@@ -246,6 +246,6 @@ function enhanceLeaderboard() {
     });
 }
 
-if (location.hash.slice(1) === 'ranking') render();
+if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'ranking') render();
 requestAnimationFrame(enhanceLeaderboard);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceLeaderboard));

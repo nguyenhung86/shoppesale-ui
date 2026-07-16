@@ -117,7 +117,7 @@ function performSearch(query, forceRefresh = false) {
     .then(res => res.json())
     .then(response => {
       // CHỐT CHẶN BẢO VỆ: Nếu người dùng đã chuyển tab khác trong lúc đang tải dữ liệu thì không ghi đè giao diện nữa
-      if (location.hash.slice(1) !== 'orders') return;
+      if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') return;
 
       if (response.success) {
         // Lưu trữ vào bộ nhớ đệm
@@ -134,7 +134,7 @@ function performSearch(query, forceRefresh = false) {
     })
     .catch(err => {
       console.error(err);
-      if (location.hash.slice(1) !== 'orders') return;
+      if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') return;
       if (app) {
         app.innerHTML = `<div style="max-width:600px; margin:50px auto; padding:20px; text-align:center; color:#d93838; font-weight:600;">Lỗi kết nối máy chủ. Vui lòng thử lại sau.</div>`;
       }
@@ -284,7 +284,7 @@ function renderDashboard(response, query, formatVND) {
 }
 
 function setupOrderResults() {
-  if (location.hash.slice(1) !== 'orders') return;
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') return;
   
   const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
   if (savedZaloId && savedZaloId !== 'null' && savedZaloId !== 'undefined' && savedZaloId.trim() !== '') {
@@ -310,7 +310,7 @@ window.addEventListener('zalo_id_synced', (e) => {
   // Xóa cache khi ID Zalo thay đổi
   cachedOrders = null;
   cachedZaloId = null;
-  if (location.hash.slice(1) === 'orders') {
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'orders') {
     performSearch(e.detail, true);
   }
 });
@@ -320,13 +320,13 @@ setupOrderResults();
 // Tự động tải ngầm đơn hàng khi tải trang ở các tab ngoài tab Đơn hàng (như Tổng quan)
 const initialZaloId = localStorage.getItem('shoppesale_zalo_id');
 if (initialZaloId && initialZaloId !== 'null' && initialZaloId !== 'undefined' && initialZaloId.trim() !== '') {
-  if (location.hash.slice(1) !== 'orders') {
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') {
     fetchOrdersInBackground(initialZaloId);
   }
 }
 // Kiểm tra định kỳ để ghi đè giao diện mẫu khi chuyển tab
 let checkInterval = setInterval(() => {
-  if (location.hash.slice(1) === 'orders') {
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'orders') {
     const resultsContainer = document.querySelector('.order-results');
     const noticeContainer = document.querySelector('.empty');
     const loaderContainer = document.querySelector('.loader');
@@ -394,7 +394,7 @@ function syncRealDataToUI() {
       }
     });
 
-    const activeHash = location.hash.slice(1) || 'dashboard';
+    const activeHash = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') || 'dashboard';
 
     // Cập nhật tab TỔNG QUAN (Dashboard)
     if (activeHash === 'dashboard') {

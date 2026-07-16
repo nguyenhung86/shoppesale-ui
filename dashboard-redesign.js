@@ -85,10 +85,10 @@ function enhanceRedesignedDashboard() {
   if (!view || view.dataset.ready) return;
   view.dataset.ready = 'true';
   const buttons = view.querySelectorAll('.dash-wallet-actions button');
-  if (buttons[0]) buttons[0].addEventListener('click', () => { location.hash = 'orders'; });
-  if (buttons[1]) buttons[1].addEventListener('click', () => { location.hash = 'referrals'; });
+  if (buttons[0]) buttons[0].addEventListener('click', () => { history.pushState(null, '', '/orders'); render(); });
+  if (buttons[1]) buttons[1].addEventListener('click', () => { history.pushState(null, '', '/referrals'); render(); });
 }
 
-if (!location.hash || location.hash.slice(1) === 'dashboard') render();
+if (!location.hash || (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'dashboard') render();
 requestAnimationFrame(enhanceRedesignedDashboard);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceRedesignedDashboard));

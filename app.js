@@ -19,7 +19,7 @@ function render(){
   }
   let key=location.pathname.slice(1)||'dashboard';
   if(location.hash){
-    key=location.hash.slice(1);
+    key=(location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
   }
   if(!pages[key])key='dashboard';
   app.innerHTML=pages[key]();
@@ -88,4 +88,9 @@ document.addEventListener('click', e => {
 
 window.addEventListener('popstate', render);
 document.querySelector('.menu-toggle').addEventListener('click',()=>nav.classList.toggle('open'));
-render();
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', render);
+} else {
+  render();
+}

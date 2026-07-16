@@ -1,5 +1,5 @@
 function setupConvertSelection() {
-  if (location.hash.slice(1) !== 'convert') return;
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'convert') return;
   
   const shops = [...document.querySelectorAll('#app .shop')];
   const input = document.querySelector('#product-link');

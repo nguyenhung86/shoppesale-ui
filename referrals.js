@@ -187,6 +187,6 @@ function enhanceReferrals() {
   });
 }
 
-if (location.hash.slice(1) === 'referrals') render();
+if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'referrals') render();
 requestAnimationFrame(enhanceReferrals);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceReferrals));

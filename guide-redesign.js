@@ -89,4 +89,4 @@ function guideRedesignedPage() {
 
 pages.guide = guideRedesignedPage;
 
-if (location.hash.slice(1) === 'guide') render();
+if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'guide') render();

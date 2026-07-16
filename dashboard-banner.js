@@ -24,7 +24,7 @@
     button.dataset.page = 'orders';
     button.innerHTML = '▣ Đơn hàng';
     button.addEventListener('click', () => {
-      location.hash = 'orders';
+      history.pushState(null, '', '/orders'); render();
     });
   }
 
@@ -34,7 +34,7 @@
 
     button.dataset.page = 'referrals';
     button.addEventListener('click', () => {
-      location.hash = 'referrals';
+      history.pushState(null, '', '/referrals'); render();
     });
   }
 

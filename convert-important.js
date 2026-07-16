@@ -1,5 +1,5 @@
 function addImportantPanel() {
-  if (location.hash.slice(1) !== 'convert' || document.querySelector('.important-panel')) return;
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'convert' || document.querySelector('.important-panel')) return;
   const notice = document.querySelector('#app .notice');
   if (!notice) return;
   const panel = document.createElement('details');

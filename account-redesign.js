@@ -179,6 +179,6 @@ function enhanceAccountPage() {
   });
 }
 
-if (location.hash.slice(1) === 'account') render();
+if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'account') render();
 requestAnimationFrame(enhanceAccountPage);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceAccountPage));

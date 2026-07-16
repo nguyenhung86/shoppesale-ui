@@ -42,4 +42,4 @@ function referralEvent() {
 
 pages.events = referralEvent;
 
-if (location.hash.slice(1) === 'events') render();
+if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'events') render();
