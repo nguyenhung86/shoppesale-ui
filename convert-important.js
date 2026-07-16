@@ -8,4 +8,10 @@ function addImportantPanel() {
   notice.replaceWith(panel);
 }
 window.addEventListener('hashchange', addImportantPanel);
+window.addEventListener('popstate', () => requestAnimationFrame(addImportantPanel));
+setInterval(() => {
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'convert') {
+    addImportantPanel();
+  }
+}, 100);
 addImportantPanel();

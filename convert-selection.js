@@ -445,4 +445,10 @@ function setupConvertSelection() {
 }
 
 window.addEventListener('hashchange', setupConvertSelection);
+window.addEventListener('popstate', () => requestAnimationFrame(setupConvertSelection));
+setInterval(() => {
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'convert') {
+    setupConvertSelection();
+  }
+}, 100);
 setupConvertSelection();

@@ -6,4 +6,10 @@ function appendConvertBot() {
   document.querySelector('#app').append(bot);
 }
 window.addEventListener('hashchange', appendConvertBot);
+window.addEventListener('popstate', () => requestAnimationFrame(appendConvertBot));
+setInterval(() => {
+  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'convert') {
+    appendConvertBot();
+  }
+}, 100);
 appendConvertBot();
