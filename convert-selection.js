@@ -1,6 +1,10 @@
 function setupConvertSelection() {
   if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'convert') return;
   
+  const container = document.querySelector('.shop-grid');
+  if (!container || container.dataset.ready) return;
+  container.dataset.ready = 'true';
+  
   const shops = [...document.querySelectorAll('#app .shop')];
   const input = document.querySelector('#product-link');
   if (!shops.length || !input) return;
