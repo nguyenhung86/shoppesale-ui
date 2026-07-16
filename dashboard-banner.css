@@ -1,0 +1,270 @@
+.dashboard-view .wallet-tier {
+  display: none;
+}
+
+.dashboard-view .wallet-actions a,
+.dashboard-view .wallet-actions button {
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.dashboard-view .wallet-actions a {
+  border-color: #f5dfcd;
+  background: #fff;
+  color: #35445b;
+}
+
+.dashboard-view .wallet-actions a:hover,
+.dashboard-view .wallet-actions button:hover {
+  border-color: #ff6208;
+  background: #ff6208;
+  box-shadow: 0 7px 14px rgba(255, 98, 8, .22);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.dashboard-commission-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1060px;
+  min-height: 118px;
+  margin: 22px auto 0;
+  padding: 20px 212px 20px 34px;
+  overflow: hidden;
+  border: 1px solid #ffe0c6;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 86% 46%, rgba(255, 186, 94, .28), transparent 18%),
+    linear-gradient(105deg, #fffaf5 0%, #fff4e9 62%, #ffe8d0 100%);
+  box-shadow: 0 9px 22px rgba(147, 81, 29, .09), inset 0 1px 0 rgba(255, 255, 255, .9);
+  color: #18273f;
+  isolation: isolate;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.dashboard-commission-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 13px 27px rgba(147, 81, 29, .14), inset 0 1px 0 rgba(255, 255, 255, .9);
+}
+
+.dashboard-commission-banner::before,
+.dashboard-commission-banner::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dashboard-commission-banner::before {
+  z-index: 0;
+  right: 52px;
+  top: 50%;
+  width: 128px;
+  height: 128px;
+  border: 1px solid rgba(255, 121, 29, .18);
+  background: rgba(255, 255, 255, .42);
+  box-shadow: 0 0 0 18px rgba(255, 255, 255, .24);
+  transform: translateY(-50%);
+}
+
+.dashboard-commission-banner::after {
+  z-index: 0;
+  top: -54px;
+  right: -54px;
+  width: 178px;
+  height: 178px;
+  border: 22px solid rgba(255, 143, 47, .11);
+  box-shadow: 0 0 0 17px rgba(255, 255, 255, .25);
+}
+
+.commission-banner-gift {
+  position: absolute;
+  z-index: 1;
+  right: 23px;
+  bottom: -28px;
+  width: 172px;
+  height: 164px;
+  margin: 0;
+  object-fit: contain;
+  object-position: center;
+  filter: drop-shadow(0 10px 10px rgba(145, 66, 6, .2));
+  transform: rotate(-3deg);
+}
+
+.commission-banner-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.commission-banner-copy small {
+  width: max-content;
+  padding: 5px 9px;
+  border: 1px solid #ffd3ab;
+  border-radius: 999px;
+  background: #fff3e8;
+  color: #ef590d;
+  font-size: 9px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 1.2px;
+}
+
+.commission-banner-copy strong {
+  font-size: 25px;
+  line-height: 1.1;
+  letter-spacing: -.45px;
+}
+
+.commission-banner-copy em {
+  color: #f6570a;
+  font-size: 34px;
+  font-style: normal;
+  letter-spacing: -.8px;
+}
+
+.commission-banner-copy span {
+  color: #68768d;
+  font-size: 14px;
+  line-height: 1.25;
+  font-weight: 500;
+}
+
+.commission-banner-coin {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 156, 69, .62);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .48), 0 0 13px rgba(255, 132, 41, .16);
+  pointer-events: none;
+  animation: commission-border-pulse 2.6s ease-in-out infinite;
+}
+
+.commission-banner-coin i {
+  position: absolute;
+  display: block;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, rgba(255, 192, 100, .72), #fff 50%, rgba(255, 192, 100, .72), transparent);
+  box-shadow: 0 0 10px rgba(255, 133, 40, .78);
+}
+
+.commission-banner-coin i:nth-child(1),
+.commission-banner-coin i:nth-child(3) {
+  width: 136px;
+  height: 2px;
+}
+
+.commission-banner-coin i:nth-child(1) {
+  top: -1px;
+  animation: commission-shine-right 3.7s linear infinite;
+}
+
+.commission-banner-coin i:nth-child(2),
+.commission-banner-coin i:nth-child(4) {
+  width: 2px;
+  height: 86px;
+  background: linear-gradient(180deg, transparent, rgba(255, 192, 100, .72), #fff 50%, rgba(255, 192, 100, .72), transparent);
+}
+
+.commission-banner-coin i:nth-child(2) {
+  right: -1px;
+  animation: commission-shine-down 3.7s linear infinite -.92s;
+}
+
+.commission-banner-coin i:nth-child(3) {
+  right: -136px;
+  bottom: -1px;
+  animation: commission-shine-left 3.7s linear infinite -1.84s;
+}
+
+.commission-banner-coin i:nth-child(4) {
+  bottom: -86px;
+  left: -1px;
+  animation: commission-shine-up 3.7s linear infinite -2.76s;
+}
+
+@keyframes commission-shine-right {
+  from { left: -136px; }
+  to { left: calc(100% + 136px); }
+}
+
+@keyframes commission-shine-down {
+  from { top: -86px; }
+  to { top: calc(100% + 86px); }
+}
+
+@keyframes commission-shine-left {
+  from { right: -136px; }
+  to { right: calc(100% + 136px); }
+}
+
+@keyframes commission-shine-up {
+  from { bottom: -86px; }
+  to { bottom: calc(100% + 86px); }
+}
+
+@keyframes commission-border-pulse {
+  50% {
+    border-color: rgba(255, 190, 109, .95);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8), 0 0 17px rgba(255, 132, 41, .24);
+  }
+}
+
+@media (max-width: 600px) {
+  .dashboard-commission-banner {
+    min-height: 132px;
+    padding: 18px 110px 18px 21px;
+    border-radius: 18px;
+  }
+
+  .commission-banner-gift {
+    right: -18px;
+    bottom: -13px;
+    width: 126px;
+    height: 126px;
+    margin: 0;
+  }
+
+  .commission-banner-copy {
+    gap: 7px;
+    margin: 0;
+    padding: 0;
+  }
+
+  .commission-banner-copy small {
+    padding: 4px 8px;
+    font-size: 8px;
+    letter-spacing: 1px;
+  }
+
+  .commission-banner-copy strong {
+    font-size: clamp(16px, 4.6vw, 21px);
+  }
+
+  .commission-banner-copy em {
+    font-size: clamp(24px, 6.5vw, 31px);
+  }
+
+  .commission-banner-copy span {
+    max-width: 210px;
+    font-size: clamp(11px, 3.15vw, 14px);
+  }
+
+  .commission-banner-coin {
+    border-radius: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .commission-banner-coin,
+  .commission-banner-coin i {
+    animation: none;
+  }
+}

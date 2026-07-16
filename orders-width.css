@@ -1,0 +1,1 @@
+.main:has(.order-search-view){max-width:1240px}.order-search-view{max-width:1140px}.order-search-card{padding:34px 44px}.order-benefits{gap:16px}@media(max-width:760px){.main:has(.order-search-view){max-width:100%}.order-search-view{max-width:100%}.order-search-card{padding:23px 19px}}

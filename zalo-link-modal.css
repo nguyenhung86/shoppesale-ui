@@ -1,0 +1,263 @@
+.zalo-link-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10020;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(20, 28, 43, .58);
+  backdrop-filter: blur(7px);
+}
+
+.zalo-link-overlay[hidden] {
+  display: none;
+}
+
+body.zalo-link-modal-open {
+  overflow: hidden;
+}
+
+.zalo-link-card {
+  width: min(100%, 470px);
+  padding: 34px;
+  border: 1px solid #e8e9ef;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 27, 48, .22);
+  color: #15233a;
+  text-align: center;
+}
+
+.zalo-link-icon {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 15px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, #168cff, #0565e8);
+  box-shadow: 0 10px 24px rgba(5, 101, 232, .25);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.zalo-link-eyebrow {
+  margin: 0 0 6px;
+  color: #f15a29;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .12em;
+}
+
+.zalo-link-card h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.zalo-link-description {
+  margin: 10px 0 18px;
+  color: #6f7d93;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.zalo-link-account {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  background: #f5f7fb;
+  color: #7787a0;
+  font-size: 11px;
+  text-align: left;
+}
+
+.zalo-link-account strong {
+  overflow: hidden;
+  color: #33425a;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#zalo-link-form {
+  text-align: left;
+}
+
+#zalo-link-form label {
+  display: block;
+  margin-bottom: 7px;
+  color: #26364f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+#zalo-link-id {
+  width: 100%;
+  height: 48px;
+  box-sizing: border-box;
+  padding: 0 14px;
+  border: 1px solid #dfe3eb;
+  border-radius: 12px;
+  outline: none;
+  color: #17243a;
+  font: inherit;
+  font-size: 14px;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+#zalo-link-id:focus {
+  border-color: #168cff;
+  box-shadow: 0 0 0 4px rgba(22, 140, 255, .12);
+}
+
+#zalo-link-help {
+  display: block;
+  margin-top: 7px;
+  color: #8a96a8;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+.zalo-admin-contact {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-top: 12px;
+  padding: 9px 10px;
+  border: 1px solid #d8e8ff;
+  border-radius: 11px;
+  background: #f7fbff;
+  color: #2b405f;
+  text-decoration: none;
+  box-shadow: 0 0 0 0 rgba(22, 119, 238, .32);
+  animation: zalo-admin-glow 2.2s ease-in-out infinite;
+  transition: border-color .2s, background .2s, transform .2s;
+}
+
+.zalo-admin-contact:hover {
+  border-color: #78b7ff;
+  background: #f0f8ff;
+  transform: translateY(-1px);
+}
+
+.zalo-admin-contact-icon {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: #1677ee;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.zalo-admin-contact > span:nth-child(2) {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.zalo-admin-contact b {
+  font-size: 11px;
+}
+
+.zalo-admin-contact small {
+  color: #71829b;
+  font-size: 9.5px;
+}
+
+.zalo-admin-contact i {
+  color: #1677ee;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+@keyframes zalo-admin-glow {
+  0%, 100% {
+    border-color: #d8e8ff;
+    box-shadow: 0 0 0 0 rgba(22, 119, 238, .24), 0 3px 8px rgba(22, 119, 238, .05);
+  }
+  50% {
+    border-color: #79b9ff;
+    box-shadow: 0 0 0 5px rgba(22, 119, 238, .1), 0 6px 14px rgba(22, 119, 238, .16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zalo-admin-contact { animation: none; }
+}
+
+.zalo-link-error {
+  display: none;
+  margin: 10px 0 0;
+  padding: 9px 11px;
+  border-radius: 9px;
+  background: #fff1ee;
+  color: #c83e1a;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.zalo-link-error.is-visible {
+  display: block;
+}
+
+#zalo-link-submit {
+  width: 100%;
+  height: 48px;
+  margin-top: 16px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ff6b40, #ed481b);
+  box-shadow: 0 9px 20px rgba(237, 72, 27, .22);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+#zalo-link-submit:disabled {
+  cursor: wait;
+  opacity: .7;
+}
+
+.zalo-link-note {
+  margin: 14px 0 0;
+  color: #8a96a8;
+  font-size: 10.5px;
+}
+
+@media (max-width: 520px) {
+  .zalo-link-overlay {
+    align-items: end;
+    padding: 12px;
+  }
+
+  .zalo-link-card {
+    padding: 26px 20px 22px;
+    border-radius: 22px;
+  }
+
+  .zalo-link-card h2 {
+    font-size: 19px;
+  }
+
+  .zalo-link-account {
+    display: block;
+  }
+
+  .zalo-link-account strong {
+    display: block;
+    margin-top: 4px;
+  }
+}

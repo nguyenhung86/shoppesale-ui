@@ -1,0 +1,225 @@
+/* Compact dashboard hero for small screens. Keep the data cards close to the top. */
+@media (max-width: 760px) {
+  .main:has(.dashboard-view) {
+    padding-top: 14px;
+  }
+
+  .dashboard-intro {
+    min-height: 190px;
+    margin-bottom: 15px;
+    border-radius: 20px;
+    align-items: flex-start;
+  }
+
+  .dashboard-intro .intro-copy {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+    padding: 23px 18px 18px 20px;
+    z-index: 3;
+  }
+
+  .dashboard-intro .intro-copy h1 {
+    font-size: 23px;
+    line-height: 1.08;
+    letter-spacing: -1px;
+  }
+
+  .dashboard-intro .intro-copy p {
+    margin: 12px 0 13px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .dashboard-intro .intro-markets {
+    position: relative;
+    z-index: 3;
+    gap: 3px;
+    font-size: 9px;
+  }
+
+  .dashboard-intro .intro-markets span {
+    /* hero-fix.css uses a 29px sprite crop on mobile; keeping the same
+       viewport prevents the marketplace icons from being clipped. */
+    width: 29px;
+    height: 29px;
+    margin-left: 2px;
+    border-radius: 6px;
+  }
+
+  .dashboard-intro .intro-markets b {
+    margin-right: 2px;
+  }
+
+  /* The illustration is useful on desktop, but it competes with the copy at
+     phone widths. Hide both decorative layers so the compact card stays
+     stable and readable. */
+  .dashboard-intro > img,
+  svg.intro-phone-ui {
+    display: none !important;
+  }
+
+  .dashboard-view .wallet-status-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+
+  .dashboard-view .wallet-status-stats > div {
+    min-height: 62px;
+    padding: 10px 6px 8px 30px;
+    border-radius: 13px;
+  }
+
+  .dashboard-view .wallet-status-stats span {
+    left: 6px;
+    top: 10px;
+    width: 21px;
+    height: 21px;
+    border-radius: 7px;
+  }
+
+  .dashboard-view .wallet-status-stats small {
+    font-size: 7px;
+    line-height: 1.25;
+  }
+
+  .dashboard-view .wallet-status-stats b {
+    margin-top: 5px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .dashboard-intro {
+    min-height: 182px;
+  }
+
+  .dashboard-intro .intro-copy {
+    padding-left: 17px;
+  }
+
+  .dashboard-intro .intro-copy h1 {
+    font-size: 22px;
+  }
+
+  .dashboard-intro .intro-copy p {
+    font-size: 11px;
+  }
+
+}
+
+/* Keep the referral hero compact on phones as well. This rule is deliberately
+   placed in the last mobile stylesheet so older referral/mobile overrides
+   cannot bring the decorative artwork back. */
+@media (max-width: 760px) {
+  .ref-program-hero {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  .ref-program-copy {
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 18px 16px 18px !important;
+  }
+
+  .ref-program-copy h1 {
+    margin: 9px 0 8px !important;
+    font-size: 27px !important;
+    line-height: 1.08 !important;
+  }
+
+  .ref-program-copy p {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .ref-program-art {
+    position: absolute !important;
+    z-index: 0 !important;
+    inset: 0 !important;
+    display: block !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none;
+  }
+
+  .ref-program-art img {
+    top: 42px !important;
+    right: -18px !important;
+    bottom: auto !important;
+    width: 180px !important;
+    height: 175px !important;
+    opacity: .14 !important;
+    filter: none !important;
+    transform: rotate(-4deg) !important;
+  }
+
+  .ref-program-art .ref-program-orbit,
+  .ref-program-art .ref-coin {
+    display: none !important;
+  }
+
+  /* Event page uses a different hero structure from the referral page. Keep
+     its gift as a subtle backdrop, rather than a separate block underneath. */
+  .event-single-card {
+    display: block !important;
+    min-height: 0 !important;
+  }
+
+  .event-single-copy {
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 18px 16px 18px !important;
+  }
+
+  .event-single-copy h2 {
+    margin: 9px 0 8px !important;
+    font-size: 27px !important;
+    line-height: 1.08 !important;
+  }
+
+  .event-single-copy p {
+    font-size: 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  .event-single-summary {
+    position: absolute !important;
+    z-index: 0 !important;
+    inset: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: hidden !important;
+    background: transparent !important;
+    pointer-events: none;
+  }
+
+  .event-single-summary img {
+    top: 34px !important;
+    right: -18px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 180px !important;
+    height: 165px !important;
+    opacity: .14 !important;
+    filter: none !important;
+    transform: rotate(-4deg) !important;
+  }
+
+  .event-single-summary::before,
+  .event-single-summary::after,
+  .event-single-amount,
+  .event-single-tier {
+    display: none !important;
+  }
+
+  /* Trang hướng dẫn: căn giữa nút chuyển link trên điện thoại. */
+  .guide-tips-new > a {
+    display: flex !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin: 18px auto 0 !important;
+    justify-content: center !important;
+  }
+}

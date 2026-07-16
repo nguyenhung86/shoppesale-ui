@@ -1,0 +1,85 @@
+.account-zalo-sync-panel {
+  display: none;
+  grid-column: 1 / -1;
+  margin-top: -4px;
+  padding: 14px;
+  border: 1px solid #d9e8ff;
+  border-radius: 14px;
+  background: #f7fbff;
+}
+
+.account-zalo-sync-panel.is-open {
+  display: block;
+}
+
+.account-zalo-sync-panel label {
+  display: block;
+  margin-bottom: 8px;
+  color: #2879e8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.account-zalo-sync-row {
+  display: flex;
+  gap: 8px;
+}
+
+.account-zalo-sync-row input {
+  min-width: 0;
+  flex: 1;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #cbdcf3;
+  border-radius: 10px;
+  background: #fff;
+  color: #172c49;
+  font: 500 12px inherit;
+  outline: none;
+}
+
+.account-zalo-sync-row input:focus {
+  border-color: #5e9af1;
+  box-shadow: 0 0 0 3px rgba(40, 121, 232, .12);
+}
+
+.account-zalo-sync-row button {
+  height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #2879e8;
+  color: #fff;
+  font: 700 11px inherit;
+  cursor: pointer;
+}
+
+.account-setting.zalo.is-zalo-locked,
+.account-setting.zalo.is-zalo-locked:disabled {
+  cursor: default;
+  opacity: 1;
+  border-color: #cdebd9;
+  background: #f5fcf8;
+}
+
+.account-setting.zalo.is-zalo-locked i {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #e2f7ea;
+  color: #17a35b;
+  font-style: normal;
+  font-weight: 900;
+}
+
+@media (max-width: 520px) {
+  .account-zalo-sync-row {
+    flex-direction: column;
+  }
+
+  .account-zalo-sync-row button {
+    width: 100%;
+  }
+}

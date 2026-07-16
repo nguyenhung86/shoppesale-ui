@@ -1,0 +1,108 @@
+.dashboard-wallet .wallet-status-stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.dashboard-wallet .wallet-status-stats > div {
+  min-height: 74px;
+  padding: 12px 34px 10px 13px;
+  overflow: hidden;
+  border-width: 1px 1px 1px 3px;
+  border-radius: 15px;
+  box-shadow: 0 4px 11px rgba(36, 47, 63, .055);
+}
+
+.wallet-status-stats span {
+  top: auto;
+  right: 10px;
+  bottom: 11px;
+  left: auto;
+  width: auto;
+  height: auto;
+  background: transparent;
+  box-shadow: none;
+  font-size: 21px;
+  opacity: .16;
+}
+
+.wallet-status-stats small {
+  font-size: 9px;
+  letter-spacing: .055em;
+  white-space: nowrap;
+}
+
+.wallet-status-stats b {
+  margin-top: 5px;
+  font-size: 19px;
+  letter-spacing: -.4px;
+  white-space: nowrap;
+}
+
+.wallet-status-stats .status-processing {
+  border-color: #f2bf47;
+  background: linear-gradient(140deg, #fffdf9, #fff8e9);
+}
+
+.wallet-status-stats .status-processing small,
+.wallet-status-stats .status-processing b {
+  color: #d98c0b;
+}
+
+.wallet-status-stats .status-processing span {
+  color: #d99b1e;
+}
+
+.wallet-status-stats .status-completed {
+  border-color: #3cc578;
+  background: linear-gradient(140deg, #fbfffc, #f1fcf5);
+}
+
+.wallet-status-stats .status-completed small,
+.wallet-status-stats .status-completed b {
+  color: #14985a;
+}
+
+.wallet-status-stats .status-completed span {
+  color: #16aa64;
+}
+
+.wallet-status-stats .status-received {
+  border-color: #4f83f3;
+  background: linear-gradient(140deg, #fcfdff, #f1f6ff);
+}
+
+.wallet-status-stats .status-received small,
+.wallet-status-stats .status-received b {
+  color: #3264c5;
+}
+
+.wallet-status-stats .status-received span {
+  color: #3d75e4;
+}
+
+@media (max-width: 600px) {
+  .dashboard-wallet .wallet-status-stats {
+    gap: 6px;
+  }
+
+  .dashboard-wallet .wallet-status-stats > div {
+    min-height: 67px;
+    padding: 10px 6px 8px 9px;
+  }
+
+  .wallet-status-stats span {
+    right: 6px;
+    bottom: 7px;
+    font-size: 16px;
+  }
+
+  .wallet-status-stats small {
+    font-size: 7px;
+    letter-spacing: .02em;
+  }
+
+  .wallet-status-stats b {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+}

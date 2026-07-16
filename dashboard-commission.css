@@ -1,0 +1,208 @@
+.dashboard-view .commission-chart-card {
+  margin-top: 22px;
+  padding: 24px 24px 20px;
+  border: 1px solid #eadfd7;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(34, 44, 57, .065);
+}
+
+.commission-chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.commission-chart-head > div {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+}
+
+.commission-chart-head > div > span {
+  display: grid;
+  flex: 0 0 34px;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ffd9c1;
+  border-radius: 11px;
+  background: #fff4eb;
+  color: #f35a19;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.commission-chart-head small {
+  display: block;
+  margin-bottom: 3px;
+  color: #f16a31;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+
+.commission-chart-head h2 {
+  margin: 0;
+  color: #172f4e;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+.commission-chart-head > b {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid #ffd5bd;
+  border-radius: 12px;
+  background: #fff7f1;
+  color: #df551c;
+  font-size: 14px;
+}
+
+.commission-chart-visual {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  grid-template-rows: 220px auto;
+  column-gap: 10px;
+  margin-top: 19px;
+}
+
+.commission-chart-y {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 220px;
+  padding: 1px 0 2px;
+}
+
+.commission-chart-y i {
+  color: #93a2b8;
+  font-size: 10px;
+  font-style: normal;
+  line-height: 1;
+}
+
+.commission-chart-canvas {
+  position: relative;
+  min-width: 0;
+  height: 220px;
+  overflow: visible;
+  border-radius: 12px;
+}
+
+.commission-chart-canvas svg {
+  display: block;
+  width: 100%;
+  height: 220px;
+  overflow: visible;
+}
+
+.commission-chart-dot {
+  position: absolute;
+  top: 5px;
+  right: -5px;
+  width: 12px;
+  height: 12px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #f35a19;
+  box-shadow: 0 0 0 3px rgba(243, 90, 25, .2), 0 4px 10px rgba(243, 90, 25, .25);
+}
+
+.commission-chart-label {
+  position: absolute;
+  top: -10px;
+  right: 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 5px 8px;
+  border: 1px solid #ffd1b6;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 5px 12px rgba(104, 65, 38, .1);
+  white-space: nowrap;
+}
+
+.commission-chart-label b {
+  color: #df551c;
+  font-size: 11px;
+}
+
+.commission-chart-label small {
+  color: #8292a9;
+  font-size: 9px;
+}
+
+.commission-chart-label[hidden],
+.commission-chart-dot[hidden] {
+  display: none;
+}
+
+.commission-chart-months {
+  display: grid;
+  grid-column: 2;
+  grid-template-columns: repeat(12, minmax(45px, 1fr));
+  margin-top: 9px;
+  overflow: hidden;
+}
+
+.commission-chart-months span {
+  color: #899ab3;
+  font-size: 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .dashboard-view .commission-chart-card {
+    padding: 18px 15px 16px;
+    border-radius: 20px;
+  }
+
+  .commission-chart-head h2 {
+    font-size: 16px;
+  }
+
+  .commission-chart-head > b {
+    padding: 7px 9px;
+    font-size: 12px;
+  }
+
+  .commission-chart-visual {
+    grid-template-columns: 34px minmax(0, 1fr);
+    column-gap: 7px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d2a58f transparent;
+  }
+
+  .commission-chart-visual::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .commission-chart-visual::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .commission-chart-visual::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #d2a58f;
+  }
+
+  .commission-chart-visual::-webkit-scrollbar-button {
+    display: none;
+  }
+
+  .commission-chart-canvas {
+    min-width: 620px;
+  }
+
+  .commission-chart-months {
+    min-width: 620px;
+  }
+}

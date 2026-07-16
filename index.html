@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hoàn Dễ — Mua sắm hoàn tiền</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="brand.css" />
+  <link rel="stylesheet" href="dashboard.css" />
+  <link rel="stylesheet" href="dashboard-banner.css?v=7" />
+  <link rel="stylesheet" href="intro.css" />
+  <link rel="stylesheet" href="wide-dashboard.css" />
+  <link rel="stylesheet" href="wide-dashboard-content.css" />
+  <link rel="stylesheet" href="hero-fix.css" />
+  <link rel="stylesheet" href="phone-overlay.css" />
+  <link rel="stylesheet" href="phone-overlay-fix.css" />
+  <link rel="stylesheet" href="extras.css" />
+  <link rel="stylesheet" href="marketplace-fix.css" />
+  <link rel="stylesheet" href="convert-bot.css?v=2" />
+  <link rel="stylesheet" href="convert-bot-polish.css?v=3" />
+  <link rel="stylesheet" href="convert-important.css" />
+  <link rel="stylesheet" href="convert-selection.css?v=4" />
+  <link rel="stylesheet" href="orders-redesign.css" />
+  <link rel="stylesheet" href="orders-width.css" />
+  <link rel="stylesheet" href="tab-width.css" />
+  <link rel="stylesheet" href="order-results.css" />
+  <link rel="stylesheet" href="order-summary-highlight.css" />
+  <link rel="stylesheet" href="orders-sync.css" />
+  <link rel="stylesheet" href="referrals.css?v=2" />
+  <link rel="stylesheet" href="referrals-redesign.css?v=9" />
+  <link rel="stylesheet" href="events-redesign.css?v=8" />
+  <link rel="stylesheet" href="leaderboard-redesign.css?v=14" />
+  <link rel="stylesheet" href="account-redesign.css?v=2" />
+  <link rel="stylesheet" href="guide-redesign.css?v=2" />
+  <link rel="stylesheet" href="dashboard-polish.css?v=2" />
+  <link rel="stylesheet" href="dashboard-status.css?v=1" />
+  <link rel="stylesheet" href="dashboard-classic-refine.css?v=2" />
+  <link rel="stylesheet" href="dashboard-commission.css?v=2" />
+  <link rel="stylesheet" href="mobile-dashboard-fix.css?v=2" />
+  <link rel="stylesheet" href="convert-page-polish.css?v=2" />
+  <link rel="stylesheet" href="orders-page-polish.css?v=4" />
+  <link rel="stylesheet" href="orders-visual-polish.css?v=6" />
+  <link rel="stylesheet" href="zalo-support.css?v=7" />
+  <link rel="stylesheet" href="mobile-layout.css?v=12" />
+  <link rel="stylesheet" href="account-zalo-sync.css?v=1" />
+  <link rel="stylesheet" href="topbar-actions.css?v=2" />
+  <link rel="stylesheet" href="logout-modal.css?v=1" />
+  <link rel="stylesheet" href="mobile-dashboard-compact.css?v=12" />
+  <link rel="stylesheet" href="zalo-link-modal.css?v=3" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+  <div id="login-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f5f9; z-index: 10000; align-items: center; justify-content: center; flex-direction: column;">
+     <div style="background: #fff; padding: 40px; border-radius: 24px; box-shadow: 0 14px 34px rgba(23,32,51,0.08); text-align: center; max-width: 400px; width: 90%; border: 1px solid #e8e9ef;">
+        <div style="width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(135deg, #ff6b40, #e84616); color: #fff; display: grid; place-items: center; font-size: 24px; font-weight: bold; margin: 0 auto 15px;">$</div>
+        <h2 style="font-family: 'Be Vietnam Pro', sans-serif; color: #15233a; margin-bottom: 8px; font-size: 22px; font-weight: 800;">Đăng Nhập</h2>
+        <p style="color: #7787a0; font-size: 13.5px; margin-bottom: 25px; line-height: 1.5;">Đăng nhập bằng tài khoản Google để đồng bộ dữ liệu và xem thông tin hoàn tiền cá nhân.</p>
+        <div style="display: flex; justify-content: center;" id="google-login-btn"></div>
+     </div>
+  </div>
+  <div id="zalo-link-overlay" class="zalo-link-overlay" role="dialog" aria-modal="true" aria-labelledby="zalo-link-title" aria-hidden="true" hidden>
+    <div class="zalo-link-card">
+      <div class="zalo-link-icon" aria-hidden="true">Zalo</div>
+      <p class="zalo-link-eyebrow">BƯỚC CUỐI CÙNG</p>
+      <h2 id="zalo-link-title">Liên kết Zalo để đồng bộ đơn hàng</h2>
+      <p class="zalo-link-description">Nhập ID Zalo bạn đang dùng trong nhóm. Hệ thống sẽ dùng ID này để tìm đúng đơn hàng và hoa hồng của bạn trên Google Sheet.</p>
+      <div class="zalo-link-account">
+        <span>Tài khoản Google</span>
+        <strong id="zalo-link-email"></strong>
+      </div>
+      <form id="zalo-link-form" novalidate>
+        <label for="zalo-link-id">ID Zalo của bạn</label>
+        <input id="zalo-link-id" name="zaloId" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 6978181959585081611" maxlength="25" aria-describedby="zalo-link-help zalo-link-error" required />
+        <small id="zalo-link-help">ID chỉ gồm các chữ số, không phải tên hiển thị hoặc số điện thoại.</small>
+        <a class="zalo-admin-contact" href="https://zalo.me/0842835222" target="_blank" rel="noopener noreferrer" aria-label="Liên hệ admin qua Zalo để lấy ID Zalo">
+          <span class="zalo-admin-contact-icon" aria-hidden="true">Zalo</span>
+          <span><b>Chưa có ID Zalo?</b><small>Liên hệ admin để được hỗ trợ</small></span>
+          <i aria-hidden="true">↗</i>
+        </a>
+        <p id="zalo-link-error" class="zalo-link-error" role="alert"></p>
+        <button id="zalo-link-submit" type="submit">Đồng bộ đơn hàng</button>
+      </form>
+      <p class="zalo-link-note"><b>Lưu ý:</b> Mỗi tài khoản chỉ được liên kết ID Zalo một lần và không thể tự thay đổi sau khi lưu.</p>
+    </div>
+  </div>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#dashboard" aria-label="Hoàn Tiền Mua Sắm - Trang chủ"><span class="brand-mark">$</span><span class="brand-copy"><strong>Hoàn Tiền Mua Sắm</strong><small>Shopee <i>•</i> Lazada <i>•</i> TikTok Shop</small></span></a>
+      <button class="menu-toggle" aria-label="Mở menu">☰</button>
+      <nav class="nav" aria-label="Điều hướng chính">
+        <a href="#dashboard" data-page="dashboard">Tổng quan</a><a href="#convert" data-page="convert">Chuyển link</a><a href="#orders" data-page="orders">Đơn hàng</a><a href="#referrals" data-page="referrals">Giới thiệu</a><a href="#events" data-page="events">Sự kiện</a><a href="#ranking" data-page="ranking">Xếp hạng</a><a href="#account" data-page="account">Tài khoản</a><a href="#guide" data-page="guide">Hướng dẫn</a>
+      </nav>
+      <div class="user-area"><span class="avatar">HV</span><span class="user-name">Hồng Vinh</span><div class="topbar-actions"><button class="topbar-action topbar-notification" type="button" aria-label="Thông báo" title="Thông báo">♧</button><button class="topbar-action topbar-logout" type="button" aria-label="Đăng xuất" title="Đăng xuất">↪</button></div></div>
+    </header>
+    <main id="app" class="main"></main>
+    <a class="support-bot zalo-support" href="https://zalo.me/g/0u5xwlj4npkvl4bomy1o" target="_blank" rel="noopener noreferrer" aria-label="Tham gia nhóm Zalo Hoàn Tiền Mua Sắm">
+      <span class="zalo-support-logo">Zalo</span>
+      <span class="zalo-support-copy"><b>Hoàn Tiền Mua Sắm</b><small>Tham gia nhóm Zalo</small></span>
+      <span class="zalo-support-arrow"><b>Vào nhóm</b><span aria-hidden="true">›</span></span>
+    </a>
+  </div>
+  <script src="config.js"></script>
+  <script src="auth.js?v=6"></script>
+  <script src="app.js?v=4"></script>
+  <script src="dashboard-banner.js?v=5"></script>
+  <script src="convert-bot.js?v=3"></script>
+  <script src="convert-important.js"></script>
+  <script src="convert-selection.js?v=6"></script>
+  <script src="orders-redesign.js"></script>
+  <script src="order-results.js?v=2"></script>
+  <script src="orders-visual-polish.js?v=3"></script>
+  <script src="referrals.js?v=11"></script>
+  <script src="events-redesign.js?v=3"></script>
+  <script src="leaderboard-redesign.js?v=1"></script>
+  <script src="account-redesign.js?v=6"></script>
+  <script src="account-zalo-sync.js?v=3"></script>
+  <script src="logout-modal.js?v=1"></script>
+  <script src="guide-redesign.js?v=3"></script>
+  <script src="commission-chart-range.js?v=8"></script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+@media (max-width: 760px) {
+  .dashboard-intro {
+    display: block;
+    min-height: 445px;
+    align-items: initial;
+  }
+
+  .dashboard-intro .intro-copy {
+    position: relative;
+    z-index: 3;
+    padding: 27px 22px 0;
+  }
+
+  .dashboard-intro .intro-copy h1 {
+    max-width: 315px;
+    font-size: 30px;
+    line-height: 1.12;
+    letter-spacing: -1.3px;
+  }
+
+  .dashboard-intro .intro-copy p {
+    max-width: 300px;
+    margin: 14px 0 17px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .dashboard-intro .intro-markets {
+    gap: 4px;
+    font-size: 10px;
+  }
+
+  .dashboard-intro .intro-markets span {
+    width: 27px;
+    height: 27px;
+    margin-left: 2px;
+  }
+
+  .dashboard-intro .intro-markets b {
+    margin-right: 2px;
+  }
+
+  .dashboard-intro > img {
+    top: 220px;
+    right: -8px;
+    z-index: 1;
+    width: 365px;
+    opacity: .96;
+  }
+
+  svg.intro-phone-ui {
+    top: 220px !important;
+    right: -8px !important;
+    z-index: 2;
+    width: 365px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .dashboard-intro {
+    min-height: 430px;
+  }
+
+  .dashboard-intro .intro-copy {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .dashboard-intro .intro-copy h1 {
+    font-size: 27px;
+  }
+
+  .dashboard-intro .intro-copy p {
+    max-width: 270px;
+    font-size: 13px;
+  }
+
+  .dashboard-intro > img,
+  svg.intro-phone-ui {
+    top: 215px !important;
+    right: -24px !important;
+    width: 340px !important;
+  }
+}

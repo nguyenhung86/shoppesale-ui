@@ -1,0 +1,109 @@
+.main:has(.dashboard-view) {
+  max-width: 1120px;
+}
+
+.dashboard-view {
+  max-width: 100%;
+}
+
+.dashboard-view .dashboard-wallet {
+  overflow: hidden;
+  border-color: #f0dfd0;
+  box-shadow: 0 10px 23px rgba(82, 58, 33, .075);
+}
+
+.dashboard-view .wallet-top {
+  position: relative;
+  background: linear-gradient(112deg, #ff5e13, #ff7620 63%, #ff9c31);
+}
+
+.dashboard-view .wallet-top::after {
+  position: absolute;
+  top: -88px;
+  right: 8%;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(255, 255, 255, .25);
+  border-radius: 50%;
+  box-shadow: 0 0 0 31px rgba(255, 255, 255, .045);
+  content: "";
+}
+
+.dashboard-view .wallet-user {
+  position: relative;
+  z-index: 1;
+}
+
+.dashboard-view .wallet-balance {
+  box-shadow: 0 7px 16px rgba(56, 44, 31, .055);
+}
+
+.dashboard-view .wallet-actions {
+  margin-top: 14px;
+}
+
+.dashboard-view .wallet-status-stats .status-processing {
+  border-color: #f1c977;
+  background: linear-gradient(145deg, #fffdf8, #fff7e9);
+}
+
+.dashboard-view .wallet-status-stats .status-processing small,
+.dashboard-view .wallet-status-stats .status-processing b {
+  color: #cc7d08;
+}
+
+.dashboard-view .wallet-status-stats .status-processing span {
+  color: #d7941d;
+}
+
+.dashboard-view .wallet-status-stats .status-completed {
+  border-color: #f3b98d;
+  background: linear-gradient(145deg, #fffdfb, #fff5ed);
+}
+
+.dashboard-view .wallet-status-stats .status-completed small,
+.dashboard-view .wallet-status-stats .status-completed b {
+  color: #d05c21;
+}
+
+.dashboard-view .wallet-status-stats .status-completed span {
+  color: #e37135;
+}
+
+.dashboard-view .wallet-status-stats .status-received {
+  border-color: #ed9d62;
+  background: linear-gradient(145deg, #fffdfb, #fff1e5);
+}
+
+.dashboard-view .wallet-status-stats .status-received small,
+.dashboard-view .wallet-status-stats .status-received b {
+  color: #bd4f14;
+}
+
+.dashboard-view .wallet-status-stats .status-received span {
+  color: #dc6826;
+}
+
+.dashboard-view .dashboard-counters > div,
+.dashboard-view .dashboard-chart {
+  border-color: #ebe5df;
+  box-shadow: 0 6px 15px rgba(40, 49, 61, .05);
+}
+
+.dashboard-view .dashboard-chart h2 {
+  color: #1b314d;
+}
+
+.dashboard-view .dashboard-commission-banner {
+  margin-top: 23px;
+}
+
+@media (max-width: 600px) {
+  .main:has(.dashboard-view) {
+    max-width: 100%;
+  }
+
+  .dashboard-view .wallet-top::after {
+    right: -58px;
+  }
+}

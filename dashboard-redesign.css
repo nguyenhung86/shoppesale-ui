@@ -1,0 +1,567 @@
+.dashboard-redesign-view {
+  display: flex;
+  gap: 22px;
+  flex-direction: column;
+}
+
+.dashboard-redesign-view .dashboard-intro {
+  margin-bottom: 0;
+}
+
+.dash-overview-grid,
+.dash-insight-grid {
+  display: grid;
+  grid-template-columns: 1.22fr .78fr;
+  gap: 20px;
+}
+
+.dash-wallet-card,
+.dash-member-card,
+.dash-chart-card,
+.dash-next-card {
+  border: 1px solid #ece5dd;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 8px 19px rgba(36, 47, 63, .055);
+}
+
+.dash-wallet-card {
+  position: relative;
+  padding: 24px;
+  overflow: hidden;
+  border-color: #ffb176;
+  background: linear-gradient(132deg, #ff5b1b, #ff7d22 68%, #ffad45);
+  box-shadow: 0 13px 26px rgba(229, 90, 19, .18);
+  color: #fff;
+}
+
+.dash-wallet-head {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dash-wallet-head > div {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.dash-welcome-dot {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .2);
+  font-size: 13px;
+}
+
+.dash-wallet-head small {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.dash-tier-badge {
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, .58);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .14);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.dash-total {
+  position: relative;
+  z-index: 1;
+  margin-top: 23px;
+}
+
+.dash-total > span,
+.dash-total strong,
+.dash-total p {
+  display: block;
+}
+
+.dash-total > span {
+  color: rgba(255, 255, 255, .82);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .11em;
+}
+
+.dash-total strong {
+  margin-top: 4px;
+  font-size: 39px;
+  letter-spacing: -1.5px;
+  text-shadow: 0 4px 12px rgba(150, 45, 0, .16);
+}
+
+.dash-total p {
+  margin: 3px 0 0;
+  color: rgba(255, 255, 255, .82);
+  font-size: 11px;
+}
+
+.dash-status-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  margin-top: 19px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.dash-status {
+  position: relative;
+  min-height: 67px;
+  padding: 11px 7px 8px 11px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .35);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .92);
+}
+
+.dash-status small,
+.dash-status b {
+  position: relative;
+  z-index: 1;
+  display: block;
+}
+
+.dash-status small {
+  color: #79869a;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.dash-status b {
+  margin-top: 5px;
+  font-size: 15px;
+  letter-spacing: -.35px;
+}
+
+.dash-status i {
+  position: absolute;
+  right: 8px;
+  bottom: 4px;
+  color: currentColor;
+  font-size: 21px;
+  font-style: normal;
+  opacity: .16;
+}
+
+.dash-status.processing {
+  color: #e09010;
+}
+
+.dash-status.completed {
+  color: #12965b;
+}
+
+.dash-status.received {
+  color: #3268cb;
+}
+
+.dash-wallet-actions {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  margin-top: 13px;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 8px;
+}
+
+.dash-wallet-actions a,
+.dash-wallet-actions button {
+  min-height: 38px;
+  padding: 9px 5px;
+  border: 1px solid rgba(255, 255, 255, .5);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .13);
+  color: #fff;
+  font: 700 10px "Be Vietnam Pro", sans-serif;
+  text-align: center;
+}
+
+.dash-wallet-actions a {
+  background: #fff;
+  color: #ef591b;
+}
+
+.dash-wallet-actions a:hover,
+.dash-wallet-actions button:hover {
+  border-color: #fff;
+  background: #fff;
+  box-shadow: 0 6px 13px rgba(128, 40, 0, .15);
+  color: #e95216;
+  transform: translateY(-1px);
+}
+
+.dash-wallet-glow {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, .18);
+  border-radius: 50%;
+}
+
+.dash-wallet-glow.one {
+  top: -130px;
+  right: -5px;
+  width: 330px;
+  height: 330px;
+}
+
+.dash-wallet-glow.two {
+  right: 130px;
+  bottom: -120px;
+  width: 220px;
+  height: 220px;
+  box-shadow: 0 0 0 34px rgba(255, 255, 255, .035);
+}
+
+.dash-member-card {
+  padding: 22px;
+  background: linear-gradient(145deg, #fffefa, #fff7ea);
+}
+
+.dash-member-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dash-member-top > div {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.dash-member-icon,
+.dash-card-heading > div > span {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  place-items: center;
+  border-radius: 12px;
+  background: #fff0e4;
+  color: #f45a19;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.dash-member-top small,
+.dash-card-heading small {
+  display: block;
+  color: #ef5c1c;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.dash-member-top h2,
+.dash-card-heading h2 {
+  margin: 3px 0 0;
+  color: #172c49;
+  font-size: 15px;
+  letter-spacing: -.3px;
+}
+
+.dash-member-top > span {
+  display: grid;
+  width: 41px;
+  height: 41px;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #ffcb4a, #f58f18);
+  box-shadow: 0 5px 10px rgba(213, 130, 0, .18);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dash-member-card > p {
+  margin: 14px 0 0;
+  color: #738196;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.dash-member-progress {
+  height: 7px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #f4e5cf;
+}
+
+.dash-member-progress span {
+  display: block;
+  width: 80%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff7023, #ffc13c);
+}
+
+.dash-member-rule {
+  display: flex;
+  gap: 6px;
+  margin-top: 11px;
+  color: #718096;
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.dash-member-rule b {
+  display: grid;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #e4f8eb;
+  color: #14a05e;
+}
+
+.dash-member-stats {
+  display: grid;
+  margin-top: 15px;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid #f0e3d1;
+}
+
+.dash-member-stats > div {
+  padding: 12px 5px 0;
+}
+
+.dash-member-stats > div + div {
+  border-left: 1px solid #f0e3d1;
+}
+
+.dash-member-stats small,
+.dash-member-stats b {
+  display: block;
+}
+
+.dash-member-stats small {
+  color: #919aa7;
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .04em;
+}
+
+.dash-member-stats b {
+  margin-top: 5px;
+  color: #25415e;
+  font-size: 12px;
+}
+
+.dash-member-stats > div:last-child b {
+  font-size: 9px;
+}
+
+.dash-chart-card,
+.dash-next-card {
+  padding: 22px;
+}
+
+.dash-card-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dash-card-heading > div {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.dash-card-heading > button {
+  padding: 8px 10px;
+  border: 1px solid #f0e1d4;
+  border-radius: 9px;
+  background: #fffaf6;
+  color: #707f94;
+  font: 700 9px "Be Vietnam Pro", sans-serif;
+}
+
+.dash-chart-new {
+  position: relative;
+  display: grid;
+  height: 182px;
+  margin-top: 17px;
+  padding: 7px 0 20px 26px;
+  grid-template-columns: 1fr;
+}
+
+.dash-y-axis {
+  position: absolute;
+  top: 5px;
+  bottom: 21px;
+  left: 0;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+.dash-y-axis i {
+  color: #9ba9bb;
+  font-size: 9px;
+  font-style: normal;
+}
+
+.dash-chart-area {
+  overflow: hidden;
+  border-bottom: 1px solid #e9eff5;
+  background: repeating-linear-gradient(to bottom, transparent 0 30px, #edf1f5 31px 32px);
+}
+
+.dash-chart-area svg {
+  width: 100%;
+  height: 100%;
+}
+
+.dash-months {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  color: #9aa7b7;
+  font-size: 9px;
+}
+
+.dash-next-card {
+  background: linear-gradient(145deg, #fff, #fff9f3);
+}
+
+.dash-next-card ol {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-next-card li {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.dash-next-card li > b {
+  display: grid;
+  width: 25px;
+  height: 25px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: #fff0e5;
+  color: #f05b1b;
+  font-size: 9px;
+}
+
+.dash-next-card li strong,
+.dash-next-card li small {
+  display: block;
+}
+
+.dash-next-card li strong {
+  color: #29415d;
+  font-size: 11px;
+}
+
+.dash-next-card li small {
+  margin-top: 3px;
+  color: #8390a1;
+  font-size: 9px;
+}
+
+.dash-next-card > a {
+  display: flex;
+  margin-top: 18px;
+  padding: 10px 12px;
+  justify-content: space-between;
+  border: 1px solid #ffd3b6;
+  border-radius: 11px;
+  background: #fff;
+  color: #ee5a1a;
+  font-size: 10px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.dash-next-card > a span {
+  font-size: 14px;
+}
+
+.dashboard-redesign-view .dashboard-commission-banner {
+  margin-top: 0;
+}
+
+@media (max-width: 760px) {
+  .dash-overview-grid,
+  .dash-insight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-wallet-card,
+  .dash-member-card,
+  .dash-chart-card,
+  .dash-next-card {
+    border-radius: 19px;
+  }
+}
+
+@media (max-width: 500px) {
+  .dash-wallet-card,
+  .dash-member-card,
+  .dash-chart-card,
+  .dash-next-card {
+    padding: 17px;
+  }
+
+  .dash-total strong {
+    font-size: 33px;
+  }
+
+  .dash-status {
+    min-height: 60px;
+    padding: 9px 3px 7px 8px;
+  }
+
+  .dash-status small {
+    font-size: 6px;
+  }
+
+  .dash-status b {
+    font-size: 12px;
+  }
+
+  .dash-status i {
+    right: 4px;
+    font-size: 16px;
+  }
+
+  .dash-wallet-actions {
+    grid-template-columns: 1.2fr 1fr 1fr;
+    gap: 5px;
+  }
+
+  .dash-wallet-actions a,
+  .dash-wallet-actions button {
+    min-height: 35px;
+    padding: 7px 2px;
+    font-size: 8px;
+  }
+
+  .dash-member-stats small {
+    font-size: 6px;
+  }
+
+  .dash-member-stats b {
+    font-size: 11px;
+  }
+}

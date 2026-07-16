@@ -1,0 +1,385 @@
+.main:has(.dashboard-view) {
+  padding-top: 34px;
+}
+
+.dashboard-view {
+  --dash-orange: #ff5b0a;
+  --dash-orange-dark: #ef4605;
+  --dash-text: #17233b;
+  --dash-muted: #718097;
+}
+
+.dashboard-intro {
+  border-color: rgba(231, 218, 208, .8);
+  box-shadow: 0 18px 45px rgba(44, 35, 28, .075);
+}
+
+.dashboard-wallet {
+  position: relative;
+  padding: 16px;
+  border: 1px solid rgba(236, 217, 203, .9);
+  border-radius: 29px;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 15px 36px rgba(81, 52, 31, .09);
+}
+
+.wallet-top {
+  position: relative;
+  height: 116px;
+  padding: 20px 26px 49px;
+  overflow: hidden;
+  border-radius: 23px;
+  background:
+    radial-gradient(circle at 88% -18%, rgba(255, 234, 190, .38), transparent 33%),
+    linear-gradient(115deg, #f65a18 0%, #ff7524 57%, #ff9a4a 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .32);
+}
+
+.wallet-top::before,
+.wallet-top::after {
+  position: absolute;
+  content: "";
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.wallet-top::before {
+  right: 68px;
+  top: -90px;
+  width: 290px;
+  height: 190px;
+  border: 18px solid rgba(255, 255, 255, .08);
+  transform: rotate(-8deg);
+}
+
+.wallet-top::after {
+  right: 24px;
+  bottom: 18px;
+  width: 94px;
+  height: 48px;
+  opacity: .25;
+  background-image: radial-gradient(circle, #fff 1.3px, transparent 1.5px);
+  background-size: 13px 13px;
+}
+
+.wallet-user {
+  position: relative;
+  z-index: 1;
+  gap: 13px;
+  font-size: 12px;
+}
+
+.wallet-user .avatar {
+  width: 51px;
+  height: 51px;
+  border: 3px solid rgba(255, 255, 255, .72);
+  background: linear-gradient(145deg, #075a59, #123f44);
+  box-shadow: 0 7px 15px rgba(45, 44, 25, .25);
+}
+
+.wallet-user strong {
+  font-size: 19px;
+  letter-spacing: -.3px;
+}
+
+.wallet-user small {
+  margin-top: 5px;
+  opacity: .88;
+}
+
+.wallet-balance {
+  height: 141px;
+  margin-top: -32px;
+  overflow: hidden;
+  border: 1px solid rgba(241, 224, 211, .9);
+  border-radius: 23px;
+  background:
+    radial-gradient(circle at 50% 10%, rgba(255, 237, 222, .62), transparent 44%),
+    linear-gradient(180deg, #fff 0%, #fffdfb 100%);
+  box-shadow: 0 10px 24px rgba(76, 50, 31, .075);
+}
+
+.wallet-balance::before,
+.wallet-balance::after {
+  opacity: 1;
+  border: 1px solid rgba(255, 112, 32, .09);
+  border-radius: 50%;
+}
+
+.wallet-balance::before {
+  top: -88px;
+  right: -52px;
+  width: 235px;
+  height: 235px;
+  box-shadow: 0 0 0 24px rgba(255, 116, 41, .025);
+}
+
+.wallet-balance::after {
+  left: -72px;
+  bottom: -122px;
+  width: 230px;
+  height: 230px;
+  box-shadow: 0 0 0 20px rgba(255, 116, 41, .025);
+}
+
+.wallet-art {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 134px;
+  display: grid;
+  width: 76px;
+  height: 76px;
+  place-items: center;
+  border: 1px solid rgba(255, 119, 35, .18);
+  border-radius: 50%;
+  background: rgba(255, 250, 245, .76);
+  box-shadow: 0 0 0 13px rgba(255, 119, 35, .035);
+  color: transparent;
+  transform: translateY(-50%);
+}
+
+.wallet-art::after {
+  content: "₫";
+  color: rgba(239, 80, 11, .25);
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.wallet-balance small {
+  color: #e9500b;
+  font-size: 11px;
+  letter-spacing: .18em;
+}
+
+.wallet-balance strong {
+  margin-top: 6px;
+  color: var(--dash-orange-dark);
+  font-size: 54px;
+  letter-spacing: -2.5px;
+  text-shadow: 0 4px 13px rgba(239, 70, 5, .11);
+}
+
+.wallet-balance em {
+  display: none;
+}
+
+.wallet-stats {
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.wallet-stats > div {
+  min-height: 72px;
+  padding: 14px 15px 11px 61px;
+  border-color: #eee3da;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff, #fffdfa);
+  box-shadow: 0 5px 13px rgba(42, 51, 64, .055);
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.wallet-stats > div:hover {
+  border-color: #ffc9a9;
+  box-shadow: 0 9px 19px rgba(213, 90, 22, .11);
+  transform: translateY(-2px);
+}
+
+.wallet-stats span {
+  left: 14px;
+  top: 14px;
+  width: 39px;
+  height: 39px;
+  border-radius: 13px;
+  background: #fff2e9;
+  color: var(--dash-orange);
+  box-shadow: inset 0 0 0 1px rgba(255, 91, 10, .05);
+}
+
+.wallet-stats small {
+  color: #6d7c92;
+  font-size: 10px;
+  letter-spacing: .035em;
+}
+
+.wallet-stats b {
+  margin-top: 4px;
+  color: var(--dash-text);
+  font-size: 19px;
+}
+
+.wallet-actions {
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dashboard-view .wallet-actions a,
+.dashboard-view .wallet-actions button {
+  min-height: 44px;
+  padding: 12px 8px;
+  border-color: #ecdccf;
+  border-radius: 15px;
+  background: #fff;
+  color: #344257;
+  font-size: 11px;
+  letter-spacing: .01em;
+}
+
+.dashboard-counters {
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.dashboard-counters > div {
+  min-height: 78px;
+  padding: 15px 18px;
+  border-color: #e6e8ec;
+  border-radius: 19px;
+  box-shadow: 0 7px 17px rgba(34, 45, 59, .06);
+  transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+
+.dashboard-counters > div:hover {
+  border-color: #ffd0b5;
+  box-shadow: 0 10px 21px rgba(211, 90, 22, .1);
+  transform: translateY(-2px);
+}
+
+.dashboard-counters span {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, #fff7f0, #ffebdc);
+  font-size: 16px;
+}
+
+.dashboard-counters p {
+  color: #6c7a90;
+  font-size: 11px;
+}
+
+.dashboard-counters b {
+  margin-top: 5px;
+  color: var(--dash-text);
+  font-size: 19px;
+}
+
+.dashboard-chart {
+  margin-top: 22px;
+  padding: 24px;
+  border-color: #e6e8ec;
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(34, 44, 57, .065);
+}
+
+.dashboard-chart h2 {
+  align-items: center;
+  color: var(--dash-text);
+  font-size: 17px;
+}
+
+.dashboard-chart h2 span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
+  background: #fff2e9;
+  font-size: 14px;
+}
+
+.dashboard-plot {
+  height: 178px;
+  margin-top: 13px;
+}
+
+.dashboard-plot i {
+  color: #9aa8bb;
+}
+
+.dashboard-plot div {
+  border-bottom-color: #e8edf2;
+  background: repeating-linear-gradient(to bottom, transparent 0 27px, #eef2f5 28px 29px);
+}
+
+.dashboard-plot p {
+  color: #8495ab;
+}
+
+.dashboard-commission-banner {
+  margin-top: 22px;
+}
+
+@media (max-width: 760px) {
+  .main:has(.dashboard-view) {
+    padding-top: 24px;
+  }
+
+  .dashboard-wallet {
+    padding: 11px;
+    border-radius: 23px;
+  }
+
+  .wallet-top {
+    height: 108px;
+    padding: 16px 15px 44px;
+    border-radius: 19px;
+  }
+
+  .wallet-balance {
+    height: 134px;
+    margin-top: -29px;
+    border-radius: 19px;
+  }
+
+  .wallet-art {
+    right: 54px;
+    width: 65px;
+    height: 65px;
+  }
+
+  .wallet-art::after {
+    font-size: 32px;
+  }
+
+  .wallet-stats {
+    gap: 8px;
+  }
+
+  .wallet-stats > div {
+    padding-left: 55px;
+  }
+
+  .wallet-stats span {
+    left: 11px;
+  }
+
+  .dashboard-chart {
+    padding: 18px;
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 430px) {
+  .wallet-user strong {
+    font-size: 17px;
+  }
+
+  .wallet-balance strong {
+    font-size: 46px;
+  }
+
+  .wallet-stats small {
+    font-size: 9px;
+  }
+
+  .dashboard-view .wallet-actions a,
+  .dashboard-view .wallet-actions button {
+    font-size: 10px;
+  }
+
+  .dashboard-counters > div {
+    padding: 13px;
+  }
+}

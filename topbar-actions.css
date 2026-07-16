@@ -1,0 +1,97 @@
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 2px;
+}
+
+.topbar-action {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #e7e9ed;
+  border-radius: 10px;
+  background: #fff;
+  color: #718096;
+  font: 700 17px/1 Arial, sans-serif;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.topbar-action:hover {
+  border-color: #ffd0b8;
+  background: #fff7f1;
+  color: #f45b18;
+}
+
+.topbar-notification {
+  position: relative;
+  background: radial-gradient(circle at 78% 23%, #f45b18 0 3px, transparent 3.5px), #fff;
+  color: transparent;
+}
+
+.topbar-notification::before {
+  position: absolute;
+  top: 9px;
+  left: 11px;
+  width: 10px;
+  height: 12px;
+  border: 1.6px solid #718096;
+  border-bottom: 0;
+  border-radius: 8px 8px 3px 3px;
+  content: "";
+  transition: .2s ease;
+}
+
+.topbar-notification::after {
+  position: absolute;
+  top: 21px;
+  left: 9px;
+  width: 14px;
+  height: 3px;
+  border-top: 1.6px solid #718096;
+  border-radius: 50%;
+  box-shadow: 5px 4px 0 -3px #718096;
+  content: "";
+  transition: .2s ease;
+}
+
+.topbar-notification:hover::before {
+  border-color: #f45b18;
+}
+
+.topbar-notification:hover::after {
+  border-color: #f45b18;
+  box-shadow: 5px 4px 0 -3px #f45b18;
+}
+
+.topbar-notification > span {
+  display: none;
+}
+
+.topbar-logout {
+  border-color: #ffe0d7;
+  background: #fff5f2;
+  color: #f04b45;
+  font-size: 18px;
+}
+
+.topbar-logout:hover {
+  border-color: #ffb9ae;
+  background: #fff0ec;
+  color: #dc332e;
+}
+
+@media (max-width: 600px) {
+  .topbar-actions {
+    gap: 6px;
+  }
+
+  .topbar-action {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+}

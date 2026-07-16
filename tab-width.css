@@ -1,0 +1,1 @@
+.main:has(.dashboard-view),.main:has(.order-search-view){max-width:1060px}.dashboard-view,.dashboard-wallet,.dashboard-counters,.dashboard-chart,.order-search-view{max-width:100%}@media(max-width:1060px){.main:has(.dashboard-view),.main:has(.order-search-view){max-width:100%}}
