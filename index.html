@@ -49,6 +49,7 @@
   <link rel="stylesheet" href="topbar-actions.css?v=2" />
   <link rel="stylesheet" href="logout-modal.css?v=1" />
   <link rel="stylesheet" href="mobile-dashboard-compact.css?v=12" />
+  <link rel="stylesheet" href="mobile-bottom-nav.css?v=1" />
   <link rel="stylesheet" href="zalo-link-modal.css?v=4" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -101,6 +102,13 @@
       <div class="user-area"><span class="avatar">HV</span><span class="user-name">Hồng Vinh</span><div class="topbar-actions"><button class="topbar-action topbar-notification" type="button" aria-label="Thông báo" title="Thông báo">♧</button><button class="topbar-action topbar-logout" type="button" aria-label="Đăng xuất" title="Đăng xuất">↪</button></div></div>
     </header>
     <main id="app" class="main"></main>
+    <nav class="mobile-bottom-nav" aria-label="Điều hướng nhanh trên điện thoại">
+      <a href="/dashboard" data-mobile-page="dashboard"><span aria-hidden="true">⌂</span><b>Trang chủ</b></a>
+      <a href="/orders" data-mobile-page="orders"><span aria-hidden="true">▣</span><b>Đơn hàng</b></a>
+      <a class="mobile-convert-tab" href="/convert" data-mobile-page="convert"><span aria-hidden="true">↔</span><b>Chuyển đổi</b></a>
+      <a href="/ranking" data-mobile-page="ranking"><span aria-hidden="true">♕</span><b>Xếp hạng</b></a>
+      <button class="mobile-more-tab" type="button" aria-label="Mở thêm chức năng" aria-expanded="false"><span aria-hidden="true">☰</span><b>Thêm</b></button>
+    </nav>
     <a class="support-bot zalo-support" href="https://zalo.me/g/0u5xwlj4npkvl4bomy1o" target="_blank" rel="noopener noreferrer" aria-label="Tham gia nhóm Zalo Hoàn Tiền Mua Sắm">
       <span class="zalo-support-logo">Zalo</span>
       <span class="zalo-support-copy"><b>Hoàn Tiền Mua Sắm</b><small>Tham gia nhóm Zalo</small></span>
@@ -110,6 +118,7 @@
   <script src="config.js"></script>
   <script src="auth.js?v=6"></script>
   <script src="app.js?v=5"></script>
+  <script src="mobile-bottom-nav.js?v=1"></script>
   <script src="dashboard-banner.js?v=5"></script>
   <script src="convert-bot.js?v=3"></script>
   <script src="convert-important.js"></script>
