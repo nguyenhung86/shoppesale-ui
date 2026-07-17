@@ -8,4 +8,6 @@
 
   polishOrders();
   window.addEventListener('hashchange', () => requestAnimationFrame(polishOrders));
+  window.addEventListener('popstate', () => requestAnimationFrame(polishOrders));
+  setInterval(polishOrders, 100);
 })();

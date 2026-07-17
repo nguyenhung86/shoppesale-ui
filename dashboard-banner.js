@@ -46,4 +46,6 @@
 
   enhanceDashboard();
   window.addEventListener('hashchange', () => requestAnimationFrame(enhanceDashboard));
+  window.addEventListener('popstate', () => requestAnimationFrame(enhanceDashboard));
+  setInterval(enhanceDashboard, 100);
 })();

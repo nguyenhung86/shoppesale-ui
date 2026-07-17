@@ -249,3 +249,5 @@ function enhanceLeaderboard() {
 if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'ranking') render();
 requestAnimationFrame(enhanceLeaderboard);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceLeaderboard));
+window.addEventListener('popstate', () => requestAnimationFrame(enhanceLeaderboard));
+setInterval(enhanceLeaderboard, 100);

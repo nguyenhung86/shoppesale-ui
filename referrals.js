@@ -190,3 +190,5 @@ function enhanceReferrals() {
 if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'referrals') render();
 requestAnimationFrame(enhanceReferrals);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceReferrals));
+window.addEventListener('popstate', () => requestAnimationFrame(enhanceReferrals));
+setInterval(enhanceReferrals, 100);

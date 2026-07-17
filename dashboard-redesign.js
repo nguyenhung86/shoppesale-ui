@@ -92,3 +92,5 @@ function enhanceRedesignedDashboard() {
 if (!location.hash || (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'dashboard') render();
 requestAnimationFrame(enhanceRedesignedDashboard);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceRedesignedDashboard));
+window.addEventListener('popstate', () => requestAnimationFrame(enhanceRedesignedDashboard));
+setInterval(enhanceRedesignedDashboard, 100);

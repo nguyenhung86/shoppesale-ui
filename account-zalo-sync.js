@@ -101,4 +101,6 @@
 
   enhanceZaloSync();
   window.addEventListener('hashchange', () => requestAnimationFrame(enhanceZaloSync));
+  window.addEventListener('popstate', () => requestAnimationFrame(enhanceZaloSync));
+  setInterval(enhanceZaloSync, 100);
 })();

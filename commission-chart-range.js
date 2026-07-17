@@ -151,4 +151,6 @@
   window.updateCommissionRange = updateCommissionRange;
   updateCommissionRange();
   window.addEventListener('hashchange', () => requestAnimationFrame(updateCommissionRange));
+  window.addEventListener('popstate', () => requestAnimationFrame(updateCommissionRange));
+  setInterval(updateCommissionRange, 100);
 })();
