@@ -39,7 +39,8 @@ pages.ranking = leaderboardPage;
 
 function enhanceLeaderboard() {
   const view = document.querySelector('.leaderboard-view');
-  if (!view) return;
+  if (!view || view.dataset.ready) return;
+  view.dataset.ready = 'true';
 
   const container = view.querySelector('.leaderboard-container');
   if (!container) return;
