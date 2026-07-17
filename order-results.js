@@ -147,6 +147,22 @@ function renderDashboard(response, query, formatVND) {
 
   const ordersList = response.data || [];
   
+  // Sắp xếp đơn hàng từ mới nhất đến cũ nhất theo ngày (DD/MM/YYYY)
+  const parseOrderDate = (dateVal) => {
+    if (!dateVal) return 0;
+    const dateStr = String(dateVal).trim();
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const year = parseInt(parts[2], 10);
+      return new Date(year, month, day).getTime();
+    }
+    const parsed = Date.parse(dateStr);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+  ordersList.sort((a, b) => parseOrderDate(b.orderDate) - parseOrderDate(a.orderDate));
+  
   if (ordersList.length === 0) {
     app.innerHTML = `
       <div style="max-width: 600px; margin: 50px auto; padding: 40px 20px; text-align: center; background: #fff; border-radius: 20px; box-shadow: 0 10px 24px rgba(23,32,51,0.05); border: 1px solid #e8e9ef;">
