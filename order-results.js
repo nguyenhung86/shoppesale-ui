@@ -337,6 +337,19 @@ let checkInterval = setInterval(() => {
 }, 300);
 
 // ĐỒNG BỘ DỮ LIỆU ĐƠN HÀNG THẬT SANG TẤT CẢ CÁC TAB KHÁC
+function getJoinDate() {
+  let date = localStorage.getItem('shoppesale_join_date');
+  if (!date) {
+    const now = new Date();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const year = now.getFullYear();
+    date = `${day}/${month}/${year}`;
+    localStorage.setItem('shoppesale_join_date', date);
+  }
+  return date;
+}
+
 function syncRealDataToUI() {
   const user = getLoggedUser();
   if (!user) return;
@@ -347,6 +360,23 @@ function syncRealDataToUI() {
   document.querySelectorAll('.wallet-user strong, .dash-wallet-head small, .profile-banner h1, .info-row b, .account-person h1, .account-info-item b').forEach(el => {
     if (el.textContent.includes("Hồng Vinh")) {
       el.textContent = el.textContent.replace("Hồng Vinh", user.name);
+    }
+  });
+
+  // 1c. Cập nhật Ngày tham gia hiển thị trên trang Web (Dashboard, Account)
+  const joinDate = getJoinDate();
+  document.querySelectorAll('.wallet-user small, .account-person p, .dash-member-stats div:nth-child(3) b').forEach(el => {
+    if (el.textContent.includes("11/07/2026")) {
+      el.textContent = el.textContent.replace("11/07/2026", joinDate);
+    }
+  });
+  
+  // Cập nhật thẻ stat Từ ngày trên trang tài khoản cũ
+  document.querySelectorAll('.card.summary').forEach(card => {
+    const small = card.querySelector('small');
+    const strong = card.querySelector('strong');
+    if (small && strong && (small.textContent === 'Từ ngày' || small.textContent === 'Từ')) {
+      strong.textContent = joinDate;
     }
   });
 
