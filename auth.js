@@ -76,7 +76,7 @@ async function validateZaloIdOnSheet(zaloId) {
     : [];
 
   return {
-    exists: Boolean(response.success && matches.length > 0),
+    exists: Boolean(response.success && (response.isZaloIdValid || matches.length > 0)),
     response
   };
 }
