@@ -363,6 +363,25 @@ function syncRealDataToUI() {
     }
   });
 
+  // 1d. Đồng bộ ảnh đại diện Google (Avatar) vào các khu vực trên trang
+  if (user.picture) {
+    document.querySelectorAll('.account-avatar, .wallet-user .avatar, .profile-banner .avatar, .user-area .avatar').forEach(el => {
+      if (el.tagName === 'IMG') {
+        el.src = user.picture;
+      } else {
+        const style = window.getComputedStyle(el);
+        const radius = style.borderRadius || '50%';
+        el.innerHTML = `<img src="${user.picture}" alt="${user.name}" style="width:100%; height:100%; object-fit:cover; border-radius:${radius};">`;
+        el.style.padding = '0';
+        el.style.overflow = 'hidden';
+        el.style.display = 'inline-flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.background = 'transparent';
+      }
+    });
+  }
+
   // 1c. Cập nhật Ngày tham gia hiển thị trên trang Web (Dashboard, Account)
   const joinDate = getJoinDate();
   document.querySelectorAll('.wallet-user small, .account-person p, .dash-member-stats div:nth-child(3) b').forEach(el => {
