@@ -74,13 +74,14 @@ function enhanceLeaderboard() {
       return;
     }
 
-    // Sắp xếp danh sách dựa trên metric đã chọn
+    // Sắp xếp danh sách dựa trên metric đã chọn và lấy top 10
     list.sort((a, b) => (b[metric] || 0) - (a[metric] || 0));
+    const top10 = list.slice(0, 10);
 
-    const first = list[0];
-    const second = list[1];
-    const third = list[2];
-    const remaining = list.slice(3);
+    const first = top10[0];
+    const second = top10[1];
+    const third = top10[2];
+    const remaining = top10.slice(3);
 
     // Cập nhật tiêu đề Hero
     const heroMetricText = document.getElementById('hero-metric-name');
