@@ -13,6 +13,52 @@
   display: none;
 }
 
+.login-zalo-group {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  width: min(240px, 100%);
+  box-sizing: border-box;
+  margin: 14px auto 0;
+  padding: 9px 10px;
+  border: 1px solid #d7e8ff;
+  border-radius: 11px;
+  background: #f8fbff;
+  color: #233b5b;
+  text-align: left;
+  text-decoration: none;
+  transition: transform .2s, box-shadow .2s;
+}
+
+.login-zalo-group:hover {
+  box-shadow: 0 5px 14px rgba(22, 119, 238, .14);
+  transform: translateY(-1px);
+}
+
+.login-zalo-group-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: #1677ee;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.login-zalo-group > span:nth-child(2) {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.login-zalo-group b { font-size: 11px; }
+.login-zalo-group small { color: #71829b; font-size: 9px; }
+.login-zalo-group i { color: #1677ee; font-size: 15px; font-style: normal; font-weight: 800; }
+
 body.zalo-link-modal-open {
   overflow: hidden;
 }
