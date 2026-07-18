@@ -24,6 +24,7 @@ function accountRedesignedPage() {
           <div><span>▣</span><small>Tổng đơn hàng</small><b>0</b></div>
           <div><span>♧</span><small>Đã giới thiệu</small><b>0</b></div>
           <div><span>◷</span><small>Đang chờ xử lý</small><b>0đ</b></div>
+          <button class="account-payment-summary payment-history" type="button"><span>◷</span><small>Lịch sử thanh toán</small><b>Xem lịch sử</b></button>
         </div>
       </section>
 
@@ -49,7 +50,6 @@ function accountRedesignedPage() {
         </div>
         <div class="account-setting-grid">
           <button class="account-setting zalo" type="button"><span class="account-setting-icon">Z</span><span><small>ZALO</small><b>Liên kết nhóm Hoàn Tiền</b><em>Chưa liên kết</em></span><i>›</i></button>
-          <button class="account-setting payment-history" type="button"><span class="account-setting-icon">◷</span><span><small>LỊCH SỬ THANH TOÁN</small><b>Hoa hồng đã thanh toán</b><em>Xem lịch sử</em></span><i>›</i></button>
         </div>
       </section>
 
@@ -276,7 +276,7 @@ function enhanceAccountPage() {
     item.addEventListener('click', openEditProfileModal);
   });
 
-  view.querySelector('.account-setting.payment-history')?.addEventListener('click', openPaymentHistoryModal);
+  view.querySelector('.account-payment-summary.payment-history')?.addEventListener('click', openPaymentHistoryModal);
 }
 
 if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'account') render();

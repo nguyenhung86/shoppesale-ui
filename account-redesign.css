@@ -233,10 +233,11 @@
 
 .account-quick-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
-.account-quick-stats > div {
+.account-quick-stats > div,
+.account-quick-stats > button {
   display: grid;
   min-height: 74px;
   padding: 13px 27px;
@@ -246,9 +247,25 @@
   align-items: center;
 }
 
-.account-quick-stats > div + div {
+.account-quick-stats > * + * {
   border-left: 1px solid #f1e9e2;
 }
+
+.account-quick-stats > button {
+  border-top: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-radius: 0;
+  background: #fffaf6;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.account-quick-stats > button:hover { background: #fff4eb; }
+.account-payment-summary b { color: #e85a20; font-size: 11px; }
 
 .account-quick-stats span {
   display: grid;
@@ -625,8 +642,24 @@
   color: #f06b24;
 }
 
+.account-profile-panel .account-setting.payment-history {
+  min-height: 76px;
+  margin-top: 13px;
+  align-items: center;
+  border-color: #f2e3d6;
+  background: #fffaf6;
+}
+
+.account-profile-panel .account-setting.payment-history b {
+  min-height: 0;
+}
+
 .account-setting.payment-history small {
   color: #e66325;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  letter-spacing: .02em;
+  text-transform: none;
 }
 
 .payment-history-modal-overlay {
@@ -766,7 +799,8 @@
     font-size: 10px;
   }
 
-  .account-quick-stats > div {
+  .account-quick-stats > div,
+  .account-quick-stats > button {
     min-height: 67px;
     padding: 11px 8px;
     grid-template-columns: 1fr;
