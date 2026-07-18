@@ -24,7 +24,7 @@ function accountRedesignedPage() {
           <div><span>▣</span><small>Tổng đơn hàng</small><b>0</b></div>
           <div><span>♧</span><small>Đã giới thiệu</small><b>0</b></div>
           <div><span>◷</span><small>Đang chờ xử lý</small><b>0đ</b></div>
-          <button class="account-payment-summary payment-history" type="button"><span>◷</span><small>Lịch sử thanh toán</small><b>Xem lịch sử</b></button>
+          <button class="account-payment-summary payment-history" type="button" aria-label="Xem lịch sử thanh toán"><span>◷</span><small>Lịch sử</small><b>Thanh toán</b></button>
         </div>
       </section>
 

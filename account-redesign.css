@@ -265,7 +265,7 @@
 }
 
 .account-quick-stats > button:hover { background: #fff4eb; }
-.account-payment-summary b { color: #e85a20; font-size: 11px; }
+.account-payment-summary b { color: #e85a20; font-size: 14px; }
 
 .account-quick-stats span {
   display: grid;
