@@ -620,6 +620,68 @@
   color: #2879e8;
 }
 
+.account-setting.payment-history .account-setting-icon {
+  background: #fff3e8;
+  color: #f06b24;
+}
+
+.account-setting.payment-history small {
+  color: #e66325;
+}
+
+.payment-history-modal-overlay {
+  position: fixed;
+  z-index: 10030;
+  inset: 0;
+  display: grid;
+  padding: 18px;
+  place-items: center;
+  background: rgba(20, 30, 45, .56);
+  backdrop-filter: blur(7px);
+}
+
+.payment-history-modal {
+  width: min(100%, 540px);
+  max-height: min(650px, calc(100vh - 36px));
+  overflow: auto;
+  border: 1px solid #e8e9ef;
+  border-radius: 23px;
+  background: #fff;
+  box-shadow: 0 22px 50px rgba(12, 23, 41, .24);
+}
+
+.payment-history-modal header {
+  display: flex;
+  padding: 25px 27px 17px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.payment-history-modal header > div { display: flex; gap: 10px; align-items: flex-start; }
+.payment-history-modal header > div > span { display: grid; width: 24px; height: 24px; place-items: center; border-radius: 8px; background: #fff2e8; color: #f35b1b; font-size: 15px; }
+.payment-history-modal h2 { margin: 0; color: #1b2b44; font-size: 19px; }
+.payment-history-modal header p { margin: 4px 0 0; color: #8b98aa; font-size: 11px; }
+.payment-history-modal header button { width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: #94a4b9; font-size: 25px; line-height: 1; cursor: pointer; }
+.payment-history-modal header button:hover { background: #f5f7fa; color: #f35b1b; }
+.payment-history-list { padding: 0 27px 20px; }
+.payment-history-row { display: flex; min-height: 65px; align-items: center; justify-content: space-between; border-top: 1px solid #edf0f4; }
+.payment-history-row strong, .payment-history-row small { display: block; }
+.payment-history-row strong { color: #273a55; font-size: 15px; }
+.payment-history-row small { margin-top: 4px; color: #8b9ab0; font-size: 10px; }
+.payment-history-row a, .payment-history-row .is-unavailable { padding: 7px 10px; border-radius: 8px; background: #fff3ef; color: #f45b25; font-size: 10px; font-weight: 800; text-decoration: none; }
+.payment-history-row .is-unavailable { background: #f3f5f8; color: #9aa6b7; }
+.payment-history-empty { padding: 30px 10px 18px; color: #8492a7; text-align: center; }
+.payment-history-empty > span { display: grid; width: 43px; height: 43px; margin: 0 auto 10px; place-items: center; border-radius: 14px; background: #fff3ea; color: #f45b18; font-size: 20px; }
+.payment-history-empty b { display: block; color: #31435c; font-size: 13px; }
+.payment-history-empty p { margin: 6px 0 0; font-size: 11px; }
+
+@media (max-width: 520px) {
+  .payment-history-modal-overlay { padding: 12px; align-items: end; }
+  .payment-history-modal { max-height: 78vh; border-radius: 22px; }
+  .payment-history-modal header { padding: 21px 19px 14px; }
+  .payment-history-list { padding: 0 19px 16px; }
+}
+
 .account-setting.security .account-setting-icon {
   background: #eafbf2;
   color: #11a463;

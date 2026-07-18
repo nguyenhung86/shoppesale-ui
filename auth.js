@@ -211,11 +211,17 @@ function checkZaloIdAndSync(email) {
     .then(res => res.json())
     .then(response => {
       if (response.success && response.zaloId) {
+        if (response.phone) {
+          localStorage.setItem('shoppesale_phone', String(response.phone));
+        } else {
+          localStorage.removeItem('shoppesale_phone');
+        }
         applySyncedZaloId(user, String(response.zaloId));
         hideZaloLinkModal();
       } else {
         localStorage.removeItem('shoppesale_zalo_id');
         localStorage.removeItem('shoppesale_zalo_email');
+        localStorage.removeItem('shoppesale_phone');
         window.dispatchEvent(new CustomEvent('zalo_id_missing'));
         updateZaloSyncUI(null);
         showZaloLinkModal(user);

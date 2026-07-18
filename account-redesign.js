@@ -49,11 +49,78 @@ function accountRedesignedPage() {
         </div>
         <div class="account-setting-grid">
           <button class="account-setting zalo" type="button"><span class="account-setting-icon">Z</span><span><small>ZALO</small><b>Liên kết nhóm Hoàn Tiền</b><em>Chưa liên kết</em></span><i>›</i></button>
+          <button class="account-setting payment-history" type="button"><span class="account-setting-icon">◷</span><span><small>LỊCH SỬ THANH TOÁN</small><b>Hoa hồng đã thanh toán</b><em>Xem lịch sử</em></span><i>›</i></button>
         </div>
       </section>
 
     </div>
   `;
+}
+
+function formatPaymentHistoryDate(value) {
+  if (!value) return 'Đã thanh toán';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return new Intl.DateTimeFormat('vi-VN', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  }).format(date);
+}
+
+function openPaymentHistoryModal() {
+  document.querySelector('.payment-history-modal-overlay')?.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'payment-history-modal-overlay';
+  modal.innerHTML = `<section class="payment-history-modal" role="dialog" aria-modal="true" aria-labelledby="payment-history-title">
+    <header><div><span>◷</span><div><h2 id="payment-history-title">Lịch sử thanh toán</h2><p>Danh sách hoa hồng đã được thanh toán cho bạn.</p></div></div><button type="button" aria-label="Đóng">×</button></header>
+    <div class="payment-history-list"><div class="payment-history-empty"><span>◷</span><b>Đang tải lịch sử chuyển khoản</b><p>Vui lòng chờ trong giây lát.</p></div></div>
+  </section>`;
+  document.body.appendChild(modal);
+
+  const list = modal.querySelector('.payment-history-list');
+  loadPaymentTransferHistory()
+    .then(transfers => { if (list) list.innerHTML = renderPaymentTransferRows(transfers); })
+    .catch(() => {
+      if (list) list.innerHTML = `<div class="payment-history-empty"><span>!</span><b>Chưa tải được lịch sử chuyển khoản</b><p>Vui lòng thử lại sau hoặc liên hệ admin.</p></div>`;
+    });
+
+  const close = () => modal.remove();
+  modal.querySelector('header button')?.addEventListener('click', close);
+  modal.addEventListener('click', event => { if (event.target === modal) close(); });
+  window.addEventListener('keydown', function onEscape(event) {
+    if (event.key !== 'Escape') return;
+    close();
+    window.removeEventListener('keydown', onEscape);
+  });
+}
+
+async function loadPaymentTransferHistory() {
+  const zaloId = localStorage.getItem('shoppesale_zalo_id') || '';
+  if (!zaloId) return [];
+
+  const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(zaloId);
+  const response = await fetch(url).then(result => result.json());
+  if (!response.success) throw new Error(response.error || 'Không thể tải lịch sử chuyển khoản.');
+
+  const data = Array.isArray(response.data) ? response.data : (response.data?.transfers || response.transfers || []);
+  return data.filter(item => item && (item.amount || item.transferAmount || item.paidAmount));
+}
+
+function renderPaymentTransferRows(transfers) {
+  if (!transfers.length) {
+    return `<div class="payment-history-empty"><span>◷</span><b>Chưa có lịch sử chuyển khoản</b><p>Các lần admin chuyển tiền và bill sẽ hiển thị tại đây.</p></div>`;
+  }
+
+  return transfers.sort((a, b) => new Date(b.transferredAt || b.paymentDate || b.date || 0) - new Date(a.transferredAt || a.paymentDate || a.date || 0)).map(transfer => {
+    const amount = Math.round(Number(transfer.amount || transfer.transferAmount || transfer.paidAmount) || 0).toLocaleString('vi-VN') + 'đ';
+    const date = formatPaymentHistoryDate(transfer.transferredAt || transfer.paymentDate || transfer.date || transfer.createdAt);
+    const billUrl = [transfer.billUrl, transfer.billImageUrl, transfer.paymentProofUrl, transfer.transferImage, transfer.receiptUrl]
+      .map(value => String(value || '').trim()).find(value => /^https?:\/\//i.test(value));
+    const billAction = billUrl
+      ? `<a href="${billUrl}" target="_blank" rel="noopener noreferrer">Xem bill ↗</a>`
+      : `<span class="is-unavailable">Chưa có bill</span>`;
+    return `<article class="payment-history-row"><div><strong>+${amount}</strong><small>${date}</small></div>${billAction}</article>`;
+  }).join('');
 }
 
 pages.account = accountRedesignedPage;
@@ -136,30 +203,61 @@ function openEditProfileModal() {
   cancelBtn.addEventListener('click', closeModal);
   modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
   
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const newName = modal.querySelector('#edit-name').value.trim();
     const newPhone = modal.querySelector('#edit-phone').value.trim();
     
     if (!newName) return;
     
-    const updatedUser = { ...user, name: newName };
-    localStorage.setItem('shoppesale_user', JSON.stringify(updatedUser));
-    
-    if (newPhone) {
-      localStorage.setItem('shoppesale_phone', newPhone);
-    } else {
-      localStorage.removeItem('shoppesale_phone');
+    const user = getLoggedUser();
+    if (!user) {
+      location.reload();
+      return;
     }
     
-    if (typeof window.syncRealDataToUI === 'function') {
-      window.syncRealDataToUI();
-    }
-    if (typeof updateTopbarUI === 'function') {
-      updateTopbarUI(updatedUser);
+    const submitBtn = form.querySelector('button[type="submit"]') || modal.querySelector('#edit-submit');
+    const originalText = submitBtn ? submitBtn.textContent : 'Lưu';
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Đang lưu...';
     }
     
-    closeModal();
+    try {
+      // Gửi số điện thoại lên Google Sheet để lưu trữ
+      const url = CONFIG.API_URL + '?action=savePhone&email=' + encodeURIComponent(user.email) + '&phone=' + encodeURIComponent(newPhone);
+      const response = await fetch(url).then(res => res.json());
+      
+      if (!response.success) {
+        throw new Error(response.error || 'Không thể lưu số điện thoại lên Google Sheet.');
+      }
+      
+      const updatedUser = { ...user, name: newName };
+      localStorage.setItem('shoppesale_user', JSON.stringify(updatedUser));
+      
+      if (newPhone) {
+        localStorage.setItem('shoppesale_phone', newPhone);
+      } else {
+        localStorage.removeItem('shoppesale_phone');
+      }
+      
+      if (typeof window.syncRealDataToUI === 'function') {
+        window.syncRealDataToUI();
+      }
+      if (typeof updateTopbarUI === 'function') {
+        updateTopbarUI(updatedUser);
+      }
+      
+      closeModal();
+    } catch (err) {
+      console.error('Lỗi khi lưu số điện thoại:', err);
+      alert(err.message || 'Lỗi kết nối máy chủ. Vui lòng thử lại!');
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
   });
 }
 
@@ -177,6 +275,8 @@ function enhanceAccountPage() {
   view.querySelectorAll('.account-info-item').forEach(item => {
     item.addEventListener('click', openEditProfileModal);
   });
+
+  view.querySelector('.account-setting.payment-history')?.addEventListener('click', openPaymentHistoryModal);
 }
 
 if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'account') render();
