@@ -817,6 +817,12 @@
     font-size: 8px;
   }
 
+  .account-payment-summary b {
+    font-size: 10px;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
   .account-content-grid {
     grid-template-columns: 1fr;
     gap: 15px;
