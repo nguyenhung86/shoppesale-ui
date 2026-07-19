@@ -182,6 +182,7 @@ function setupConvertSelection() {
             animation: slideUp 0.3s ease;
           `;
           
+          const finalRate = commissionRate || 8.0;
           resultCard.innerHTML = `
             <!-- Header -->
             <div style="color: #22c55e; font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 18px;">
@@ -201,19 +202,11 @@ function setupConvertSelection() {
             <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 16px; margin-bottom: 20px;">
               <div>
                 <div style="font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 4px; font-weight: 600;">
-                  💰 Hoa hồng ước tính
+                  💰 Tỷ lệ hoàn tiền ước tính
                 </div>
-                <div style="font-size: 26px; font-weight: 800; color: #0f172a; margin-top: 4px; line-height: 1;">
-                  ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : (commissionRate > 0 ? commissionRate + '%' : 'Chờ đối soát')}
+                <div style="font-size: 26px; font-weight: 800; color: #ea580c; margin-top: 6px; line-height: 1;">
+                  ≈ ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(2) + '%'}
                 </div>
-                ${price > 0 ? `
-                <div style="font-size: 12px; color: #94a3b8; margin-top: 6px; font-weight: 500;">
-                  Giá: ${price.toLocaleString('vi-VN')}đ
-                </div>` : ''}
-              </div>
-              
-              <div style="background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; border-radius: 9999px; padding: 6px 12px; font-size: 13px; font-weight: 800;">
-                ${commissionRate ? (Number.isInteger(commissionRate) ? commissionRate + '%' : commissionRate.toFixed(2) + '%') : '0%'}
               </div>
             </div>
             
