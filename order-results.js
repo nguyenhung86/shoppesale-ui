@@ -368,7 +368,33 @@ function getJoinDate() {
 
 function syncRealDataToUI() {
   const user = getLoggedUser();
-  if (!user) return;
+  if (!user) {
+    // Cập nhật giao diện Khách vãng lai
+    document.querySelectorAll('.wallet-user strong, .dash-wallet-head small, .profile-banner h1, .info-row b, .account-person h1, .account-info-item b').forEach(el => {
+      if (el.tagName === 'SMALL') {
+        el.textContent = 'XIN CHÀO, KHÁCH';
+      } else {
+        el.textContent = 'Khách';
+      }
+    });
+    document.querySelectorAll('.dash-tier-badge, .wallet-tier, .rank').forEach(el => {
+      el.textContent = 'Khách vãng lai';
+    });
+    document.querySelectorAll('.account-avatar, .wallet-user .avatar, .profile-banner .avatar, .user-area .avatar').forEach(el => {
+      if (el.tagName === 'IMG') {
+        el.src = '';
+      } else {
+        el.innerHTML = '<span style="font-size:16px;">👤</span>';
+        el.style.background = '#e2e8f0';
+        el.style.display = 'grid';
+        el.style.placeItems = 'center';
+      }
+    });
+    document.querySelectorAll('.dash-total strong, .dash-status b, .wallet-balance strong, .wallet-stats b').forEach(el => {
+      el.textContent = '0 đ';
+    });
+    return;
+  }
   
   const formatVND = val => Math.round(Number(val) || 0).toLocaleString("vi-VN") + " đ";
 

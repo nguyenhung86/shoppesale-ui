@@ -22,6 +22,17 @@ function render(){
     key=(location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
   }
   if(!pages[key])key='dashboard';
+  
+  // Kiểm tra quyền truy cập của khách vãng lai
+  const restrictedKeys = ['convert', 'orders', 'referrals', 'events', 'account'];
+  if (restrictedKeys.includes(key) && !getLoggedUser()) {
+    key = 'dashboard';
+    history.replaceState(null, '', '/dashboard');
+    setTimeout(() => {
+      if (typeof showLoginModal === 'function') showLoginModal();
+    }, 100);
+  }
+  
   app.innerHTML=pages[key]();
   if(key==='dashboard'){
     const intro=document.createElement('section');
@@ -78,8 +89,17 @@ document.addEventListener('click', e => {
     const href = a.getAttribute('href');
     // Intercept internal routing links
     if (href && (href.startsWith('/') || href.startsWith('#')) && !href.startsWith('//')) {
-      e.preventDefault();
       const path = href.startsWith('#') ? '/' + href.slice(1) : href;
+      const targetPage = path.slice(1) || 'dashboard';
+      
+      const restrictedKeys = ['convert', 'orders', 'referrals', 'events', 'account'];
+      if (restrictedKeys.includes(targetPage) && !getLoggedUser()) {
+        e.preventDefault();
+        if (typeof showLoginModal === 'function') showLoginModal();
+        return;
+      }
+      
+      e.preventDefault();
       history.pushState(null, '', path);
       render();
     }

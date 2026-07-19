@@ -186,21 +186,103 @@ function handleGoogleCredentialResponse(response) {
   }
 }
 
-function updateTopbarUI(user) {
-  if (!user) return;
-  const nameEl = document.querySelector('.user-name');
-  const avatarEl = document.querySelector('.avatar');
-  if (nameEl) nameEl.textContent = user.name;
-  if (avatarEl) {
-    if (user.picture) {
-      avatarEl.innerHTML = `<img src="${user.picture}" alt="${user.name}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
-      avatarEl.style.background = 'transparent';
-      avatarEl.style.border = '1px solid #e8e9ef';
-    } else {
-      avatarEl.textContent = (user.name || "User").slice(0, 2).toUpperCase();
-    }
+function showLoginModal() {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    document.body.classList.add('login-overlay-active');
   }
 }
+
+function hideLoginModal() {
+  const overlay = document.getElementById('login-overlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    document.body.classList.remove('login-overlay-active');
+  }
+}
+
+window.showLoginModal = showLoginModal;
+window.hideLoginModal = hideLoginModal;
+
+// Lắng nghe sự kiện click ngoài modal và nút đóng
+document.addEventListener('DOMContentLoaded', () => {
+  const overlay = document.getElementById('login-overlay');
+  const closeBtn = document.getElementById('close-login-modal-btn');
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) {
+        hideLoginModal();
+      }
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      hideLoginModal();
+    });
+  }
+});
+
+function updateTopbarUI(user) {
+  const userArea = document.querySelector('.user-area');
+  if (!userArea) return;
+  
+  if (user) {
+    userArea.innerHTML = `
+      <span class="avatar"></span>
+      <span class="user-name"></span>
+      <div class="topbar-actions">
+        <button class="topbar-action topbar-notification" type="button" aria-label="Thông báo" title="Thông báo" style="display:none;">♧</button>
+        <button class="topbar-action topbar-logout" type="button" aria-label="Đăng xuất" title="Đăng xuất">↪</button>
+      </div>
+    `;
+    
+    userArea.querySelector('.topbar-logout')?.addEventListener('click', event => {
+      event.preventDefault();
+      if (typeof window.openLogoutModal === 'function') {
+        window.openLogoutModal();
+      } else {
+        const overlay = document.createElement('div');
+        overlay.className = 'logout-modal';
+        overlay.innerHTML = '<div class="logout-dialog" role="dialog" aria-modal="true" aria-labelledby="logout-title"><div class="logout-dialog-heading"><span class="logout-dialog-icon" aria-hidden="true">△</span><h2 id="logout-title">Đăng xuất?</h2></div><p>Bạn sẽ cần đăng nhập lại để tiếp tục.</p><div class="logout-dialog-actions"><button class="logout-stay" type="button">Ở lại</button><button class="logout-confirm" type="button">Đăng xuất</button></div></div>';
+        document.body.append(overlay);
+        overlay.addEventListener('click', e => {
+          if (e.target === overlay || e.target.closest('.logout-stay')) overlay.remove();
+          if (e.target.closest('.logout-confirm')) {
+            overlay.remove();
+            localStorage.removeItem('shoppesale_user');
+            localStorage.removeItem('shoppesale_zalo_id');
+            localStorage.removeItem('shoppesale_zalo_email');
+            location.reload();
+          }
+        });
+      }
+    });
+
+    const nameEl = userArea.querySelector('.user-name');
+    const avatarEl = userArea.querySelector('.avatar');
+    if (nameEl) nameEl.textContent = user.name;
+    if (avatarEl) {
+      if (user.picture) {
+        avatarEl.innerHTML = `<img src="${user.picture}" alt="${user.name}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+        avatarEl.style.background = 'transparent';
+        avatarEl.style.border = '1px solid #e8e9ef';
+      } else {
+        avatarEl.textContent = (user.name || "User").slice(0, 2).toUpperCase();
+      }
+    }
+  } else {
+    userArea.innerHTML = `
+      <button class="topbar-login-btn" type="button" style="padding: 6px 16px; background: linear-gradient(135deg, #ff6b40, #e84616); color: #fff; border: 0; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 10px rgba(233,91,34,0.15); transition: all 0.2s;">
+        <span style="font-size: 14px;">🔑</span> Đăng nhập
+      </button>
+    `;
+    userArea.querySelector('.topbar-login-btn')?.addEventListener('click', () => {
+      showLoginModal();
+    });
+  }
+}
+
 
 function checkZaloIdAndSync(email) {
   const user = getLoggedUser();
@@ -285,10 +367,10 @@ function initGoogleAuth() {
   const overlay = document.getElementById('login-overlay');
   const shell = document.querySelector('.app-shell');
   
+  if (overlay) overlay.style.display = 'none';
+  if (shell) shell.style.display = 'block';
+  
   if (user) {
-    if (overlay) overlay.style.display = 'none';
-    if (shell) shell.style.display = 'block';
-    
     // Update Topbar UI on load
     setTimeout(() => {
       updateTopbarUI(user);
@@ -306,8 +388,10 @@ function initGoogleAuth() {
       }
     }, 200);
   } else {
-    if (overlay) overlay.style.display = 'flex';
-    if (shell) shell.style.display = 'none';
+    // Update Topbar UI for guest on load
+    setTimeout(() => {
+      updateTopbarUI(null);
+    }, 200);
     
     // Chế độ Đăng nhập Thử nghiệm cục bộ nếu chưa cấu hình Google Client ID
     if (!CONFIG.GOOGLE_CLIENT_ID || CONFIG.GOOGLE_CLIENT_ID === "YOUR_GOOGLE_CLIENT_ID_HERE") {
@@ -330,11 +414,9 @@ function initGoogleAuth() {
           localStorage.setItem('shoppesale_user', JSON.stringify(user));
           
           // Ẩn overlay đăng nhập
-          const overlay = document.getElementById('login-overlay');
           if (overlay) overlay.style.display = 'none';
           
           // Hiện giao diện chính
-          const shell = document.querySelector('.app-shell');
           if (shell) shell.style.display = 'block';
           
           // Cập nhật thông tin Topbar

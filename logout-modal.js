@@ -7,6 +7,7 @@
   }
 
   function openModal() {
+    window.openLogoutModal = openModal;
     if (modal) return;
     modal = document.createElement('div');
     modal.className = 'logout-modal';

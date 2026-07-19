@@ -54,8 +54,19 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <div id="login-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f5f9; z-index: 10000; align-items: center; justify-content: center; flex-direction: column;">
-     <div style="background: #fff; padding: 40px; border-radius: 24px; box-shadow: 0 14px 34px rgba(23,32,51,0.08); text-align: center; max-width: 400px; width: 90%; border: 1px solid #e8e9ef;">
+  <div id="login-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.45); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 10000; align-items: center; justify-content: center; flex-direction: column;">
+     <div id="login-card" style="background: #fff; padding: 42px 40px 30px; border-radius: 24px; box-shadow: 0 20px 40px rgba(15,23,42,0.15); text-align: center; max-width: 400px; width: 90%; border: 1px solid #e8e9ef; position: relative; animation: modalAppear 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);">
+        <!-- Nút Đóng Modal -->
+        <button id="close-login-modal-btn" type="button" aria-label="Đóng" style="position: absolute; top: 16px; right: 16px; width: 28px; height: 28px; border: 0; background: #f1f5f9; border-radius: 50%; display: grid; place-items: center; font-size: 16px; color: #64748b; cursor: pointer; transition: all 0.2s; font-weight: bold;">×</button>
+        
+        <style>
+          @keyframes modalAppear {
+            from { transform: scale(0.9) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+          }
+          #close-login-modal-btn:hover { background: #e2e8f0; color: #0f172a; }
+          .login-overlay-active { overflow: hidden; }
+        </style>
         <div style="width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(135deg, #ff6b40, #e84616); color: #fff; display: grid; place-items: center; font-size: 24px; font-weight: bold; margin: 0 auto 15px;">$</div>
         <h2 style="font-family: 'Be Vietnam Pro', sans-serif; color: #15233a; margin-bottom: 8px; font-size: 22px; font-weight: 800;">Đăng Nhập</h2>
         <p style="color: #7787a0; font-size: 13.5px; margin-bottom: 25px; line-height: 1.5;">Đăng nhập bằng tài khoản Google để đồng bộ dữ liệu và xem thông tin hoàn tiền cá nhân.</p>
