@@ -21,18 +21,36 @@
   box-sizing: border-box;
   margin: 14px auto 0;
   padding: 9px 10px;
-  border: 1px solid #d7e8ff;
+  border: 1px solid #1677ee;
   border-radius: 11px;
   background: #f8fbff;
   color: #233b5b;
   text-align: left;
   text-decoration: none;
-  transition: transform .2s, box-shadow .2s;
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+  animation: zaloGlow 2s infinite ease-in-out;
 }
 
 .login-zalo-group:hover {
-  box-shadow: 0 5px 14px rgba(22, 119, 238, .14);
+  animation: none;
+  box-shadow: 0 0 16px rgba(22, 119, 238, 0.55), 0 0 0 3px rgba(22, 119, 238, 0.2);
+  border-color: #1677ee;
   transform: translateY(-1px);
+}
+
+@keyframes zaloGlow {
+  0% {
+    box-shadow: 0 0 4px rgba(22, 119, 238, 0.15), 0 0 0 1px rgba(22, 119, 238, 0.05);
+    border-color: #d7e8ff;
+  }
+  50% {
+    box-shadow: 0 0 12px rgba(22, 119, 238, 0.4), 0 0 0 3px rgba(22, 119, 238, 0.15);
+    border-color: #8abeff;
+  }
+  100% {
+    box-shadow: 0 0 4px rgba(22, 119, 238, 0.15), 0 0 0 1px rgba(22, 119, 238, 0.05);
+    border-color: #d7e8ff;
+  }
 }
 
 .login-zalo-group-icon {
