@@ -94,49 +94,15 @@ function setupConvertSelection() {
       return;
     }
 
-    async function processConversion() {
-      let response = null;
-      // 1. Thử gọi Bot API cục bộ (nếu Admin đang mở Chrome Extension addlivetag.com/lazada-affiliate-api/)
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-        const localRes = await fetch("http://127.0.0.1:9225/api/convert", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: rawUrl, userId: zaloId }),
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-        if (localRes.ok) {
-          const localJson = await localRes.json();
-          if (localJson && localJson.success) {
-            response = {
-              success: true,
-              shortLink: localJson.affiliateLink,
-              productName: localJson.productName,
-              commissionRate: parseFloat(String(localJson.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 5,
-              commissionAmount: 0,
-              imageUrl: ""
-            };
-          }
-        }
-      } catch (e) {}
-
-      // 2. Nếu không kết nối được Bot API cục bộ, gọi Google Apps Script làm dự phòng
-      if (!response) {
-        try {
-          const apiCallUrl = CONFIG.API_URL + "?action=convertLink&url=" + encodeURIComponent(rawUrl) + "&subId=" + zaloId;
-          const res = await fetch(apiCallUrl);
-          response = await res.json();
-        } catch(errScript) {
-          response = { success: false, error: errScript.message };
-        }
-      }
-
-      convertBtnEl.disabled = false;
-      convertBtnEl.textContent = "Chuyển đổi";
-
-      if (response && response.success) {
+    const apiCallUrl = CONFIG.API_URL + "?action=convertLink&url=" + encodeURIComponent(rawUrl) + "&subId=" + zaloId;
+    
+    fetch(apiCallUrl)
+      .then(res => res.json())
+      .then(response => {
+        convertBtnEl.disabled = false;
+        convertBtnEl.textContent = "Chuyển đổi";
+        
+        if (response && response.success) {
           const shortLink = response.shortLink;
           const productName = response.productName || "Sản phẩm mua sắm";
           const commissionAmount = response.commissionAmount || 0;
@@ -276,14 +242,13 @@ function setupConvertSelection() {
         } else {
           alert("Lỗi: " + (response.error || "Không thể chuyển đổi link"));
         }
-      } else {
+      })
+      .catch(err => {
         convertBtnEl.disabled = false;
         convertBtnEl.textContent = "Chuyển đổi";
+        console.error("Lỗi kết nối:", err);
         alert("⚠️ Không thể kết nối máy chủ để lấy thông tin hoa hồng. Vui lòng kiểm tra lại cấu hình hoặc thử lại sau!");
-      }
-    }
-    
-    processConversion();
+      });
   }
 
   function saveConvertHistory(platform, originalUrl, convertedUrl, productName, price, commissionRate, commissionAmount, imageUrl) {
