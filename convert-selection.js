@@ -100,7 +100,7 @@ function setupConvertSelection() {
         const timeout = setTimeout(() => {
           window.removeEventListener("message", handler);
           resolve(null);
-        }, 3000);
+        }, 1200);
 
         function handler(event) {
           if (event.data && event.data.type === "SHOPPESALE_CONVERT_LAZADA_RES" && event.data.id === reqId) {
@@ -121,37 +121,35 @@ function setupConvertSelection() {
     }
 
     async function processConversion() {
-      let response = null;
-      if (/lazada\.vn|lzd\.co/i.test(rawUrl)) {
-        try {
-          const bridgeRes = await convertViaExtensionBridge(rawUrl, zaloId);
-          if (bridgeRes && bridgeRes.success) {
-            response = {
-              success: true,
-              shortLink: bridgeRes.affiliateLink,
-              productName: bridgeRes.productName,
-              commissionRate: parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 0,
-              commissionAmount: 0,
-              imageUrl: ""
-            };
-          }
-        } catch(eBridge) {}
-      }
-
-      if (!response) {
-        try {
-          const apiCallUrl = CONFIG.API_URL + "?action=convertLink&url=" + encodeURIComponent(rawUrl) + "&subId=" + zaloId;
-          const res = await fetch(apiCallUrl);
-          response = await res.json();
-        } catch(errScript) {
-          response = { success: false, error: errScript.message };
+      try {
+        let response = null;
+        if (/lazada\.vn|lzd\.co/i.test(rawUrl)) {
+          try {
+            const bridgeRes = await convertViaExtensionBridge(rawUrl, zaloId);
+            if (bridgeRes && bridgeRes.success) {
+              response = {
+                success: true,
+                shortLink: bridgeRes.affiliateLink,
+                productName: bridgeRes.productName,
+                commissionRate: parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 0,
+                commissionAmount: 0,
+                imageUrl: ""
+              };
+            }
+          } catch(eBridge) {}
         }
-      }
 
-      convertBtnEl.disabled = false;
-      convertBtnEl.textContent = "Chuyển đổi";
+        if (!response) {
+          try {
+            const apiCallUrl = CONFIG.API_URL + "?action=convertLink&url=" + encodeURIComponent(rawUrl) + "&subId=" + zaloId;
+            const res = await fetch(apiCallUrl);
+            response = await res.json();
+          } catch(errScript) {
+            response = { success: false, error: errScript.message };
+          }
+        }
 
-      if (response && response.success) {
+        if (response && response.success) {
           const shortLink = response.shortLink;
           const productName = response.productName || "Sản phẩm mua sắm";
           const commissionAmount = response.commissionAmount || 0;
@@ -289,12 +287,14 @@ function setupConvertSelection() {
           // Lưu lịch sử chuyển đổi vào localStorage
           saveConvertHistory(platform, rawUrl, shortLink, productName, price, commissionRate, commissionAmount, imageUrl);
         } else {
-          alert("Lỗi: " + (response.error || "Không thể chuyển đổi link"));
+          alert("Lỗi: " + (response ? response.error : "Không thể chuyển đổi link"));
         }
-      } else {
+      } catch (err) {
+        console.error("Lỗi chuyển đổi:", err);
+        alert("⚠️ Không thể kết nối máy chủ để lấy thông tin hoa hồng. Vui lòng kiểm tra lại cấu hình hoặc thử lại sau!");
+      } finally {
         convertBtnEl.disabled = false;
         convertBtnEl.textContent = "Chuyển đổi";
-        alert("⚠️ Không thể kết nối máy chủ để lấy thông tin hoa hồng. Vui lòng kiểm tra lại cấu hình hoặc thử lại sau!");
       }
     }
 
