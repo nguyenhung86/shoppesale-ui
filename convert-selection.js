@@ -165,7 +165,7 @@ function setupConvertSelection() {
           else if (lowerUrl.includes('shopeefood')) platform = "ShopeeFood";
           
           // Hiển thị 100% hoa hồng ước tính theo yêu cầu của sếp
-          const cashback = commissionAmount;
+          const cashback = commissionAmount || (price > 0 && commissionRate > 0 ? Math.round(price * commissionRate / 100) : 0);
           
           // Tạo kết quả hiển thị
           const resultCard = document.createElement('div');
@@ -212,7 +212,7 @@ function setupConvertSelection() {
               </div>
               
               <div style="background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; border-radius: 9999px; padding: 6px 12px; font-size: 13px; font-weight: 800;">
-                ${commissionRate.toFixed(2)}%
+                ${commissionRate ? (Number.isInteger(commissionRate) ? commissionRate + '%' : commissionRate.toFixed(2) + '%') : '0%'}
               </div>
             </div>
             
