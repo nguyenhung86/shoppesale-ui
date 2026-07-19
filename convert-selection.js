@@ -182,7 +182,13 @@ function setupConvertSelection() {
             animation: slideUp 0.3s ease;
           `;
           
-          const finalRate = commissionRate || 8.0;
+          // Hoa hồng hoàn tiền thực tế cho khách = 80% hoa hồng gốc của sàn
+          // Nếu sàn là Lazada, mặc định là 5.0% raw (hoàn 4.0%), nếu Shopee mặc định là 10.0% raw (hoàn 8.0%)
+          let rawRate = commissionRate;
+          if (!rawRate || rawRate === 8.0) {
+            rawRate = platform === "Lazada" ? 5.0 : 10.0;
+          }
+          const finalRate = rawRate * 0.8;
           resultCard.innerHTML = `
             <!-- Header -->
             <div style="color: #22c55e; font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 18px;">
