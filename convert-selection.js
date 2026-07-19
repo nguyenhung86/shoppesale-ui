@@ -131,9 +131,10 @@ function setupConvertSelection() {
                 success: true,
                 shortLink: bridgeRes.affiliateLink,
                 productName: bridgeRes.productName,
-                commissionRate: parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 0,
-                commissionAmount: 0,
-                imageUrl: ""
+                commissionRate: bridgeRes.commissionRate || parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 0,
+                commissionAmount: bridgeRes.commissionAmount || 0,
+                price: bridgeRes.price || 0,
+                imageUrl: bridgeRes.imageUrl || ""
               };
             }
           } catch(eBridge) {}
