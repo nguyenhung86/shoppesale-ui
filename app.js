@@ -24,7 +24,7 @@ function render(){
   if(!pages[key])key='dashboard';
   
   // Kiểm tra quyền truy cập của khách vãng lai
-  const restrictedKeys = ['convert', 'orders', 'referrals', 'events', 'account'];
+  const restrictedKeys = ['convert', 'orders', 'account'];
   if (restrictedKeys.includes(key) && !getLoggedUser()) {
     key = 'dashboard';
     history.replaceState(null, '', '/dashboard');
@@ -92,7 +92,7 @@ document.addEventListener('click', e => {
       const path = href.startsWith('#') ? '/' + href.slice(1) : href;
       const targetPage = path.slice(1) || 'dashboard';
       
-      const restrictedKeys = ['convert', 'orders', 'referrals', 'events', 'account'];
+      const restrictedKeys = ['convert', 'orders', 'account'];
       if (restrictedKeys.includes(targetPage) && !getLoggedUser()) {
         e.preventDefault();
         if (typeof showLoginModal === 'function') showLoginModal();
