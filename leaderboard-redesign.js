@@ -136,7 +136,7 @@ function enhanceLeaderboard() {
       <div class="leaderboard-podium">
         <article class="rank-place second ${second.isUser ? 'is-current-user' : ''}" ${second.isUser ? 'style="border: 2px solid #ff5722; background: rgba(255,87,34,0.04);"' : ''}>
           <span class="rank-medal">2</span>
-          <span class="rank-title">🥈 Chiến Binh</span>
+          <span class="rank-title">🥈 Hạng 2</span>
           <span class="rank-avatar">${getInitials(second.name)}</span>
           <b>${second.name}</b>
           ${getValuesHTML(second)}
@@ -145,7 +145,7 @@ function enhanceLeaderboard() {
         <article class="rank-place first ${first.isUser ? 'is-current-user' : ''}" ${first.isUser ? 'style="border: 2px solid #ff5722; background: rgba(255,87,34,0.04);"' : ''}>
           <span class="rank-crown">♕</span>
           <span class="rank-medal">1</span>
-          <span class="rank-title">👑 Vua Xếp Hạng</span>
+          <span class="rank-title">👑 Hạng 1</span>
           <span class="rank-avatar">${getInitials(first.name)}</span>
           <b>${first.name}</b>
           ${getValuesHTML(first)}
@@ -153,7 +153,7 @@ function enhanceLeaderboard() {
         
         <article class="rank-place third ${third.isUser ? 'is-current-user' : ''}" ${third.isUser ? 'style="border: 2px solid #ff5722; background: rgba(255,87,34,0.04);"' : ''}>
           <span class="rank-medal">3</span>
-          <span class="rank-title">🥉 Ngôi Sao</span>
+          <span class="rank-title">🥉 Hạng 3</span>
           <span class="rank-avatar">${getInitials(third.name)}</span>
           <b>${third.name}</b>
           ${getValuesHTML(third)}
