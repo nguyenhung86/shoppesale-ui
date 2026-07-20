@@ -709,7 +709,7 @@
 .payment-history-empty p { margin: 6px 0 0; font-size: 11px; }
 
 @media (max-width: 520px) {
-  .payment-history-modal-overlay { padding: 12px; align-items: end; }
+  .payment-history-modal-overlay { padding: 12px; align-items: center; }
   .payment-history-modal { max-height: 78vh; border-radius: 22px; }
   .payment-history-modal header { padding: 21px 19px 14px; }
   .payment-history-list { padding: 0 19px 16px; }
