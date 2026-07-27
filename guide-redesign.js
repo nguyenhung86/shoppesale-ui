@@ -35,18 +35,6 @@ function guideRedesignedPage() {
         </div>
       </section>
 
-      <section class="guide-intro-new">
-        <div class="guide-section-heading">
-          <div><span>⌁</span><div><small>HIỂU NHANH VỀ HOÀN TIỀN</small><h2>Chỉ 3 điều cần nhớ</h2></div></div>
-          <p>Mua trên sàn như bình thường, Hoàn Tiền Mua Sắm giúp ghi nhận đơn và quản lý số dư.</p>
-        </div>
-        <div class="guide-concept-grid">
-          <article><span class="guide-concept-icon">₫</span><b>Hoàn tiền là gì?</b><p>Đây là phần hoa hồng hợp lệ từ sàn được chia lại cho bạn.</p></article>
-          <article><span class="guide-concept-icon">↪</span><b>Làm thế nào để nhận?</b><p>Chuyển link sản phẩm trước khi mua để tạo dấu vết ghi nhận.</p></article>
-          <article><span class="guide-concept-icon">▣</span><b>Tiền về đâu?</b><p>Sau đối soát, tiền được cộng vào số dư Hoàn Tiền Mua Sắm.</p></article>
-        </div>
-      </section>
-
       <section class="guide-videos-new">
         <div class="guide-section-heading">
           <div><span>🎥</span><div><small>TỔNG HỢP VIDEO HƯỚNG DẪN</small><h2>Xem video thực hành trực quan</h2></div></div>
@@ -77,6 +65,18 @@ function guideRedesignedPage() {
               <p>Cách đăng nhập shoppesale.io.vn, tự chuyển đổi link và kiểm tra số dư ví hoàn tiền.</p>
             </div>
           </article>
+        </div>
+      </section>
+
+      <section class="guide-intro-new">
+        <div class="guide-section-heading">
+          <div><span>⌁</span><div><small>HIỂU NHANH VỀ HOÀN TIỀN</small><h2>Chỉ 3 điều cần nhớ</h2></div></div>
+          <p>Mua trên sàn như bình thường, Hoàn Tiền Mua Sắm giúp ghi nhận đơn và quản lý số dư.</p>
+        </div>
+        <div class="guide-concept-grid">
+          <article><span class="guide-concept-icon">₫</span><b>Hoàn tiền là gì?</b><p>Đây là phần hoa hồng hợp lệ từ sàn được chia lại cho bạn.</p></article>
+          <article><span class="guide-concept-icon">↪</span><b>Làm thế nào để nhận?</b><p>Chuyển link sản phẩm trước khi mua để tạo dấu vết ghi nhận.</p></article>
+          <article><span class="guide-concept-icon">▣</span><b>Tiền về đâu?</b><p>Sau đối soát, tiền được cộng vào số dư Hoàn Tiền Mua Sắm.</p></article>
         </div>
       </section>
 
