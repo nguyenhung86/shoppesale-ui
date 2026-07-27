@@ -47,6 +47,39 @@ function guideRedesignedPage() {
         </div>
       </section>
 
+      <section class="guide-videos-new">
+        <div class="guide-section-heading">
+          <div><span>🎥</span><div><small>TỔNG HỢP VIDEO HƯỚNG DẪN</small><h2>Xem video thực hành trực quan</h2></div></div>
+          <p>📚 Chỉ cần làm đúng theo hướng dẫn, bạn sẽ mua sắm như bình thường và vẫn nhận được <b>hoàn tiền</b> sau mỗi đơn hàng trên Shopee, TikTok Shop & Lazada.</p>
+        </div>
+        
+        <div class="guide-video-grid">
+          <!-- Video 1: Zalo Bot -->
+          <article class="guide-video-card">
+            <div class="guide-video-wrapper video-shorts">
+              <iframe src="https://www.youtube.com/embed/K_P3TV-drxY" title="Hướng dẫn mua hàng qua Bot Zalo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="guide-video-info">
+              <span class="guide-video-badge">📱 Bot Zalo</span>
+              <h3>Hướng dẫn mua hàng qua Bot Zalo</h3>
+              <p>Cách gửi link sản phẩm cho Bot Zalo để nhận link hoàn tiền chỉ trong vài giây.</p>
+            </div>
+          </article>
+
+          <!-- Video 2: Website -->
+          <article class="guide-video-card">
+            <div class="guide-video-wrapper video-standard">
+              <iframe src="https://www.youtube.com/embed/JX6gtHvLynk" title="Hướng dẫn đăng nhập website và chuyển đổi link mua hàng" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            <div class="guide-video-info">
+              <span class="guide-video-badge">🌐 Website & Chuyển Đổi</span>
+              <h3>Hướng dẫn đăng nhập web & chuyển đổi link</h3>
+              <p>Cách đăng nhập shoppesale.io.vn, tự chuyển đổi link và kiểm tra số dư ví hoàn tiền.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section class="guide-process-new">
         <div class="guide-section-heading">
           <div><span>01</span><div><small>QUY TRÌNH MUA HOÀN TIỀN</small><h2>Thực hiện theo 4 bước</h2></div></div>
