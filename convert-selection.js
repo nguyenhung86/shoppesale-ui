@@ -157,6 +157,8 @@ function setupConvertSelection() {
           const commissionRate = response.commissionRate || 0;
           const price = response.price || 0;
           const imageUrl = response.imageUrl || "";
+          const shopeeRate = response.shopeeRate || 0;
+          const sellerRate = response.sellerRate || 0;
           
           // Xác định sàn mua hàng
           let platform = "Shopee";
@@ -188,6 +190,24 @@ function setupConvertSelection() {
           if (!finalRate || finalRate === 8.0) {
             finalRate = platform === "Lazada" ? 4.0 : 8.0;
           }
+
+          // Xây dựng nhãn chi tiết hoa hồng
+          let breakdown = "";
+          if (platform === "Shopee") {
+            const sRate = shopeeRate || finalRate;
+            if (sellerRate > 0) {
+              breakdown = `Shopee ${Number.isInteger(sRate) ? sRate : sRate.toFixed(1)}% + Xtra ${Number.isInteger(sellerRate) ? sellerRate : sellerRate.toFixed(1)}%`;
+            } else {
+              breakdown = `Shopee ${Number.isInteger(sRate) ? sRate : sRate.toFixed(1)}%`;
+            }
+          } else if (platform === "Lazada") {
+            breakdown = `Lazada ${Number.isInteger(finalRate) ? finalRate : finalRate.toFixed(1)}%`;
+          } else if (platform === "TikTok Shop") {
+            breakdown = `TikTok ${Number.isInteger(finalRate) ? finalRate : finalRate.toFixed(1)}%`;
+          } else {
+            breakdown = `${platform} ${Number.isInteger(finalRate) ? finalRate : finalRate.toFixed(1)}%`;
+          }
+
           resultCard.innerHTML = `
             <!-- Header -->
             <div style="color: #22c55e; font-weight: 800; font-size: 13px; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 18px;">
@@ -209,10 +229,22 @@ function setupConvertSelection() {
                 <div style="font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 4px; font-weight: 600;">
                   💰 Hoa hồng ước tính
                 </div>
-                <div style="font-size: 26px; font-weight: 800; color: #ea580c; margin-top: 6px; line-height: 1;">
-                  ≈ ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(2) + '%'}
+                <div style="font-size: 20px; font-weight: 800; color: #ea580c; margin-top: 6px; line-height: 1.3; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
+                  ≈ ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(2) + '%'} ${cashback > 0 ? `~ ${cashback.toLocaleString('vi-VN')}đ` : ''}
+                  <span style="font-size: 13px; font-weight: 600; color: #64748b; margin-left: 2px;">(${breakdown})</span>
+                </div>
+                ${cashback === 0 && finalRate ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 6px; font-weight: 500;">(Tỷ lệ hoa hồng ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(2) + '%'} tính theo tổng giá trị sản phẩm khi bạn đặt mua trên sàn)</div>` : ''}
+              </div>
+              ${price > 0 ? `
+              <div style="text-align: right;">
+                <div style="font-size: 13px; color: #64748b; font-weight: 600;">
+                  🏷️ Giá sản phẩm
+                </div>
+                <div style="font-size: 18px; font-weight: 700; color: #334155; margin-top: 6px;">
+                  ${price.toLocaleString('vi-VN')}đ
                 </div>
               </div>
+              ` : ''}
             </div>
             
             <!-- Primary CTA Action Button -->
