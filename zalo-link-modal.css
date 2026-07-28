@@ -4,9 +4,10 @@
   z-index: 10020;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 20px;
   background: rgba(20, 28, 43, .58);
   backdrop-filter: blur(7px);
+  overflow-y: auto;
 }
 
 .zalo-link-overlay[hidden] {
@@ -84,8 +85,9 @@ body.zalo-link-modal-open {
 .zalo-link-card {
   position: relative;
   width: min(100%, 470px);
-  max-height: calc(100vh - 32px);
-  padding: 30px 32px 28px;
+  max-height: min(680px, calc(100vh - 40px));
+  margin: auto;
+  padding: 24px 28px 22px;
   border: 1px solid #e8e9ef;
   border-radius: 24px;
   background: #fff;
@@ -98,16 +100,21 @@ body.zalo-link-modal-open {
 }
 
 .zalo-link-card::-webkit-scrollbar {
-  width: 5px;
+  width: 6px;
 }
 
 .zalo-link-card::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f5f9;
+  border-radius: 10px;
 }
 
 .zalo-link-card::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 10px;
+}
+
+.zalo-link-card::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .zalo-mobile-drag-handle {
@@ -516,4 +523,44 @@ body.zalo-link-modal-open {
   letter-spacing: 0.03em;
   box-shadow: 0 2px 6px rgba(22, 119, 238, 0.28);
   margin: 0 2px;
+}
+
+/* SMALL PC / LAPTOP LOW RESOLUTION SCREEN SAFEGUARDS */
+@media (min-width: 521px) and (max-height: 750px) {
+  .zalo-link-card {
+    padding: 20px 24px 18px;
+    max-height: calc(100vh - 30px);
+  }
+
+  .zalo-link-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .zalo-link-card h2 {
+    font-size: 19.5px;
+  }
+
+  .zalo-link-description {
+    margin: 6px 0 12px;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .zalo-link-account {
+    margin-bottom: 12px;
+    padding: 8px 12px;
+  }
+
+  .zalo-id-guide-box {
+    margin: 9px 0 11px;
+    padding: 10px 12px;
+  }
+
+  #zalo-link-submit {
+    height: 44px;
+    margin-top: 12px;
+  }
 }
