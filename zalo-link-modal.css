@@ -338,18 +338,41 @@ body.zalo-link-modal-open {
 @media (max-width: 520px) {
   .zalo-link-overlay {
     align-items: end;
-    padding: 10px;
+    padding: 8px 8px 10px;
   }
 
   .zalo-link-card {
-    max-height: calc(100vh - 16px);
-    padding: 16px 16px 14px;
+    max-height: calc(100vh - 20px) !important;
+    padding: 14px 14px 12px !important;
     border-radius: 20px;
     box-shadow: 0 -10px 40px rgba(15, 27, 48, .28);
+    overflow-y: scroll !important;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .zalo-link-card::-webkit-scrollbar {
+    width: 6px !important;
+    display: block !important;
+  }
+
+  .zalo-link-card::-webkit-scrollbar-track {
+    background: rgba(22, 119, 238, 0.08) !important;
+    border-radius: 10px !important;
+  }
+
+  .zalo-link-card::-webkit-scrollbar-thumb {
+    background: #1677ee !important;
+    border-radius: 10px !important;
   }
 
   .zalo-mobile-drag-handle {
     display: block;
+    width: 42px;
+    height: 5px;
+    margin: -4px auto 8px;
+    background: #1677ee;
+    opacity: 0.6;
   }
 
   .zalo-link-icon {
