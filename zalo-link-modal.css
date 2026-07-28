@@ -82,23 +82,34 @@ body.zalo-link-modal-open {
   overflow: hidden;
 }
 
-.zalo-link-card {
+.zalo-link-card-wrapper {
   position: relative;
   width: min(100%, 470px);
   max-height: min(680px, calc(100vh - 40px));
   margin: auto;
-  padding: 24px 28px 22px;
   border: 1px solid #e8e9ef;
   border-radius: 24px;
   background: #fff;
   box-shadow: 0 24px 70px rgba(15, 27, 48, .22);
+  overflow: hidden !important;
+  box-sizing: border-box;
+}
+
+.zalo-link-card {
+  position: relative;
+  width: 100%;
+  max-height: min(680px, calc(100vh - 40px));
+  margin: 0;
+  padding: 24px 28px 22px;
+  background: #fff;
   color: #15233a;
   text-align: center;
   overflow-y: auto;
   overflow-x: hidden;
-  clip-path: inset(0 round 24px);
   box-sizing: border-box;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #1677ee transparent;
 }
 
 .zalo-link-card::-webkit-scrollbar {
@@ -107,7 +118,6 @@ body.zalo-link-modal-open {
 
 .zalo-link-card::-webkit-scrollbar-track {
   background: transparent;
-  margin: 18px 0;
 }
 
 .zalo-link-card::-webkit-scrollbar-thumb {
@@ -343,11 +353,19 @@ body.zalo-link-modal-open {
     padding: 8px 8px 10px;
   }
 
+  .zalo-link-card-wrapper {
+    width: 100%;
+    max-height: calc(100vh - 20px) !important;
+    border-radius: 20px;
+    box-shadow: 0 -10px 40px rgba(15, 27, 48, .28);
+    overflow: hidden !important;
+  }
+
   .zalo-link-card {
     max-height: calc(100vh - 20px) !important;
     padding: 14px 14px 12px !important;
-    border-radius: 20px;
-    box-shadow: 0 -10px 40px rgba(15, 27, 48, .28);
+    border-radius: 0;
+    box-shadow: none;
     overflow-y: scroll !important;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;

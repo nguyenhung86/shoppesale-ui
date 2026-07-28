@@ -50,7 +50,7 @@
   <link rel="stylesheet" href="logout-modal.css?v=1" />
   <link rel="stylesheet" href="mobile-dashboard-compact.css?v=12" />
   <link rel="stylesheet" href="mobile-bottom-nav.css?v=1" />
-  <link rel="stylesheet" href="zalo-link-modal.css?v=11" />
+  <link rel="stylesheet" href="zalo-link-modal.css?v=12" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
@@ -79,44 +79,46 @@
      </div>
   </div>
   <div id="zalo-link-overlay" class="zalo-link-overlay" role="dialog" aria-modal="true" aria-labelledby="zalo-link-title" aria-hidden="true" hidden>
-    <div class="zalo-link-card">
-      <div class="zalo-mobile-drag-handle" aria-hidden="true"></div>
-      <div class="zalo-link-icon" aria-hidden="true">Zalo</div>
-      <p class="zalo-link-eyebrow">BƯỚC CUỐI CÙNG</p>
-      <h2 id="zalo-link-title">Liên kết Zalo để đồng bộ đơn hàng</h2>
-      <p class="zalo-link-description">Nhập ID Zalo bạn đang dùng trong nhóm. Hệ thống sẽ dùng ID này để tìm đúng đơn hàng và hoa hồng của bạn trên Google Sheet.</p>
-      <div class="zalo-link-account">
-        <span>Tài khoản Google</span>
-        <strong id="zalo-link-email"></strong>
-      </div>
-      <form id="zalo-link-form" novalidate>
-        <label for="zalo-link-id">ID Zalo của bạn</label>
-        <input id="zalo-link-id" name="zaloId" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 6978181959585081611" maxlength="25" aria-describedby="zalo-link-help zalo-link-error" required />
-        <small id="zalo-link-help">ID chỉ gồm các chữ số, không phải tên hiển thị hoặc số điện thoại.</small>
-        
-        <div class="zalo-id-guide-box">
-          <span class="zalo-id-guide-badge">💡 CÁCH LẤY ZALO ID NHANH</span>
-          <div class="zalo-id-guide-steps">
-            <div class="zalo-id-step">
-              <span class="zalo-id-step-num">1</span>
-              <span>Bấm nút <strong>"Tham gia nhóm Zalo"</strong> ở ngay phía dưới 👇</span>
-            </div>
-            <div class="zalo-id-step">
-              <span class="zalo-id-step-num">2</span>
-              <span>Nhắn tin riêng cho <strong>Bảo Sơn Qa</strong> cú pháp <span class="zalo-id-cmd-badge">/idzalo</span> để lấy ID</span>
+    <div class="zalo-link-card-wrapper">
+      <div class="zalo-link-card">
+        <div class="zalo-mobile-drag-handle" aria-hidden="true"></div>
+        <div class="zalo-link-icon" aria-hidden="true">Zalo</div>
+        <p class="zalo-link-eyebrow">BƯỚC CUỐI CÙNG</p>
+        <h2 id="zalo-link-title">Liên kết Zalo để đồng bộ đơn hàng</h2>
+        <p class="zalo-link-description">Nhập ID Zalo bạn đang dùng trong nhóm. Hệ thống sẽ dùng ID này để tìm đúng đơn hàng và hoa hồng của bạn trên Google Sheet.</p>
+        <div class="zalo-link-account">
+          <span>Tài khoản Google</span>
+          <strong id="zalo-link-email"></strong>
+        </div>
+        <form id="zalo-link-form" novalidate>
+          <label for="zalo-link-id">ID Zalo của bạn</label>
+          <input id="zalo-link-id" name="zaloId" type="text" inputmode="numeric" autocomplete="off" placeholder="Ví dụ: 6978181959585081611" maxlength="25" aria-describedby="zalo-link-help zalo-link-error" required />
+          <small id="zalo-link-help">ID chỉ gồm các chữ số, không phải tên hiển thị hoặc số điện thoại.</small>
+          
+          <div class="zalo-id-guide-box">
+            <span class="zalo-id-guide-badge">💡 CÁCH LẤY ZALO ID NHANH</span>
+            <div class="zalo-id-guide-steps">
+              <div class="zalo-id-step">
+                <span class="zalo-id-step-num">1</span>
+                <span>Bấm nút <strong>"Tham gia nhóm Zalo"</strong> ở ngay phía dưới 👇</span>
+              </div>
+              <div class="zalo-id-step">
+                <span class="zalo-id-step-num">2</span>
+                <span>Nhắn tin riêng cho <strong>Bảo Sơn Qa</strong> cú pháp <span class="zalo-id-cmd-badge">/idzalo</span> để lấy ID</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <a class="zalo-admin-contact" href="https://zalo.me/g/0u5xwlj4npkvl4bomy1o" target="_blank" rel="noopener noreferrer" aria-label="Tham gia nhóm Zalo 💎 Hoàn Tiền Shopee - Lazada - TikTok">
-          <span class="zalo-admin-contact-icon" aria-hidden="true">Zalo</span>
-          <span><b>Tham gia nhóm Zalo</b><small>💎 Hoàn Tiền Shopee - Lazada - TikTok</small></span>
-          <i aria-hidden="true">↗</i>
-        </a>
-        <p id="zalo-link-error" class="zalo-link-error" role="alert"></p>
-        <button id="zalo-link-submit" type="submit">Đồng bộ đơn hàng</button>
-      </form>
-      <p class="zalo-link-note"><b>Lưu ý:</b> Mỗi tài khoản chỉ được liên kết ID Zalo một lần và không thể tự thay đổi sau khi lưu.</p>
+          <a class="zalo-admin-contact" href="https://zalo.me/g/0u5xwlj4npkvl4bomy1o" target="_blank" rel="noopener noreferrer" aria-label="Tham gia nhóm Zalo 💎 Hoàn Tiền Shopee - Lazada - TikTok">
+            <span class="zalo-admin-contact-icon" aria-hidden="true">Zalo</span>
+            <span><b>Tham gia nhóm Zalo</b><small>💎 Hoàn Tiền Shopee - Lazada - TikTok</small></span>
+            <i aria-hidden="true">↗</i>
+          </a>
+          <p id="zalo-link-error" class="zalo-link-error" role="alert"></p>
+          <button id="zalo-link-submit" type="submit">Đồng bộ đơn hàng</button>
+        </form>
+        <p class="zalo-link-note"><b>Lưu ý:</b> Mỗi tài khoản chỉ được liên kết ID Zalo một lần và không thể tự thay đổi sau khi lưu.</p>
+      </div>
     </div>
   </div>
   <div class="app-shell">
