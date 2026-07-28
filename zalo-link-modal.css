@@ -329,13 +329,13 @@ body.zalo-link-modal-open {
 /* ZALO ID GUIDANCE BOX */
 .zalo-id-guide-box {
   margin: 12px 0 14px;
-  padding: 12px 14px;
+  padding: 13px 15px;
   border: 1px solid #d0e3ff;
   border-left: 4px solid #1677ee;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #f2f7ff, #e8f2ff);
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f0f6ff, #e6f1fe);
   text-align: left;
-  box-shadow: 0 4px 14px rgba(22, 119, 238, 0.07);
+  box-shadow: 0 4px 16px rgba(22, 119, 238, 0.08);
 }
 
 .zalo-id-guide-badge {
@@ -346,17 +346,39 @@ body.zalo-link-modal-open {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.04em;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
-.zalo-id-guide-text {
-  margin: 0;
+.zalo-id-guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.zalo-id-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   color: #2b405f;
   font-size: 12.5px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
-.zalo-id-guide-text strong {
+.zalo-id-step-num {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: #1677ee;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+.zalo-id-step strong {
   color: #0c56be;
   font-weight: 800;
 }
