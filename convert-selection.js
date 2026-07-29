@@ -300,10 +300,13 @@ function handleConvert() {
           // Tự động điều chỉnh tỷ lệ hoa hồng cơ bản theo chính sách đặc biệt tài khoản của sếp (Trích xuất chuẩn 100% từ affiliate-bot.js)
           let shopeeRate = (response.shopeeRate !== undefined && response.shopeeRate !== null && parseFloat(response.shopeeRate) > 0)
             ? parseFloat(response.shopeeRate)
-            : ((response.commissionRate !== undefined && response.commissionRate !== null) ? parseFloat(response.commissionRate) : 0);
-          let sellerRate = (response.sellerRate !== undefined && response.sellerRate !== null) ? parseFloat(response.sellerRate) : 0;
-          let finalRate = shopeeRate + sellerRate;
-          
+            : 0;
+          let sellerRate = (response.sellerRate !== undefined && response.sellerRate !== null && parseFloat(response.sellerRate) > 0)
+            ? parseFloat(response.sellerRate)
+            : 0;
+          let rawRate = (response.commissionRate !== undefined && response.commissionRate !== null) ? parseFloat(response.commissionRate) : 0;
+          let finalRate = rawRate;
+
           if (platform === "Shopee") {
             const nameLower = (productName || "").toLowerCase();
 
@@ -328,8 +331,14 @@ function handleConvert() {
             } else if (isMotorcycle) {
               shopeeRate = 3.5;
             } else {
-              if (shopeeRate < 8.0) shopeeRate = 8.0; // Nâng hoa hồng cơ bản tối thiểu 8%, giữ nguyên nếu hoa hồng thực tế cao hơn (10%, 15%, 20%)
+              if (shopeeRate <= 0) shopeeRate = 8.0;
             }
+            
+            // Tự động phân rã Xtra người bán nếu API trả về tỷ lệ tổng rawRate > shopeeRate (ví dụ rawRate = 10 -> Shopee 8% + Xtra 2%)
+            if (sellerRate <= 0 && rawRate > shopeeRate) {
+              sellerRate = rawRate - shopeeRate;
+            }
+            
             finalRate = shopeeRate + sellerRate;
           } else if (platform === "TikTok Shop") {
             if (!finalRate || finalRate <= 0) finalRate = 10.0;
@@ -342,21 +351,37 @@ function handleConvert() {
 
           // Ảnh sản phẩm chuẩn từ API
           let safeImage = imageUrl;
-          if (!safeImage || safeImage.includes("addlivetag") || safeImage.includes("unsplash")) {
+          if (!safeImage || safeImage.includes("unsplash")) {
             safeImage = "assets/hero-illustration-v3.png";
           }
 
-          // Giá sản phẩm & Số tiền hoàn VNĐ (Tính chuẩn hạn mức 40.000đ của Shopee theo affiliate-bot.js)
+          // Giá sản phẩm & Số tiền hoàn VNĐ
           let displayPrice = price || 0;
+          let cashback = response.commissionAmount || 0;
+          
           let calculatedShopeeComm = 0;
           if (platform === "Shopee" && shopeeRate > 0 && displayPrice > 0) {
             calculatedShopeeComm = Math.round(displayPrice * (shopeeRate / 100));
             if (calculatedShopeeComm > 40000) calculatedShopeeComm = 40000;
           }
           let sellerCommVal = (sellerRate > 0 && displayPrice > 0) ? Math.round(displayPrice * (sellerRate / 100)) : 0;
-          let cashback = (platform === "Shopee")
-            ? (calculatedShopeeComm + sellerCommVal)
-            : ((commissionAmount && commissionAmount > 0) ? commissionAmount : Math.round(displayPrice * (finalRate / 100)));
+          
+          if (platform === "Shopee" && displayPrice > 0) {
+            cashback = calculatedShopeeComm + sellerCommVal;
+          } else if (cashback <= 0 && displayPrice > 0 && finalRate > 0) {
+            cashback = Math.round(displayPrice * (finalRate / 100));
+          }
+          
+          // Tự động phục hồi giá sản phẩm VNĐ nếu giá = 0 nhưng có số tiền hoàn cashback
+          if (displayPrice <= 0 && cashback > 0 && finalRate > 0) {
+            displayPrice = Math.round((cashback / (finalRate / 100)));
+            if (platform === "Shopee" && shopeeRate > 0) {
+              calculatedShopeeComm = Math.round(displayPrice * (shopeeRate / 100));
+              if (calculatedShopeeComm > 40000) calculatedShopeeComm = 40000;
+              sellerCommVal = (sellerRate > 0) ? Math.round(displayPrice * (sellerRate / 100)) : 0;
+              cashback = calculatedShopeeComm + sellerCommVal;
+            }
+          }
 
           // Tạo kết quả hiển thị
           const resultCard = document.createElement('div');
