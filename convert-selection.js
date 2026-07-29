@@ -53,16 +53,21 @@ function setupConvertSelection() {
 
   function handleConvert() {
     const rawUrl = input.value.trim();
-    const zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
+    let zaloId = localStorage.getItem('shoppesale_zalo_id') || localStorage.getItem('shoppesale_user_id') || "";
+    
+    // Nếu chưa liên kết Zalo ID, tự động dùng ID đăng nhập Google / Email / ID khách để không chặn nút chuyển đổi
+    if (!zaloId) {
+      try {
+        const userObj = JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
+        zaloId = userObj.id || userObj.zaloId || userObj.email || "guest_web";
+      } catch(e) {
+        zaloId = "guest_web";
+      }
+    }
     
     // Xóa kết quả cũ nếu có
     const oldResult = document.querySelector('.convert-result-card');
     if (oldResult) oldResult.remove();
-    
-    if (!zaloId) {
-      alert("⚠️ Vui lòng liên kết tài khoản Zalo ở tab 'Tài khoản' trước để hệ thống ghi nhận hoàn tiền cho bạn!");
-      return;
-    }
     
     if (!rawUrl) {
       alert("⚠️ Vui lòng dán link sản phẩm cần chuyển đổi!");
