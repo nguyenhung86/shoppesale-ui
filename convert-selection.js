@@ -247,19 +247,24 @@ function setupConvertSelection() {
               : "assets/hero-illustration-v3.png";
           }
 
-          // Đảm bảo luôn hiển thị 100% hoa hồng và giá sản phẩm bằng VNĐ
+          // Tỷ lệ hoa hồng %
           let finalRate = commissionRate || 8.0;
-          let displayPrice = price > 0 ? price : 425000;
-          let cashback = commissionAmount || Math.round(displayPrice * finalRate / 100);
-
+          
+          // Tên sản phẩm hiển thị chuẩn từ API
           let displayName = productName;
-          if (!displayName || displayName === "Sản phẩm TikTok Shop" || displayName.includes("Shopee Affiliate") || displayName.includes("Tra cứu hoa hồng")) {
-            displayName = "Set polo chân váy CLLEE 2 màu bigsize nữ (TikTok Shop)";
+          if (!displayName || displayName.includes("Shopee Affiliate") || displayName.includes("Tra cứu hoa hồng")) {
+            displayName = platform === "TikTok Shop" ? "Sản phẩm TikTok Shop" : "Sản phẩm mua sắm";
           }
 
-          const safeImage = (imageUrl && !imageUrl.includes("unsplash")) 
-            ? imageUrl 
-            : "https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/79c0bc3480fc4da2b0db2d3c6adbd62d~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my&from=1432613627&from_p=3004324551";
+          // Ảnh sản phẩm chuẩn từ API
+          let safeImage = imageUrl;
+          if (!safeImage || safeImage.includes("unsplash")) {
+            safeImage = "assets/hero-illustration-v3.png";
+          }
+
+          // Giá sản phẩm & Số tiền hoàn VNĐ (Hoàn toàn động từ API)
+          let displayPrice = price || 0;
+          let cashback = commissionAmount || (displayPrice > 0 ? Math.round(displayPrice * finalRate / 100) : 0);
 
           // Tạo kết quả hiển thị
           const resultCard = document.createElement('div');
@@ -314,10 +319,12 @@ function setupConvertSelection() {
                   💰 Hoa hồng ước tính
                 </div>
                 <div style="font-size: 20px; font-weight: 800; color: #ea580c; margin-top: 6px; line-height: 1.3; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
-                  ≈ ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(1) + '%'} <span style="color: #22c55e;">(~ ${cashback.toLocaleString('vi-VN')}đ)</span>
+                  ≈ ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(1) + '%'} ${cashback > 0 ? `<span style="color: #22c55e;">(~ ${cashback.toLocaleString('vi-VN')}đ)</span>` : ''}
                   <span style="font-size: 13px; font-weight: 600; color: #64748b; margin-left: 2px;">(${breakdown})</span>
                 </div>
+                ${cashback === 0 && finalRate ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 6px; font-weight: 500;">(Tỷ lệ hoa hồng ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(1) + '%'} tính theo tổng giá trị sản phẩm khi bạn đặt mua trên sàn)</div>` : ''}
               </div>
+              ${displayPrice > 0 ? `
               <div style="text-align: right;">
                 <div style="font-size: 13px; color: #64748b; font-weight: 600;">
                   🏷️ Giá sản phẩm
@@ -326,6 +333,7 @@ function setupConvertSelection() {
                   ${displayPrice.toLocaleString('vi-VN')}đ
                 </div>
               </div>
+              ` : ''}
             </div>
             
             <!-- Primary CTA Action Button -->
