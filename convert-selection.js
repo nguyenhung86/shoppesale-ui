@@ -165,6 +165,7 @@ function setupConvertSelection() {
               response = {
                 success: true,
                 shortLink: rioData.affiliate_link,
+                rawAffiliateLink: rioData.affiliate_link,
                 productName: pName,
                 commissionRate: commRate,
                 commissionAmount: pCommAmt,
@@ -211,22 +212,41 @@ function setupConvertSelection() {
         }
 
         if (response && response.success) {
-          const shortLink = response.shortLink;
-          const productName = response.productName || "Sản phẩm mua sắm";
+          let shortLink = response.shortLink;
+          let productName = response.productName || "Sản phẩm mua sắm";
           const commissionAmount = response.commissionAmount || 0;
           const commissionRate = response.commissionRate || 0;
           const price = response.price || 0;
-          const imageUrl = response.imageUrl || "";
+          let imageUrl = response.imageUrl || "";
           const shopeeRate = response.shopeeRate || 0;
           const sellerRate = response.sellerRate || 0;
           
           // Xác định sàn mua hàng
-          let platform = "Shopee";
+          let platform = response.platformName || "Shopee";
           const lowerUrl = rawUrl.toLowerCase();
           if (lowerUrl.includes('lazada')) platform = "Lazada";
           else if (lowerUrl.includes('tiktok')) platform = "TikTok Shop";
           else if (lowerUrl.includes('shopeefood')) platform = "ShopeeFood";
           
+          // THEO YÊU CẦU CỦA SẾP: TIKTOK VÀ LAZADA HIỂN THỊ LINK GỐC, KHÔNG BỌC LINK SHOPPESALE.IO.VN
+          if (platform === "TikTok Shop" || platform === "Lazada") {
+            if (response.rawAffiliateLink || response.affiliateLink || response.originalLink) {
+              shortLink = response.rawAffiliateLink || response.affiliateLink || response.originalLink;
+            }
+          }
+
+          // Tránh tên mặc định lỗi "Tra cứu hoa hồng Shopee Affiliate" đối với TikTok
+          if (platform === "TikTok Shop" && (!productName || productName.includes("Shopee Affiliate") || productName.includes("Tra cứu hoa hồng"))) {
+            productName = "Sản phẩm TikTok Shop";
+          }
+
+          // Tránh ảnh minh họa biển mặc định khi chưa tải được ảnh TikTok
+          if (!imageUrl || imageUrl.includes("unsplash")) {
+            imageUrl = platform === "TikTok Shop" 
+              ? "https://p16-oec-va.ibyteimg.com/tos-maliva-i-o3syd03w52-us/5096531952ee4b8bb6a61765df8a5a40~tplv-o3syd03w52-origin-jpeg.jpeg?from=1432613627" 
+              : "assets/hero-illustration-v3.png";
+          }
+
           // Hiển thị 100% hoa hồng ước tính theo yêu cầu của sếp
           const cashback = commissionAmount || (price > 0 && commissionRate > 0 ? Math.round(price * commissionRate / 100) : 0);
           
