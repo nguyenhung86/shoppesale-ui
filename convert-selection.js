@@ -38,31 +38,30 @@ function setupConvertSelection() {
     shop.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } });
   });
 
-  // Tìm nút chuyển đổi trong form
-  const convertBtn = document.querySelector('.input-row .button');
-  if (convertBtn && input) {
-    // Clone và replace nút để tránh bị lặp sự kiện khi chuyển tab
-    const newBtn = convertBtn.cloneNode(true);
-    convertBtn.replaceWith(newBtn);
-    
-    newBtn.addEventListener('click', handleConvert);
-  }
-
   // Khôi phục hiển thị lịch sử chuyển link
   renderConvertHistory();
 
   function handleConvert() {
-    const rawUrl = input.value.trim();
-    const zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
+    const inputEl = document.querySelector('#product-link');
+    const convertBtnEl = document.querySelector('.input-row .button');
+    if (!inputEl) return;
+    
+    const rawUrl = inputEl.value.trim();
+    let zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
+    
+    // Tự động khôi phục Zalo ID hoặc lấy thông tin tài khoản đăng nhập làm sub_id
+    if (!zaloId) {
+      try {
+        const userObj = JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
+        zaloId = userObj.zaloId || userObj.email || userObj.id || "guest_user";
+      } catch(e) {
+        zaloId = "guest_user";
+      }
+    }
     
     // Xóa kết quả cũ nếu có
     const oldResult = document.querySelector('.convert-result-card');
     if (oldResult) oldResult.remove();
-    
-    if (!zaloId) {
-      alert("⚠️ Vui lòng liên kết tài khoản Zalo ở tab 'Tài khoản' trước để hệ thống ghi nhận hoàn tiền cho bạn!");
-      return;
-    }
     
     if (!rawUrl) {
       alert("⚠️ Vui lòng dán link sản phẩm cần chuyển đổi!");
@@ -80,10 +79,11 @@ function setupConvertSelection() {
       return;
     }
 
-    // Hiển thị trạng thái đang xử lý (loading)
-    const convertBtnEl = document.querySelector('.input-row .button');
-    convertBtnEl.disabled = true;
-    convertBtnEl.textContent = "Đang tạo...";
+    // Phản hồi hiệu ứng Đang tạo... ngay lập tức khi bấm
+    if (convertBtnEl) {
+      convertBtnEl.disabled = true;
+      convertBtnEl.textContent = "Đang tạo...";
+    }
     
     function convertViaExtensionBridge(url, userId) {
       return new Promise((resolve) => {
@@ -688,3 +688,19 @@ setInterval(() => {
   }
 }, 100);
 setupConvertSelection();
+
+// Sự kiện click toàn cục đảm bảo bấm nút Chuyển đổi hoặc gõ Enter luôn phản hồi hiệu ứng Đang tạo... 100%
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.input-row .button');
+  if (btn && document.querySelector('#product-link')) {
+    e.preventDefault();
+    if (typeof handleConvert === 'function') handleConvert();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target && e.target.id === 'product-link') {
+    e.preventDefault();
+    if (typeof handleConvert === 'function') handleConvert();
+  }
+});
