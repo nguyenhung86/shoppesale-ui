@@ -2011,6 +2011,17 @@ function upgradeSheetLayoutInternal() {
 
 // Hàm chuyển link hoàn tiền tự động (Shopee rút gọn, Lazada không rút gọn)
 function convertLinkAndGetCommission(productUrl, subId) {
+  // ⚡ TĂNG TỐC SIÊU TỐC KHÔNG CHỜ ĐỜI (CACHE SERVICE): Trả về kết quả trong 0.1 giây nếu link đã từng chuyển
+  var cacheKey = "";
+  try {
+    var rawKey = "c_v2_" + (productUrl || "").trim() + "_" + (subId || "").trim();
+    cacheKey = "ck_" + Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, rawKey).map(function(b) { return ('0' + (b & 0xFF).toString(16)).slice(-2); }).join('');
+    var cachedData = CacheService.getScriptCache().get(cacheKey);
+    if (cachedData) {
+      return JSON.parse(cachedData);
+    }
+  } catch (eCache) {}
+
   try {
     // 0. Kiểm tra nếu là link TikTok Shop -> Gọi RioHub API
     const isTikTok = productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1;
@@ -2373,7 +2384,7 @@ function convertLinkAndGetCommission(productUrl, subId) {
       }
     }
     
-    return {
+var finalResult = {
       success: true,
       shortLink: shortLink,
       productName: productName || (isLazada ? "Sản phẩm Lazada" : "Sản phẩm Shopee"),
@@ -2384,6 +2395,12 @@ function convertLinkAndGetCommission(productUrl, subId) {
       shopeeRate: shopeeRate,
       sellerRate: sellerRate
     };
+    try {
+      if (cacheKey && finalResult.success) {
+        CacheService.getScriptCache().put(cacheKey, JSON.stringify(finalResult), 21600); // Cache 6 tiếng
+      }
+    } catch(eSave) {}
+    return finalResult;
   } catch (e) {
     return { success: false, error: e.toString() };
   }
