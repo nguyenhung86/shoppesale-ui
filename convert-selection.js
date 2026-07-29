@@ -308,51 +308,49 @@ function setupConvertSelection() {
             </div>
             
             <!-- Product Info Row -->
-            <div style="display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start;">
-              <img src="${safeImage}" style="width: 68px; height: 68px; border-radius: 12px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;" alt="Product Image" />
-              <div style="font-size: 14px; font-weight: 600; color: #1e293b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px;">
+            <div style="display: flex; gap: 14px; margin-bottom: 20px; align-items: flex-start;">
+              <img src="${safeImage}" style="width: 64px; height: 64px; border-radius: 10px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;" alt="Product Image" />
+              <div style="font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px;">
                 ${displayName}
               </div>
             </div>
             
-            <!-- Pricing & Commission Info -->
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 16px; margin-bottom: 20px;">
-              <div>
-                <div style="font-size: 13px; color: #64748b; display: flex; align-items: center; gap: 4px; font-weight: 600;">
-                  💰 Hoa hồng ước tính
-                </div>
-                <div style="font-size: 20px; font-weight: 800; color: #ea580c; margin-top: 6px; line-height: 1.3; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
-                  ≈ ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(1) + '%'} ${cashback > 0 ? `<span style="color: #22c55e;">(~ ${cashback.toLocaleString('vi-VN')}đ)</span>` : ''}
-                  <span style="font-size: 13px; font-weight: 600; color: #64748b; margin-left: 2px;">(${breakdown})</span>
-                </div>
-                ${cashback === 0 && finalRate ? `<div style="font-size: 12px; color: #94a3b8; margin-top: 6px; font-weight: 500;">(Tỷ lệ hoa hồng ${Number.isInteger(finalRate) ? finalRate + '%' : finalRate.toFixed(1) + '%'} tính theo tổng giá trị sản phẩm khi bạn đặt mua trên sàn)</div>` : ''}
+            <!-- Pricing & Commission Info (Chuẩn phong cách muasam-hoantien.com) -->
+            <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; margin-bottom: 20px;">
+              <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
+                Bạn nhận ước tính <svg style="width: 14px; height: 14px; fill: #94a3b8;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
               </div>
-              ${displayPrice > 0 ? `
-              <div style="text-align: right;">
-                <div style="font-size: 13px; color: #64748b; font-weight: 600;">
-                  🏷️ Giá sản phẩm
+              <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                  <div style="font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.2;">
+                    ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : finalRate + '%'}
+                  </div>
+                  ${displayPrice > 0 ? `
+                  <div style="font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500;">
+                    Giá: ${displayPrice.toLocaleString('vi-VN')}đ
+                  </div>
+                  ` : ''}
                 </div>
-                <div style="font-size: 18px; font-weight: 700; color: #334155; margin-top: 6px;">
-                  ${displayPrice.toLocaleString('vi-VN')}đ
+                <div style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 700;">
+                  ${Number(finalRate).toFixed(2)}%
                 </div>
               </div>
-              ` : ''}
             </div>
             
             <!-- Primary CTA Action Button -->
-            <a href="${shortLink}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #ea580c; color: #ffffff; border-radius: 16px; font-weight: bold; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(234,88,12,0.25); margin-bottom: 12px; transition: background 0.2s;">
+            <a href="${shortLink}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f97316; color: #ffffff; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(249,115,22,0.25); margin-bottom: 12px; transition: all 0.2s;">
               <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
               Mở link mua hàng
             </a>
             
             <!-- Secondary Action Buttons -->
             <div style="display: flex; gap: 12px;">
-              <button id="copy-converted-link" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; font-weight: bold; color: #334155; font-size: 13px; cursor: pointer; transition: background 0.2s;">
+              <button id="copy-converted-link" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;">
                 <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
                 Sao chép
               </button>
-              <button id="show-qr-code" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16px; font-weight: bold; color: #334155; font-size: 13px; cursor: pointer; transition: background 0.2s;">
-                <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1v3a1 1 0 001 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1v-1h-1zM11 12a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm3 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm5-11a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V5zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm-4 0a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm2 5a1 1 0 00-1 1v1a1 1 0 001 1h1a1 1 0 001-1v-1a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>
+              <button id="show-qr-code" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+                <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1v-1h-1zM11 12a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm3 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm5-11a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V5zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm-4 0a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm2 5a1 1 0 00-1 1v1a1 1 0 001 1h1a1 1 0 001-1v-1a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>
                 QR Code
               </button>
             </div>
