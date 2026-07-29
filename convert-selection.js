@@ -298,9 +298,11 @@ function handleConvert() {
           }
 
           // Tự động điều chỉnh tỷ lệ hoa hồng cơ bản theo chính sách đặc biệt tài khoản của sếp (Trích xuất chuẩn 100% từ affiliate-bot.js)
-          let shopeeRate = (response.commissionRate !== undefined && response.commissionRate !== null) ? parseFloat(response.commissionRate) : 0;
-          let sellerRate = response.sellerRate || 0;
-          let finalRate = shopeeRate;
+          let shopeeRate = (response.shopeeRate !== undefined && response.shopeeRate !== null && parseFloat(response.shopeeRate) > 0)
+            ? parseFloat(response.shopeeRate)
+            : ((response.commissionRate !== undefined && response.commissionRate !== null) ? parseFloat(response.commissionRate) : 0);
+          let sellerRate = (response.sellerRate !== undefined && response.sellerRate !== null) ? parseFloat(response.sellerRate) : 0;
+          let finalRate = shopeeRate + sellerRate;
           
           if (platform === "Shopee") {
             const nameLower = (productName || "").toLowerCase();

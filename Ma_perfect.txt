@@ -2167,7 +2167,9 @@ function convertLinkAndGetCommission(productUrl, subId) {
             }
           }
           
-          // Parse hoa hồng Shopee
+          // Parse hoa hồng Shopee & Seller Extra (Trích xuất chuẩn từ affiliate-bot.js)
+          let shopeeRate = 0;
+          let sellerRate = 0;
           const descMatch = html.match(/<meta name="description" content="([^"]+)"/i);
           if (descMatch) {
             const desc = descMatch[1];
@@ -2175,6 +2177,11 @@ function convertLinkAndGetCommission(productUrl, subId) {
             if (commMatch) {
               value = parseInt(commMatch[1].replace(/[.,]/g, ""), 10) || 0;
               rate = parseFloat(commMatch[2].replace(",", "."));
+            }
+            const shopeeMatch = desc.match(/Shopee\s*([0-9.,]+)\s*%/i);
+            const sellerMatch = desc.match(/(?:Seller|Xtra)\s*([0-9.,]+)\s*%/i);
+            if (shopeeMatch) shopeeRate = parseFloat(shopeeMatch[1].replace(",", ".")) || 0;
+            if (sellerMatch) sellerRate = parseFloat(sellerMatch[1].replace(",", ".")) || 0;
             // Trích xuất chuẩn 100% từ affiliate-bot.js
             var nameLower = (productName || "").toLowerCase();
             var isPetProduct = nameLower.indexOf("chó") !== -1 || nameLower.indexOf("mèo") !== -1 ||
@@ -2224,8 +2231,10 @@ function convertLinkAndGetCommission(productUrl, subId) {
       shortLink: shortLink,
       productName: productName || (isLazada ? "Sản phẩm Lazada" : "Sản phẩm Shopee"),
       price: price,
-      commissionRate: rate,
+      commissionRate: rate || (shopeeRate + sellerRate),
       commissionAmount: value,
+      shopeeRate: shopeeRate,
+      sellerRate: sellerRate,
       imageUrl: imageUrl
     };
   } catch (e) {
