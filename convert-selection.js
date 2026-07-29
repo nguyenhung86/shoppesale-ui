@@ -370,21 +370,30 @@ function handleConvert() {
             animation: slideUp 0.3s ease;
           `;
           
-          // Xây dựng nhãn chi tiết hoa hồng
-          let breakdown = "";
+          // Xây dựng nhãn chi tiết hoa hồng chia 2 loại chuẩn 100% theo Bot Zalo
+          let breakdownStr = "";
           if (platform === "Shopee") {
-            const sRate = shopeeRate || finalRate;
-            if (sellerRate > 0) {
-              breakdown = `Shopee ${Number.isInteger(sRate) ? sRate : sRate.toFixed(1)}% + Xtra ${Number.isInteger(sellerRate) ? sellerRate : sellerRate.toFixed(1)}%`;
-            } else {
-              breakdown = `Shopee ${Number.isInteger(sRate) ? sRate : sRate.toFixed(1)}%`;
+            const parts = [];
+            if (shopeeRate > 0) {
+              const isCapped = calculatedShopeeComm >= 40000;
+              const sRateFormatted = Number.isInteger(shopeeRate) ? shopeeRate : shopeeRate.toFixed(1);
+              if (isCapped) {
+                parts.push(`Shopee ${sRateFormatted}% (₫40.000,tối đa)`);
+              } else {
+                parts.push(`Shopee ${sRateFormatted}%`);
+              }
             }
-          } else if (platform === "Lazada") {
-            breakdown = `Lazada ${Number.isInteger(finalRate) ? finalRate : finalRate.toFixed(1)}%`;
+            if (sellerRate > 0) {
+              const sellerRateFormatted = Number.isInteger(sellerRate) ? sellerRate : sellerRate.toFixed(1);
+              parts.push(`Xtra ${sellerRateFormatted}%`);
+            }
+            breakdownStr = parts.length > 0 ? parts.join(" + ") : `Shopee ${finalRate}%`;
           } else if (platform === "TikTok Shop") {
-            breakdown = `TikTok ${Number.isInteger(finalRate) ? finalRate : finalRate.toFixed(1)}%`;
+            breakdownStr = `TikTok ${finalRate}%`;
+          } else if (platform === "Lazada") {
+            breakdownStr = `Lazada ${finalRate}%`;
           } else {
-            breakdown = `${platform} ${Number.isInteger(finalRate) ? finalRate : finalRate.toFixed(1)}%`;
+            breakdownStr = `${platform} ${finalRate}%`;
           }
 
           resultCard.innerHTML = `
@@ -402,7 +411,7 @@ function handleConvert() {
               </div>
             </div>
             
-            <!-- Pricing & Commission Info (Chuẩn phong cách muasam-hoantien.com) -->
+            <!-- Pricing & Commission Info (Chuẩn 100% phong cách Bot Zalo) -->
             <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; margin-bottom: 20px;">
               <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
                 Bạn nhận ước tính <svg style="width: 14px; height: 14px; fill: #94a3b8;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
@@ -412,12 +421,20 @@ function handleConvert() {
                   <div style="font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.2;">
                     ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : finalRate + '%'}
                   </div>
+                  <div style="font-size: 13px; color: #ea580c; margin-top: 4px; font-weight: 600;">
+                    (${breakdownStr})
+                  </div>
                   ${displayPrice > 0 ? `
-                  <div style="font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500;">
+                  <div style="font-size: 13px; color: #64748b; margin-top: 2px; font-weight: 500;">
                     Giá: ${displayPrice.toLocaleString('vi-VN')}đ
                   </div>
                   ` : ''}
                 </div>
+                <div style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 700;">
+                  ${Number(finalRate).toFixed(2)}%
+                </div>
+              </div>
+            </div>
                 <div style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 700;">
                   ${Number(finalRate).toFixed(2)}%
                 </div>
