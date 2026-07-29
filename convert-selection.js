@@ -271,8 +271,10 @@ function setupConvertSelection() {
             }
           }
 
-          // Tỷ lệ hoa hồng % (Động theo từng ngành hàng 3.5%, 5%, 8%, 10% khớp 100% với Bot Zalo)
-          let finalRate = (commissionRate && commissionRate > 0) ? commissionRate : (platform === "TikTok Shop" ? 10.0 : 8.0);
+          // Tỷ lệ hoa hồng % (Đồng bộ chuẩn 100% theo Zalo bot affiliate-bot.js)
+          let finalRate = (response.commissionRate !== undefined && response.commissionRate !== null && response.commissionRate > 0)
+            ? parseFloat(response.commissionRate)
+            : (platform === "TikTok Shop" ? 10.0 : (platform === "Shopee" ? 3.5 : 8.0));
           
           // Tên sản phẩm hiển thị chuẩn từ API
           let displayName = productName || "Sản phẩm mua sắm";
@@ -283,11 +285,11 @@ function setupConvertSelection() {
             safeImage = "assets/hero-illustration-v3.png";
           }
 
-          // Giá sản phẩm & Số tiền hoàn VNĐ (Chuẩn theo từng ngành hàng)
+          // Giá sản phẩm & Số tiền hoàn VNĐ (Tính chuẩn theo Zalo bot)
           let displayPrice = price || 0;
           let cashback = (commissionAmount && commissionAmount > 0) 
             ? commissionAmount 
-            : ((displayPrice > 0) ? Math.round(displayPrice * (finalRate / 100)) : 0);
+            : ((displayPrice > 0 && finalRate > 0) ? Math.round(displayPrice * (finalRate / 100)) : 0);
 
           // Tạo kết quả hiển thị
           const resultCard = document.createElement('div');
