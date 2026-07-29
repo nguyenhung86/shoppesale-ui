@@ -268,8 +268,6 @@ function handleConvert() {
           const commissionRate = response.commissionRate || 10.0;
           const price = response.price || 0;
           let imageUrl = response.imageUrl || "";
-          const shopeeRate = response.shopeeRate || 0;
-          const sellerRate = response.sellerRate || 0;
           
           // Xác định sàn mua hàng
           let platform = response.platformName || "Shopee";
@@ -701,7 +699,6 @@ function handleConvert() {
       });
     });
   }
-}
 
 window.addEventListener('hashchange', setupConvertSelection);
 window.addEventListener('popstate', () => requestAnimationFrame(setupConvertSelection));
