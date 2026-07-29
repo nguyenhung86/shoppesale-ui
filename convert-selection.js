@@ -458,11 +458,6 @@ function handleConvert() {
                 </div>
               </div>
             </div>
-                <div style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 700;">
-                  ${Number(finalRate).toFixed(2)}%
-                </div>
-              </div>
-            </div>
             
             <!-- Primary CTA Action Button -->
             <a href="${shortLink}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f97316; color: #ffffff; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(249,115,22,0.25); margin-bottom: 12px; transition: all 0.2s;">
