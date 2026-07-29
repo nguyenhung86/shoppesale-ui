@@ -1,0 +1,134 @@
+/**
+ * ====================================================================
+ * SHOPPESALE & HOAN-DE-UI - GOOGLE APPS SCRIPT BACKEND (MÃ PERFECT)
+ * File: Ma_perfect.txt / Ma_perfect.gs
+ * Tự động đồng bộ trên GitHub Repository: shoppesale-ui
+ * ====================================================================
+ */
+
+function doGet(e) {
+  return handleRequest(e);
+}
+
+function doPost(e) {
+  return handleRequest(e);
+}
+
+function handleRequest(e) {
+  var action = e.parameter.action || '';
+  var url = e.parameter.url || '';
+  var subId = e.parameter.subId || 'shoppesale_web';
+
+  if (action === 'convertLink' && url) {
+    var result = convertLinkWithRio(url, subId);
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ success: false, error: 'Yêu cầu không hợp lệ' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function convertLinkWithRio(rawUrl, subId) {
+  var RIO_API_KEY = 'rhk_5e184fd38ebff8c159abbe6fb302d875cc4f00c4bbf162bc';
+  var CREATOR_USERNAME = 'con.muon.noi6';
+
+  // Chuyển đổi link TikTok Shop qua RioHub API
+  if (rawUrl.indexOf('tiktok.com') !== -1) {
+    try {
+      var linkEndpoint = 'https://riohub.vn/api/v1/partner/tiktok/affiliate/links';
+      var payload = {
+        creator_username: CREATOR_USERNAME,
+        product_url: rawUrl,
+        sub_id: subId
+      };
+
+      var options = {
+        method: 'post',
+        contentType: 'application/json',
+        headers: {
+          'X-Riohub-Api-Key': RIO_API_KEY
+        },
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true
+      };
+
+      var resp = UrlFetchApp.fetch(linkEndpoint, options);
+      var rioData = JSON.parse(resp.getContentText());
+
+      if (rioData && (rioData.affiliate_link || rioData.link)) {
+        var affLink = rioData.affiliate_link || rioData.link;
+        var productId = rioData.product_id;
+
+        var productName = 'Sản phẩm TikTok Shop';
+        var price = 0;
+        var commissionRate = 10.0;
+        var commissionAmount = 0;
+        var imageUrl = '';
+
+        // Lấy thông tin chi tiết sản phẩm TikTok từ RioHub (Tên thật, Ảnh thật, Giá bán, Hoa hồng)
+        if (productId) {
+          try {
+            var prodEndpoint = 'https://riohub.vn/api/v1/partner/tiktok/affiliate/products?creator_username=' + encodeURIComponent(CREATOR_USERNAME) + '&product_id=' + encodeURIComponent(productId);
+            var prodOptions = {
+              method: 'get',
+              headers: {
+                'X-Riohub-Api-Key': RIO_API_KEY
+              },
+              muteHttpExceptions: true
+            };
+
+            var prodResp = UrlFetchApp.fetch(prodEndpoint, prodOptions);
+            var prodData = JSON.parse(prodResp.getContentText());
+
+            if (prodData && prodData.products && prodData.products.length > 0) {
+              var item = prodData.products[0];
+              if (item.title) productName = item.title;
+              if (item.main_image_url) imageUrl = item.main_image_url;
+
+              if (item.sales_price && (item.sales_price.minimum_amount || item.sales_price.amount)) {
+                price = parseFloat(item.sales_price.minimum_amount || item.sales_price.amount) || 0;
+              }
+
+              if (item.commission) {
+                if (item.commission.rate) {
+                  var rRate = parseFloat(item.commission.rate);
+                  commissionRate = rRate > 50 ? rRate / 100 : rRate;
+                }
+                if (item.commission.amount) {
+                  var mComm = String(item.commission.amount).match(/[\d.]+/);
+                  if (mComm) commissionAmount = Math.round(parseFloat(mComm[0]));
+                }
+              }
+
+              if (commissionAmount === 0 && price > 0 && commissionRate > 0) {
+                commissionAmount = Math.round(price * commissionRate / 100);
+              }
+            }
+          } catch (eProd) {
+            Logger.log('Error fetching product details: ' + eProd);
+          }
+        }
+
+        return {
+          success: true,
+          shortLink: affLink,
+          rawAffiliateLink: affLink,
+          productName: productName,
+          price: price,
+          commissionRate: commissionRate,
+          commissionAmount: commissionAmount,
+          imageUrl: imageUrl,
+          platformName: 'TikTok Shop'
+        };
+      }
+    } catch (eRio) {
+      Logger.log('Error calling RioHub: ' + eRio);
+    }
+  }
+
+  return {
+    success: false,
+    error: 'Không thể chuyển đổi link TikTok Shop'
+  };
+}
