@@ -2200,9 +2200,9 @@ function convertLinkAndGetCommission(productUrl, subId) {
               rate = 3.5;
               if (price > 0) { value = Math.round(price * 0.035); }
             } else {
-              rate = 8.0; // Hầu hết các ngành hàng còn lại (điện thoại, mỹ phẩm, mẹ bé, thời trang, gia dụng...) đều được 8%
-              if (price > 0) {
-                var commCalc = Math.round(price * 0.08);
+              if (!rate || rate < 8.0) { rate = 8.0; }
+              if (price > 0 && rate > 0) {
+                var commCalc = Math.round(price * (rate / 100));
                 value = commCalc > 40000 ? 40000 : commCalc; // Hạn mức tối đa 40.000đ theo affiliate-bot.js
               }
             }

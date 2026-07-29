@@ -326,7 +326,7 @@ function handleConvert() {
             } else if (isMotorcycle) {
               shopeeRate = 3.5;
             } else {
-              shopeeRate = 8.0; // Hầu hết các ngành hàng còn lại (điện thoại, mỹ phẩm, mẹ bé, thời trang, gia dụng...) đều được 8%
+              if (shopeeRate < 8.0) shopeeRate = 8.0; // Nâng hoa hồng cơ bản tối thiểu 8%, giữ nguyên nếu hoa hồng thực tế cao hơn (10%, 15%, 20%)
             }
             finalRate = shopeeRate + sellerRate;
           } else if (platform === "TikTok Shop") {
