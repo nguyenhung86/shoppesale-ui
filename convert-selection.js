@@ -126,6 +126,10 @@ function setupConvertSelection() {
             if (rioData && rioData.affiliate_link) {
               let pName = "Sản phẩm TikTok Shop";
               let commRate = 6.0;
+              let pPrice = 0;
+              let pImg = "";
+              let pCommAmt = 0;
+
               if (rioData.product_id) {
                 try {
                   const pRes = await fetch(`https://riohub.vn/api/v1/partner/tiktok/affiliate/products?creator_username=${encodeURIComponent(creatorUsername)}&product_id=${encodeURIComponent(rioData.product_id)}`, {
@@ -135,17 +139,37 @@ function setupConvertSelection() {
                   if (pData && pData.products && pData.products.length > 0) {
                     const item = pData.products[0];
                     if (item.title) pName = item.title;
-                    if (item.commission && item.commission.rate) {
-                      commRate = parseFloat(item.commission.rate) / 100;
+                    if (item.main_image_url) pImg = item.main_image_url;
+                    
+                    if (item.sales_price && item.sales_price.minimum_amount) {
+                      pPrice = parseFloat(item.sales_price.minimum_amount) || 0;
+                    }
+                    
+                    if (item.commission) {
+                      if (item.commission.rate) {
+                        commRate = parseFloat(item.commission.rate) / 100;
+                      }
+                      if (item.commission.amount) {
+                        const mComm = String(item.commission.amount).match(/[\d.]+/);
+                        if (mComm) pCommAmt = Math.round(parseFloat(mComm[0]));
+                      }
+                    }
+
+                    if (pCommAmt === 0 && pPrice > 0 && commRate > 0) {
+                      pCommAmt = Math.round(pPrice * commRate / 100);
                     }
                   }
                 } catch(eP) {}
               }
+
               response = {
                 success: true,
                 shortLink: rioData.affiliate_link,
                 productName: pName,
                 commissionRate: commRate,
+                commissionAmount: pCommAmt,
+                price: pPrice,
+                imageUrl: pImg,
                 platformName: "TikTok Shop"
               };
             } else if (rioData && (rioData.message || rioData.error)) {
