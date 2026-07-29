@@ -38,52 +38,75 @@ function setupConvertSelection() {
     shop.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(); } });
   });
 
+  // Gắn sự kiện click trực tiếp trên nút chuyển đổi
+  const convertBtn = document.querySelector('.input-row .button');
+  if (convertBtn && input) {
+    const newBtn = convertBtn.cloneNode(true);
+    newBtn.setAttribute('type', 'button');
+    convertBtn.replaceWith(newBtn);
+    
+    newBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleConvert();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConvert();
+      }
+    });
+  }
+
   // Khôi phục hiển thị lịch sử chuyển link
   renderConvertHistory();
+}
 
-  function handleConvert() {
-    const inputEl = document.querySelector('#product-link');
-    const convertBtnEl = document.querySelector('.input-row .button');
-    if (!inputEl) return;
-    
-    const rawUrl = inputEl.value.trim();
-    let zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
-    
-    // Tự động khôi phục Zalo ID hoặc lấy thông tin tài khoản đăng nhập làm sub_id
-    if (!zaloId) {
-      try {
-        const userObj = JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
-        zaloId = userObj.zaloId || userObj.email || userObj.id || "guest_user";
-      } catch(e) {
-        zaloId = "guest_user";
-      }
+// Định nghĩa handleConvert ở phạm vi toàn cục (Global Scope) để gọi bất kỳ lúc nào
+function handleConvert() {
+  const inputEl = document.querySelector('#product-link');
+  const convertBtnEl = document.querySelector('.input-row .button');
+  if (!inputEl) return;
+  
+  const rawUrl = inputEl.value.trim();
+  let zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
+  const ENABLE_TIKTOK = true;
+  
+  // Tự động khôi phục Zalo ID hoặc lấy thông tin tài khoản đăng nhập làm sub_id
+  if (!zaloId) {
+    try {
+      const userObj = JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
+      zaloId = userObj.zaloId || userObj.email || userObj.id || "guest_user";
+    } catch(e) {
+      zaloId = "guest_user";
     }
-    
-    // Xóa kết quả cũ nếu có
-    const oldResult = document.querySelector('.convert-result-card');
-    if (oldResult) oldResult.remove();
-    
-    if (!rawUrl) {
-      alert("⚠️ Vui lòng dán link sản phẩm cần chuyển đổi!");
-      return;
-    }
-    
-    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-      alert("⚠️ Link sản phẩm không hợp lệ. Vui lòng nhập link bắt đầu bằng http:// hoặc https://");
-      return;
-    }
+  }
+  
+  // Xóa kết quả cũ nếu có
+  const oldResult = document.querySelector('.convert-result-card');
+  if (oldResult) oldResult.remove();
+  
+  if (!rawUrl) {
+    alert("⚠️ Vui lòng dán link sản phẩm cần chuyển đổi!");
+    return;
+  }
+  
+  if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+    alert("⚠️ Link sản phẩm không hợp lệ. Vui lòng nhập link bắt đầu bằng http:// hoặc https://");
+    return;
+  }
 
-    // Kiểm tra nếu tính năng TikTok đang bị tạm đóng
-    if (!ENABLE_TIKTOK && /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
-      alert("⚠️ Chức năng chuyển đổi link TikTok Shop hiện đang tạm đóng. Vui lòng quay lại sau!");
-      return;
-    }
+  // Kiểm tra nếu tính năng TikTok đang bị tạm đóng
+  if (!ENABLE_TIKTOK && /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
+    alert("⚠️ Chức năng chuyển đổi link TikTok Shop hiện đang tạm đóng. Vui lòng quay lại sau!");
+    return;
+  }
 
-    // Phản hồi hiệu ứng Đang tạo... ngay lập tức khi bấm
-    if (convertBtnEl) {
-      convertBtnEl.disabled = true;
-      convertBtnEl.textContent = "Đang tạo...";
-    }
+  // Phản hồi hiệu ứng Đang tạo... ngay lập tức khi bấm
+  if (convertBtnEl) {
+    convertBtnEl.disabled = true;
+    convertBtnEl.textContent = "Đang tạo...";
+  }
     
     function convertViaExtensionBridge(url, userId) {
       return new Promise((resolve) => {
