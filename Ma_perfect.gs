@@ -2130,9 +2130,15 @@ function convertLinkAndGetCommission(productUrl, subId) {
         }
       }
       
-      // Tải thông tin hoa hồng Shopee từ AddLiveTag công khai
+      // Tải thông tin hoa hồng Shopee từ AddLiveTag công khai (Giải mã short link trước)
       try {
-        const addLiveTagUrl = "https://addlivetag.com/product/?q=" + encodeURIComponent(productUrl);
+        var targetUrl = productUrl;
+        try {
+          var redirectRes = UrlFetchApp.fetch(productUrl, { followRedirects: true, muteHttpExceptions: true });
+          targetUrl = redirectRes.getRedirectUrl() || redirectRes.getUrl() || productUrl;
+        } catch (eRedir) {}
+
+        const addLiveTagUrl = "https://addlivetag.com/product/?q=" + encodeURIComponent(targetUrl);
         const response = UrlFetchApp.fetch(addLiveTagUrl, {
           headers: {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -2160,7 +2166,7 @@ function convertLinkAndGetCommission(productUrl, subId) {
           
           if (!productName) {
             const titleMatch = html.match(/property="og:title"\s+content="([^"]+)"/i) || 
-                               html.match(/content="([^"]+)"\s+property="og:image"/i);
+                               html.match(/content="([^"]+)"\s+property="og:title"/i);
             if (titleMatch) {
               const parts = titleMatch[1].split("—");
               productName = parts.length >= 2 ? parts.slice(1).join("—").replace(/\s*\|\s*AddLiveTag/i, "").trim() : titleMatch[1].replace(/\s*\|\s*AddLiveTag/i, "").trim();
@@ -2182,7 +2188,7 @@ function convertLinkAndGetCommission(productUrl, subId) {
             const sellerMatch = desc.match(/(?:Seller|Xtra)\s*([0-9.,]+)\s*%/i);
             if (shopeeMatch) shopeeRate = parseFloat(shopeeMatch[1].replace(",", ".")) || 0;
             if (sellerMatch) sellerRate = parseFloat(sellerMatch[1].replace(",", ".")) || 0;
-            // Trích xuất chuẩn 100% từ affiliate-bot.js
+
             var nameLower = (productName || "").toLowerCase();
             var isPetProduct = nameLower.indexOf("chó") !== -1 || nameLower.indexOf("mèo") !== -1 ||
               nameLower.indexOf("thú cưng") !== -1 || nameLower.indexOf("pet") !== -1 ||
@@ -2201,19 +2207,21 @@ function convertLinkAndGetCommission(productUrl, subId) {
               nameLower.indexOf("nón bảo hiểm") !== -1 || nameLower.indexOf("non bao hiem") !== -1;
 
             if (isPetProduct) {
-              rate = 0.0;
-              value = 0;
+              shopeeRate = 0.0;
             } else if (isMotorcycle) {
-              rate = 3.5;
-              if (price > 0) { value = Math.round(price * 0.035); }
+              shopeeRate = 3.5;
             } else {
-              if (!rate || rate < 8.0) { rate = 8.0; }
-              if (price > 0 && rate > 0) {
-                var commCalc = Math.round(price * (rate / 100));
-                value = commCalc > 40000 ? 40000 : commCalc; // Hạn mức tối đa 40.000đ theo affiliate-bot.js
-              }
+              if (!shopeeRate || shopeeRate < 8.0) { shopeeRate = 8.0; }
             }
+
+            rate = shopeeRate + sellerRate;
+            var basicCommVal = 0;
+            if (shopeeRate > 0 && price > 0) {
+              basicCommVal = Math.round(price * (shopeeRate / 100));
+              if (basicCommVal > 40000) basicCommVal = 40000;
             }
+            var sellerCommVal = (sellerRate > 0 && price > 0) ? Math.round(price * (sellerRate / 100)) : 0;
+            value = basicCommVal + sellerCommVal;
           }
           
           // Parse ảnh sản phẩm Shopee
