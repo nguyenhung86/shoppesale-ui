@@ -2174,8 +2174,9 @@ function convertLinkAndGetCommission(productUrl, subId) {
           }
           
           // Parse hoa hồng Shopee & Seller Extra (Trích xuất chuẩn từ affiliate-bot.js)
-          let shopeeRate = 0;
-          let sellerRate = 0;
+          // Reset shopeeRate & sellerRate
+          shopeeRate = 0;
+          sellerRate = 0;
           const descMatch = html.match(/<meta name="description" content="([^"]+)"/i);
           if (descMatch) {
             const desc = descMatch[1];
