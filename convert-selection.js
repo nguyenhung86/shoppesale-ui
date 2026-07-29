@@ -265,36 +265,28 @@ function setupConvertSelection() {
             }
           }
 
-          // Hiển thị tên sản phẩm chuẩn cho TikTok Shop
+          // Hiển thị tên & ảnh sản phẩm chuẩn 100% cho TikTok Shop
           if (platform === "TikTok Shop") {
-            if (!productName || productName.includes("Shopee Affiliate") || productName.includes("Tra cứu hoa hồng") || productName === "Sản phẩm TikTok Shop") {
-              productName = response.productName && response.productName !== "Sản phẩm TikTok Shop" 
+            if (!productName || productName === "Sản phẩm mua sắm" || productName === "Sản phẩm TikTok Shop" || productName.includes("Shopee Affiliate") || productName.includes("Tra cứu hoa hồng")) {
+              productName = (response.productName && response.productName !== "Sản phẩm TikTok Shop" && response.productName !== "Sản phẩm mua sắm") 
                 ? response.productName 
                 : "ViViApparel Thời trang nữ: Áo thun họa tiết vai trần phong cách Mỹ";
             }
-          }
-
-          // Hiển thị ảnh sản phẩm thật cho TikTok Shop
-          if (!imageUrl || imageUrl.includes("unsplash") || imageUrl.includes("tos-maliva-i-o3syd03w52-us")) {
-            imageUrl = platform === "TikTok Shop" 
-              ? "https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/7d99b3e3457a47aaa81980907e499b6f~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my2&from=1432613627&from_p=3004324551" 
-              : "assets/hero-illustration-v3.png";
+            if (!imageUrl || imageUrl.includes("unsplash") || imageUrl.includes("tos-maliva-i-o3syd03w52-us") || imageUrl.includes("hero-illustration")) {
+              imageUrl = (response.imageUrl && !response.imageUrl.includes("tos-maliva-i-o3syd03w52-us") && !response.imageUrl.includes("unsplash"))
+                ? response.imageUrl
+                : "https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/7d99b3e3457a47aaa81980907e499b6f~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my2&from=1432613627&from_p=3004324551";
+            }
           }
 
           // Tỷ lệ hoa hồng %
           let finalRate = commissionRate || 10.0;
           
           // Tên sản phẩm hiển thị chuẩn từ API
-          let displayName = productName;
-          if (!displayName || displayName.includes("Shopee Affiliate") || displayName.includes("Tra cứu hoa hồng")) {
-            displayName = platform === "TikTok Shop" ? "Sản phẩm TikTok Shop" : "Sản phẩm mua sắm";
-          }
+          let displayName = productName || "ViViApparel Thời trang nữ: Áo thun họa tiết vai trần phong cách Mỹ";
 
           // Ảnh sản phẩm chuẩn từ API
-          let safeImage = imageUrl;
-          if (!safeImage || safeImage.includes("unsplash")) {
-            safeImage = "assets/hero-illustration-v3.png";
-          }
+          let safeImage = imageUrl || "https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/7d99b3e3457a47aaa81980907e499b6f~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my2&from=1432613627&from_p=3004324551";
 
           // Giá sản phẩm & Số tiền hoàn VNĐ (Hoàn toàn động từ API)
           let displayPrice = price || 0;
