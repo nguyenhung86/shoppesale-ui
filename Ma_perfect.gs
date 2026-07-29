@@ -2175,8 +2175,7 @@ function convertLinkAndGetCommission(productUrl, subId) {
             if (commMatch) {
               value = parseInt(commMatch[1].replace(/[.,]/g, ""), 10) || 0;
               rate = parseFloat(commMatch[2].replace(",", "."));
-            if (!rate || rate < 8.0) { rate = 8.0; }
-            if (price > 0 && rate > 0) { value = Math.round(price * rate / 100); }
+            if (price > 0 && rate > 0 && (!value || value === 0)) { value = Math.round(price * rate / 100); }
             }
           }
           
