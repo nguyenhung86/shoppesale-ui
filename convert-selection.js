@@ -43,9 +43,20 @@ function setupConvertSelection() {
   if (convertBtn && input) {
     // Clone và replace nút để tránh bị lặp sự kiện khi chuyển tab
     const newBtn = convertBtn.cloneNode(true);
+    newBtn.setAttribute('type', 'button');
     convertBtn.replaceWith(newBtn);
     
-    newBtn.addEventListener('click', handleConvert);
+    newBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleConvert();
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleConvert();
+      }
+    });
   }
 
   // Khôi phục hiển thị lịch sử chuyển link
@@ -55,25 +66,19 @@ function setupConvertSelection() {
     const rawUrl = input.value.trim();
     let zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
     
-    // Tự động khôi phục zaloId từ thông tin tài khoản nếu đã từng liên kết
+    // Tự động sử dụng Zalo ID hoặc thông tin tài khoản đang đăng nhập (Google/Email/ID) làm subId để không chặn chuyển link
     if (!zaloId) {
       try {
         const userObj = JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
-        if (userObj && userObj.zaloId) {
-          zaloId = userObj.zaloId;
-          localStorage.setItem('shoppesale_zalo_id', zaloId);
-        }
-      } catch(e) {}
+        zaloId = userObj.zaloId || userObj.email || userObj.id || "guest_user";
+      } catch(e) {
+        zaloId = "guest_user";
+      }
     }
     
     // Xóa kết quả cũ nếu có
     const oldResult = document.querySelector('.convert-result-card');
     if (oldResult) oldResult.remove();
-    
-    if (!zaloId) {
-      alert("⚠️ Vui lòng liên kết tài khoản Zalo ở tab 'Tài khoản' trước để hệ thống ghi nhận hoàn tiền cho bạn!");
-      return;
-    }
     
     if (!rawUrl) {
       alert("⚠️ Vui lòng dán link sản phẩm cần chuyển đổi!");
