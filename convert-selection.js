@@ -12,15 +12,17 @@ function setupConvertSelection() {
   const links = ['https://shopee.vn/product/...', 'https://www.lazada.vn/products/...', 'https://www.tiktok.com/...', 'https://shopeefood.vn/...'];
   const rates = ['80%', '80%', '80%', '80%'];
   
+  const ENABLE_TIKTOK = false; // Đổi thành true để bật lại tính năng TikTok Shop
+
   shops.forEach((shop, index) => {
     shop.setAttribute('role', 'button');
-    const isComingSoon = false;
-    shop.setAttribute('tabindex', '0');
-    shop.setAttribute('aria-disabled', 'false');
-    shop.classList.toggle('coming-soon', false);
+    const isComingSoon = index === 2 && !ENABLE_TIKTOK;
+    shop.setAttribute('tabindex', isComingSoon ? '-1' : '0');
+    shop.setAttribute('aria-disabled', isComingSoon ? 'true' : 'false');
+    shop.classList.toggle('coming-soon', isComingSoon);
     const tag = shop.querySelector('.tag');
     if (tag) {
-      const status = index === 2 ? '<small>HOT</small>' : (index === 1 || index === 3 ? '<small>BETA</small>' : '');
+      const status = index === 2 ? (ENABLE_TIKTOK ? '<small>HOT</small>' : '<small style="background:#fee2e2;color:#dc2626;font-weight:800">TẠM ĐÓNG</small>') : (index === 1 || index === 3 ? '<small>BETA</small>' : '');
       tag.innerHTML = `${rates[index]}${status}`;
     }
 
@@ -69,6 +71,12 @@ function setupConvertSelection() {
     
     if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
       alert("⚠️ Link sản phẩm không hợp lệ. Vui lòng nhập link bắt đầu bằng http:// hoặc https://");
+      return;
+    }
+
+    // Kiểm tra nếu tính năng TikTok đang bị tạm đóng
+    if (!ENABLE_TIKTOK && /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
+      alert("⚠️ Chức năng chuyển đổi link TikTok Shop hiện đang tạm đóng. Vui lòng quay lại sau!");
       return;
     }
 
