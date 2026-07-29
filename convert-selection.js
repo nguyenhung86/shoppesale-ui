@@ -271,11 +271,14 @@ function setupConvertSelection() {
             }
           }
 
-          // Tỷ lệ hoa hồng %
-          let finalRate = commissionRate || 10.0;
+          // Tỷ lệ hoa hồng % (Cập nhật Shopee lên 8.0% chuẩn theo yêu cầu của Sếp)
+          let finalRate = commissionRate;
+          if (platform === "Shopee" || !finalRate || finalRate < 8.0) {
+            finalRate = 8.0;
+          }
           
           // Tên sản phẩm hiển thị chuẩn từ API
-          let displayName = productName || "Sản phẩm TikTok Shop";
+          let displayName = productName || "Sản phẩm mua sắm";
 
           // Ảnh sản phẩm chuẩn từ API
           let safeImage = imageUrl;
@@ -283,9 +286,9 @@ function setupConvertSelection() {
             safeImage = "assets/hero-illustration-v3.png";
           }
 
-          // Giá sản phẩm & Số tiền hoàn VNĐ (Hoàn toàn động từ API)
+          // Giá sản phẩm & Số tiền hoàn VNĐ (Chuẩn 8% cho Shopee)
           let displayPrice = price || 0;
-          let cashback = commissionAmount || (displayPrice > 0 ? Math.round(displayPrice * finalRate / 100) : 0);
+          let cashback = (displayPrice > 0) ? Math.round(displayPrice * (finalRate / 100)) : (commissionAmount || 0);
 
           // Tạo kết quả hiển thị
           const resultCard = document.createElement('div');
