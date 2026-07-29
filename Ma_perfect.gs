@@ -2175,7 +2175,17 @@ function convertLinkAndGetCommission(productUrl, subId) {
             if (commMatch) {
               value = parseInt(commMatch[1].replace(/[.,]/g, ""), 10) || 0;
               rate = parseFloat(commMatch[2].replace(",", "."));
-            if (price > 0 && rate > 0 && (!value || value === 0)) { value = Math.round(price * rate / 100); }
+            var pLower = (productName || "").toLowerCase();
+            if (pLower.indexOf("thú cưng") !== -1 || pLower.indexOf("thu cung") !== -1 || pLower.indexOf("cho chó") !== -1 || pLower.indexOf("cho mèo") !== -1 || pLower.indexOf("thức ăn cho") !== -1) {
+              rate = 0;
+              value = 0;
+            } else if (pLower.indexOf("xe máy") !== -1 || pLower.indexOf("xe may") !== -1 || pLower.indexOf("phụ kiện xe") !== -1 || pLower.indexOf("bảo hiểm") !== -1) {
+              rate = 3.5;
+              if (price > 0) { value = Math.round(price * 0.035); }
+            } else {
+              if (rate < 8.0) { rate = 8.0; }
+              if (price > 0) { value = Math.round(price * 0.08); }
+            }
             }
           }
           

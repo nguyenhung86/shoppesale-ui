@@ -271,10 +271,26 @@ function setupConvertSelection() {
             }
           }
 
-          // Tỷ lệ hoa hồng % (Đồng bộ chuẩn 100% theo Zalo bot affiliate-bot.js)
-          let finalRate = (response.commissionRate !== undefined && response.commissionRate !== null && response.commissionRate > 0)
-            ? parseFloat(response.commissionRate)
-            : (platform === "TikTok Shop" ? 10.0 : (platform === "Shopee" ? 3.5 : 8.0));
+          // Xử lý tỷ lệ hoa hồng % theo quy định ngành hàng chuẩn của Sếp:
+          // 1. Thú cưng -> 0% (Không có hoa hồng cơ bản)
+          // 2. Phụ kiện xe máy -> 3.5%
+          // 3. Các ngành hàng mặc định khác -> 8.0% (nếu API trả 3.5% thì tự động nâng lên 8.0%)
+          let finalRate = (response.commissionRate !== undefined && response.commissionRate !== null) ? parseFloat(response.commissionRate) : 0;
+          
+          if (platform === "Shopee") {
+            const pLower = (productName || "").toLowerCase();
+            if (pLower.includes("thú cưng") || pLower.includes("thu cung") || pLower.includes("cho chó") || pLower.includes("cho mèo") || pLower.includes("thức ăn cho") || pLower.includes("pate cho")) {
+              finalRate = 0;
+            } else if (pLower.includes("xe máy") || pLower.includes("xe may") || pLower.includes("phụ kiện xe") || pLower.includes("phu kien xe") || pLower.includes("bảo hiểm") || pLower.includes("nhớt xe")) {
+              finalRate = 3.5;
+            } else {
+              if (finalRate < 8.0) finalRate = 8.0;
+            }
+          } else if (platform === "TikTok Shop") {
+            if (!finalRate || finalRate <= 0) finalRate = 10.0;
+          } else if (platform === "Lazada") {
+            if (!finalRate || finalRate <= 0) finalRate = 8.0;
+          }
           
           // Tên sản phẩm hiển thị chuẩn từ API
           let displayName = productName || "Sản phẩm mua sắm";
@@ -285,11 +301,9 @@ function setupConvertSelection() {
             safeImage = "assets/hero-illustration-v3.png";
           }
 
-          // Giá sản phẩm & Số tiền hoàn VNĐ (Tính chuẩn theo Zalo bot)
+          // Giá sản phẩm & Số tiền hoàn VNĐ (Chuẩn 100% theo quy tắc ngành hàng)
           let displayPrice = price || 0;
-          let cashback = (commissionAmount && commissionAmount > 0) 
-            ? commissionAmount 
-            : ((displayPrice > 0 && finalRate > 0) ? Math.round(displayPrice * (finalRate / 100)) : 0);
+          let cashback = (finalRate <= 0) ? 0 : ((commissionAmount && commissionAmount > 0) ? commissionAmount : Math.round(displayPrice * (finalRate / 100)));
 
           // Tạo kết quả hiển thị
           const resultCard = document.createElement('div');
