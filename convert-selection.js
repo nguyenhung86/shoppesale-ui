@@ -206,18 +206,15 @@ function setupConvertSelection() {
                 }
               }
 
-              const defaultTikTokTitle = "ViViApparel Thời trang nữ: Áo thun họa tiết vai trần phong cách Mỹ";
-              const defaultTikTokImg = "https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/7d99b3e3457a47aaa81980907e499b6f~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my2&from=1432613627&from_p=3004324551";
-
               response = {
                 success: true,
                 shortLink: affLink,
                 rawAffiliateLink: affLink,
-                productName: pName || defaultTikTokTitle,
+                productName: pName || "Sản phẩm TikTok Shop",
                 commissionRate: commRate || 10.0,
-                commissionAmount: pCommAmt || 13635,
-                price: pPrice || 136348,
-                imageUrl: pImg || defaultTikTokImg,
+                commissionAmount: pCommAmt || (pPrice > 0 ? Math.round(pPrice * (commRate / 100)) : 0),
+                price: pPrice || 0,
+                imageUrl: pImg || "",
                 platformName: "TikTok Shop"
               };
             } else if (rioData && (rioData.message || rioData.error)) {
@@ -244,9 +241,9 @@ function setupConvertSelection() {
         if (response && response.success) {
           let shortLink = response.shortLink;
           let productName = response.productName || "Sản phẩm mua sắm";
-          const commissionAmount = response.commissionAmount || 13635;
+          const commissionAmount = response.commissionAmount || 0;
           const commissionRate = response.commissionRate || 10.0;
-          const price = response.price || 136348;
+          const price = response.price || 0;
           let imageUrl = response.imageUrl || "";
           const shopeeRate = response.shopeeRate || 0;
           const sellerRate = response.sellerRate || 0;
@@ -265,16 +262,12 @@ function setupConvertSelection() {
             }
           }
 
-          // Hiển thị tên & ảnh sản phẩm chuẩn 100% cho TikTok Shop (Loại bỏ triệt để tên "Tra cứu hoa hồng Shopee Affiliate")
-          const defaultTikTokName = "ViViApparel Thời trang nữ: Áo thun họa tiết vai trần phong cách Mỹ";
-          const defaultTikTokImage = "https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/7d99b3e3457a47aaa81980907e499b6f~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my2&from=1432613627&from_p=3004324551";
-
+          // Xử lý tên sản phẩm động cho TikTok Shop (Loại bỏ các chữ lỗi mặc định)
           if (platform === "TikTok Shop") {
-            if (!productName || productName.includes("Shopee") || productName.includes("Tra cứu hoa hồng") || productName === "Sản phẩm mua sắm" || productName === "Sản phẩm TikTok Shop") {
-              productName = defaultTikTokName;
-            }
-            if (!imageUrl || imageUrl.includes("addlivetag") || imageUrl.includes("unsplash") || imageUrl.includes("tos-maliva-i-o3syd03w52-us") || imageUrl.includes("hero-illustration")) {
-              imageUrl = defaultTikTokImage;
+            if (!productName || productName.includes("Shopee") || productName.includes("Tra cứu hoa hồng")) {
+              productName = (response.productName && !response.productName.includes("Shopee") && !response.productName.includes("Tra cứu hoa hồng"))
+                ? response.productName
+                : "Sản phẩm TikTok Shop";
             }
           }
 
@@ -282,15 +275,12 @@ function setupConvertSelection() {
           let finalRate = commissionRate || 10.0;
           
           // Tên sản phẩm hiển thị chuẩn từ API
-          let displayName = productName;
-          if (platform === "TikTok Shop" && (!displayName || displayName.includes("Shopee") || displayName.includes("Tra cứu hoa hồng") || displayName === "Sản phẩm TikTok Shop")) {
-            displayName = defaultTikTokName;
-          }
+          let displayName = productName || "Sản phẩm TikTok Shop";
 
           // Ảnh sản phẩm chuẩn từ API
           let safeImage = imageUrl;
-          if (platform === "TikTok Shop" && (!safeImage || safeImage.includes("addlivetag") || safeImage.includes("unsplash") || safeImage.includes("tos-maliva-i-o3syd03w52-us"))) {
-            safeImage = defaultTikTokImage;
+          if (!safeImage || safeImage.includes("addlivetag") || safeImage.includes("unsplash")) {
+            safeImage = "assets/hero-illustration-v3.png";
           }
 
           // Giá sản phẩm & Số tiền hoàn VNĐ (Hoàn toàn động từ API)
