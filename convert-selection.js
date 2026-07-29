@@ -62,8 +62,13 @@ function setupConvertSelection() {
   renderConvertHistory();
 }
 
-// Định nghĩa handleConvert ở phạm vi toàn cục (Global Scope) để gọi bất kỳ lúc nào
+// Biến khóa chống kích hoạt trùng lặp
+let isProcessingConvert = false;
+
+// Định nghĩa handleConvert ở phạm vi toàn cục (Global Scope)
 function handleConvert() {
+  if (isProcessingConvert) return;
+  
   const inputEl = document.querySelector('#product-link');
   const convertBtnEl = document.querySelector('.input-row .button');
   if (!inputEl) return;
@@ -82,9 +87,8 @@ function handleConvert() {
     }
   }
   
-  // Xóa kết quả cũ nếu có
-  const oldResult = document.querySelector('.convert-result-card');
-  if (oldResult) oldResult.remove();
+  // Xóa TẤT CẢ kết quả cũ nếu có
+  document.querySelectorAll('.convert-result-card').forEach(card => card.remove());
   
   if (!rawUrl) {
     alert("⚠️ Vui lòng dán link sản phẩm cần chuyển đổi!");
@@ -102,7 +106,8 @@ function handleConvert() {
     return;
   }
 
-  // Phản hồi hiệu ứng Đang tạo... ngay lập tức khi bấm
+  // Bật cờ khóa xử lý và đổi trạng thái nút sang Đang tạo...
+  isProcessingConvert = true;
   if (convertBtnEl) {
     convertBtnEl.disabled = true;
     convertBtnEl.textContent = "Đang tạo...";
@@ -496,8 +501,11 @@ function handleConvert() {
         console.error("Lỗi chuyển đổi:", err);
         alert("⚠️ Không thể kết nối máy chủ để lấy thông tin hoa hồng. Vui lòng kiểm tra lại cấu hình hoặc thử lại sau!");
       } finally {
-        convertBtnEl.disabled = false;
-        convertBtnEl.textContent = "Chuyển đổi";
+        isProcessingConvert = false;
+        if (convertBtnEl) {
+          convertBtnEl.disabled = false;
+          convertBtnEl.textContent = "Chuyển đổi";
+        }
       }
     }
 
