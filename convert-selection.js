@@ -106,7 +106,27 @@ function setupConvertSelection() {
     async function processConversion() {
       try {
         let response = null;
-        if (/tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
+
+        // 1. Ưu tiên thử qua Extension Bridge (Local Bot Node.js Server - Lấy 100% data Tên, Giá, Ảnh, Hoa hồng)
+        try {
+          const bridgeRes = await convertViaExtensionBridge(rawUrl, zaloId);
+          if (bridgeRes && bridgeRes.success) {
+            response = {
+              success: true,
+              shortLink: bridgeRes.affiliateLink || bridgeRes.shortLink,
+              rawAffiliateLink: bridgeRes.affiliateLink || bridgeRes.shortLink,
+              productName: bridgeRes.productName,
+              commissionRate: bridgeRes.commissionRate || parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 8.0,
+              commissionAmount: bridgeRes.commissionAmount || 0,
+              price: bridgeRes.price || 0,
+              imageUrl: bridgeRes.imageUrl || "",
+              platformName: bridgeRes.platformName || (/tiktok/i.test(rawUrl) ? "TikTok Shop" : (/lazada/i.test(rawUrl) ? "Lazada" : "Shopee"))
+            };
+          }
+        } catch(eBridge) {}
+
+        // 2. Nếu chưa có Bridge, gọi RioHub API trực tiếp cho TikTok
+        if (!response && /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
           try {
             const apiKey = "rhk_5e184fd38ebff8c159abbe6fb302d875cc4f00c4bbf162bc";
             const creatorUsername = "con.muon.noi6";
@@ -125,7 +145,7 @@ function setupConvertSelection() {
             const rioData = await rioRes.json();
             if (rioData && rioData.affiliate_link) {
               let pName = "Sản phẩm TikTok Shop";
-              let commRate = 6.0;
+              let commRate = 8.0;
               let pPrice = 0;
               let pImg = "";
               let pCommAmt = 0;
@@ -182,23 +202,6 @@ function setupConvertSelection() {
           } catch(eRio) {
             console.error("Lỗi kết nối RioHub API:", eRio);
           }
-        }
-
-        if (!response && /lazada\.vn|lzd\.co/i.test(rawUrl)) {
-          try {
-            const bridgeRes = await convertViaExtensionBridge(rawUrl, zaloId);
-            if (bridgeRes && bridgeRes.success) {
-              response = {
-                success: true,
-                shortLink: bridgeRes.affiliateLink,
-                productName: bridgeRes.productName,
-                commissionRate: bridgeRes.commissionRate || parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 0,
-                commissionAmount: bridgeRes.commissionAmount || 0,
-                price: bridgeRes.price || 0,
-                imageUrl: bridgeRes.imageUrl || ""
-              };
-            }
-          } catch(eBridge) {}
         }
 
         if (!response) {
