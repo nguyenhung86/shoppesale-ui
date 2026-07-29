@@ -12,7 +12,7 @@ function setupConvertSelection() {
   const links = ['https://shopee.vn/product/...', 'https://www.lazada.vn/products/...', 'https://www.tiktok.com/...', 'https://shopeefood.vn/...'];
   const rates = ['80%', '80%', '80%', '80%'];
   
-  const ENABLE_TIKTOK = false; // Đổi thành true để bật lại tính năng TikTok Shop
+  const ENABLE_TIKTOK = true; // Đổi thành true để bật lại tính năng TikTok Shop
 
   shops.forEach((shop, index) => {
     shop.setAttribute('role', 'button');
