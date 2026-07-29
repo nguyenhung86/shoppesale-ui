@@ -355,9 +355,11 @@ function handleConvert() {
             safeImage = "assets/hero-illustration-v3.png";
           }
 
-          // Giá sản phẩm & Số tiền hoàn VNĐ
-          let displayPrice = price || 0;
-          let cashback = response.commissionAmount || 0;
+          // Giá sản phẩm & Số tiền hoàn VNĐ (Ưu tiên tuyệt đối số tiền hoa hồng thực tế từ API)
+          let displayPrice = price || response.price || 0;
+          let cashback = (response && response.commissionAmount && parseFloat(response.commissionAmount) > 0) 
+            ? parseFloat(response.commissionAmount) 
+            : 0;
           
           let calculatedShopeeComm = 0;
           if (platform === "Shopee" && shopeeRate > 0 && displayPrice > 0) {
@@ -366,7 +368,7 @@ function handleConvert() {
           }
           let sellerCommVal = (sellerRate > 0 && displayPrice > 0) ? Math.round(displayPrice * (sellerRate / 100)) : 0;
           
-          if (platform === "Shopee" && displayPrice > 0) {
+          if (platform === "Shopee" && (calculatedShopeeComm + sellerCommVal) > 0) {
             cashback = calculatedShopeeComm + sellerCommVal;
           } else if (cashback <= 0 && displayPrice > 0 && finalRate > 0) {
             cashback = Math.round(displayPrice * (finalRate / 100));
@@ -375,12 +377,6 @@ function handleConvert() {
           // Tự động phục hồi giá sản phẩm VNĐ nếu giá = 0 nhưng có số tiền hoàn cashback
           if (displayPrice <= 0 && cashback > 0 && finalRate > 0) {
             displayPrice = Math.round((cashback / (finalRate / 100)));
-            if (platform === "Shopee" && shopeeRate > 0) {
-              calculatedShopeeComm = Math.round(displayPrice * (shopeeRate / 100));
-              if (calculatedShopeeComm > 40000) calculatedShopeeComm = 40000;
-              sellerCommVal = (sellerRate > 0) ? Math.round(displayPrice * (sellerRate / 100)) : 0;
-              cashback = calculatedShopeeComm + sellerCommVal;
-            }
           }
 
           // Tạo kết quả hiển thị
