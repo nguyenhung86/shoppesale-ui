@@ -271,21 +271,38 @@ function setupConvertSelection() {
             }
           }
 
-          // Xử lý tỷ lệ hoa hồng % theo quy định ngành hàng chuẩn của Sếp:
-          // 1. Thú cưng -> 0% (Không có hoa hồng cơ bản)
-          // 2. Phụ kiện xe máy -> 3.5%
-          // 3. Các ngành hàng mặc định khác -> 8.0% (nếu API trả 3.5% thì tự động nâng lên 8.0%)
-          let finalRate = (response.commissionRate !== undefined && response.commissionRate !== null) ? parseFloat(response.commissionRate) : 0;
+          // Tự động điều chỉnh tỷ lệ hoa hồng cơ bản theo chính sách đặc biệt tài khoản của sếp (Trích xuất chuẩn 100% từ affiliate-bot.js)
+          let shopeeRate = (response.commissionRate !== undefined && response.commissionRate !== null) ? parseFloat(response.commissionRate) : 0;
+          let sellerRate = response.sellerRate || 0;
+          let finalRate = shopeeRate;
           
           if (platform === "Shopee") {
-            const pLower = (productName || "").toLowerCase();
-            if (pLower.includes("thú cưng") || pLower.includes("thu cung") || pLower.includes("cho chó") || pLower.includes("cho mèo") || pLower.includes("thức ăn cho") || pLower.includes("pate cho")) {
-              finalRate = 0;
-            } else if (pLower.includes("xe máy") || pLower.includes("xe may") || pLower.includes("phụ kiện xe") || pLower.includes("phu kien xe") || pLower.includes("bảo hiểm") || pLower.includes("nhớt xe")) {
-              finalRate = 3.5;
+            const nameLower = (productName || "").toLowerCase();
+
+            const isPetProduct = nameLower.includes("chó") || nameLower.includes("mèo") ||
+              nameLower.includes("thú cưng") || nameLower.includes("pet") ||
+              nameLower.includes("cát vệ sinh") || nameLower.includes("pate") ||
+              nameLower.includes("royal canin") || nameLower.includes("whiskas") ||
+              nameLower.includes("ve rận");
+
+            const isMotorcycle = nameLower.includes("xe máy") || nameLower.includes("xe may") ||
+              nameLower.includes("ô tô") || nameLower.includes("o to") ||
+              nameLower.includes("xe hơi") || nameLower.includes("salaya") ||
+              nameLower.includes("nhông sên") || nameLower.includes("nhớt") ||
+              nameLower.includes("dầu nhớt") || nameLower.includes("bao tay") ||
+              nameLower.includes("tay nắm") || nameLower.includes("kính chiếu hậu") ||
+              nameLower.includes("gương xe") || nameLower.includes("pô xe") ||
+              nameLower.includes("mũ bảo hiểm") || nameLower.includes("mu bao hiem") ||
+              nameLower.includes("nón bảo hiểm") || nameLower.includes("non bao hiem");
+
+            if (isPetProduct) {
+              shopeeRate = 0.0;
+            } else if (isMotorcycle) {
+              shopeeRate = 3.5;
             } else {
-              if (finalRate < 8.0) finalRate = 8.0;
+              shopeeRate = 8.0; // Hầu hết các ngành hàng còn lại (điện thoại, mỹ phẩm, mẹ bé, thời trang, gia dụng...) đều được 8%
             }
+            finalRate = shopeeRate + sellerRate;
           } else if (platform === "TikTok Shop") {
             if (!finalRate || finalRate <= 0) finalRate = 10.0;
           } else if (platform === "Lazada") {
@@ -301,9 +318,17 @@ function setupConvertSelection() {
             safeImage = "assets/hero-illustration-v3.png";
           }
 
-          // Giá sản phẩm & Số tiền hoàn VNĐ (Chuẩn 100% theo quy tắc ngành hàng)
+          // Giá sản phẩm & Số tiền hoàn VNĐ (Tính chuẩn hạn mức 40.000đ của Shopee theo affiliate-bot.js)
           let displayPrice = price || 0;
-          let cashback = (finalRate <= 0) ? 0 : ((commissionAmount && commissionAmount > 0) ? commissionAmount : Math.round(displayPrice * (finalRate / 100)));
+          let calculatedShopeeComm = 0;
+          if (platform === "Shopee" && shopeeRate > 0 && displayPrice > 0) {
+            calculatedShopeeComm = Math.round(displayPrice * (shopeeRate / 100));
+            if (calculatedShopeeComm > 40000) calculatedShopeeComm = 40000;
+          }
+          let sellerCommVal = (sellerRate > 0 && displayPrice > 0) ? Math.round(displayPrice * (sellerRate / 100)) : 0;
+          let cashback = (platform === "Shopee")
+            ? (calculatedShopeeComm + sellerCommVal)
+            : ((commissionAmount && commissionAmount > 0) ? commissionAmount : Math.round(displayPrice * (finalRate / 100)));
 
           // Tạo kết quả hiển thị
           const resultCard = document.createElement('div');

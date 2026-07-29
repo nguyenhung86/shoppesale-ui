@@ -2175,16 +2175,36 @@ function convertLinkAndGetCommission(productUrl, subId) {
             if (commMatch) {
               value = parseInt(commMatch[1].replace(/[.,]/g, ""), 10) || 0;
               rate = parseFloat(commMatch[2].replace(",", "."));
-            var pLower = (productName || "").toLowerCase();
-            if (pLower.indexOf("thú cưng") !== -1 || pLower.indexOf("thu cung") !== -1 || pLower.indexOf("cho chó") !== -1 || pLower.indexOf("cho mèo") !== -1 || pLower.indexOf("thức ăn cho") !== -1) {
-              rate = 0;
+            // Trích xuất chuẩn 100% từ affiliate-bot.js
+            var nameLower = (productName || "").toLowerCase();
+            var isPetProduct = nameLower.indexOf("chó") !== -1 || nameLower.indexOf("mèo") !== -1 ||
+              nameLower.indexOf("thú cưng") !== -1 || nameLower.indexOf("pet") !== -1 ||
+              nameLower.indexOf("cát vệ sinh") !== -1 || nameLower.indexOf("pate") !== -1 ||
+              nameLower.indexOf("royal canin") !== -1 || nameLower.indexOf("whiskas") !== -1 ||
+              nameLower.indexOf("ve rận") !== -1;
+
+            var isMotorcycle = nameLower.indexOf("xe máy") !== -1 || nameLower.indexOf("xe may") !== -1 ||
+              nameLower.indexOf("ô tô") !== -1 || nameLower.indexOf("o to") !== -1 ||
+              nameLower.indexOf("xe hơi") !== -1 || nameLower.indexOf("salaya") !== -1 ||
+              nameLower.indexOf("nhông sên") !== -1 || nameLower.indexOf("nhớt") !== -1 ||
+              nameLower.indexOf("dầu nhớt") !== -1 || nameLower.indexOf("bao tay") !== -1 ||
+              nameLower.indexOf("tay nắm") !== -1 || nameLower.indexOf("kính chiếu hậu") !== -1 ||
+              nameLower.indexOf("gương xe") !== -1 || nameLower.indexOf("pô xe") !== -1 ||
+              nameLower.indexOf("mũ bảo hiểm") !== -1 || nameLower.indexOf("mu bao hiem") !== -1 ||
+              nameLower.indexOf("nón bảo hiểm") !== -1 || nameLower.indexOf("non bao hiem") !== -1;
+
+            if (isPetProduct) {
+              rate = 0.0;
               value = 0;
-            } else if (pLower.indexOf("xe máy") !== -1 || pLower.indexOf("xe may") !== -1 || pLower.indexOf("phụ kiện xe") !== -1 || pLower.indexOf("bảo hiểm") !== -1) {
+            } else if (isMotorcycle) {
               rate = 3.5;
               if (price > 0) { value = Math.round(price * 0.035); }
             } else {
-              if (rate < 8.0) { rate = 8.0; }
-              if (price > 0) { value = Math.round(price * 0.08); }
+              rate = 8.0; // Hầu hết các ngành hàng còn lại (điện thoại, mỹ phẩm, mẹ bé, thời trang, gia dụng...) đều được 8%
+              if (price > 0) {
+                var commCalc = Math.round(price * 0.08);
+                value = commCalc > 40000 ? 40000 : commCalc; // Hạn mức tối đa 40.000đ theo affiliate-bot.js
+              }
             }
             }
           }
