@@ -14,13 +14,13 @@ function setupConvertSelection() {
   
   shops.forEach((shop, index) => {
     shop.setAttribute('role', 'button');
-    const isComingSoon = index === 2;
-    shop.setAttribute('tabindex', isComingSoon ? '-1' : '0');
-    shop.setAttribute('aria-disabled', isComingSoon ? 'true' : 'false');
-    shop.classList.toggle('coming-soon', isComingSoon);
+    const isComingSoon = false;
+    shop.setAttribute('tabindex', '0');
+    shop.setAttribute('aria-disabled', 'false');
+    shop.classList.toggle('coming-soon', false);
     const tag = shop.querySelector('.tag');
     if (tag) {
-      const status = index === 2 ? '<small>SẮP RA MẮT</small>' : (index === 1 || index === 3 ? '<small>BETA</small>' : '');
+      const status = index === 2 ? '<small>HOT</small>' : (index === 1 || index === 3 ? '<small>BETA</small>' : '');
       tag.innerHTML = `${rates[index]}${status}`;
     }
 
@@ -77,23 +77,6 @@ function setupConvertSelection() {
     convertBtnEl.disabled = true;
     convertBtnEl.textContent = "Đang tạo...";
     
-    // TikTok Shop chua ho tro chuyen doi: hien thong bao thay vi goi API.
-    if (/(^|\.)tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
-      const comingSoonCard = document.createElement('div');
-      comingSoonCard.className = 'card convert-result-card tiktok-coming-soon-card';
-      comingSoonCard.innerHTML = `
-        <div class="tiktok-coming-soon-icon" aria-hidden="true">♪</div>
-        <div>
-          <p class="tiktok-coming-soon-eyebrow">TIKTOK SHOP</p>
-          <h3>Tính năng sắp ra mắt</h3>
-          <p>Chuyển đổi link TikTok Shop đang được hoàn thiện. Vui lòng quay lại sau nhé.</p>
-        </div>
-      `;
-      const convertSection = document.querySelector('#product-link').closest('.section');
-      convertSection.appendChild(comingSoonCard);
-      return;
-    }
-
     function convertViaExtensionBridge(url, userId) {
       return new Promise((resolve) => {
         const reqId = "req_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
@@ -123,7 +106,60 @@ function setupConvertSelection() {
     async function processConversion() {
       try {
         let response = null;
-        if (/lazada\.vn|lzd\.co/i.test(rawUrl)) {
+        if (/tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
+          try {
+            const apiKey = "rhk_5e184fd38ebff8c159abbe6fb302d875cc4f00c4bbf162bc";
+            const creatorUsername = "con.muon.noi6";
+            const rioRes = await fetch("https://riohub.vn/api/v1/partner/tiktok/affiliate/links", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-Riohub-Api-Key": apiKey
+              },
+              body: JSON.stringify({
+                creator_username: creatorUsername,
+                product_url: rawUrl,
+                sub_id: zaloId
+              })
+            });
+            const rioData = await rioRes.json();
+            if (rioData && rioData.affiliate_link) {
+              let pName = "Sản phẩm TikTok Shop";
+              let commRate = 6.0;
+              if (rioData.product_id) {
+                try {
+                  const pRes = await fetch(`https://riohub.vn/api/v1/partner/tiktok/affiliate/products?creator_username=${encodeURIComponent(creatorUsername)}&product_id=${encodeURIComponent(rioData.product_id)}`, {
+                    headers: { "X-Riohub-Api-Key": apiKey }
+                  });
+                  const pData = await pRes.json();
+                  if (pData && pData.products && pData.products.length > 0) {
+                    const item = pData.products[0];
+                    if (item.title) pName = item.title;
+                    if (item.commission && item.commission.rate) {
+                      commRate = parseFloat(item.commission.rate) / 100;
+                    }
+                  }
+                } catch(eP) {}
+              }
+              response = {
+                success: true,
+                shortLink: rioData.affiliate_link,
+                productName: pName,
+                commissionRate: commRate,
+                platformName: "TikTok Shop"
+              };
+            } else if (rioData && (rioData.message || rioData.error)) {
+              response = {
+                success: false,
+                error: rioData.message || rioData.error
+              };
+            }
+          } catch(eRio) {
+            console.error("Lỗi kết nối RioHub API:", eRio);
+          }
+        }
+
+        if (!response && /lazada\.vn|lzd\.co/i.test(rawUrl)) {
           try {
             const bridgeRes = await convertViaExtensionBridge(rawUrl, zaloId);
             if (bridgeRes && bridgeRes.success) {
