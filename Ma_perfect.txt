@@ -268,6 +268,14 @@ function doPost(e) {
         })).setMimeType(ContentService.MimeType.JSON);
       }
 
+      // Tự động tắt bộ lọc (Filter) nếu đang bật
+      try {
+        var activeFilter = sheet.getFilter();
+        if (activeFilter) {
+          activeFilter.remove();
+        }
+      } catch (eFilter) {}
+
       const lastRow = sheet.getLastRow();
       let exists = false;
       if (lastRow >= 2) {
@@ -299,11 +307,11 @@ function doPost(e) {
 
         sheet.getRange(targetRow, 1).setValue(data.userName);
         sheet.getRange(targetRow, 2).setValue("'" + data.userId);
-        sheet.getRange(targetRow, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-        sheet.getRange(targetRow, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-        sheet.getRange(targetRow, 5).setFormula(`=IFERROR(XLOOKUP(B${targetRow};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
-        sheet.getRange(targetRow, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-        sheet.getRange(targetRow, 7).setFormula(`=C${targetRow}+D${targetRow}+F${targetRow}`);
+        sheet.getRange(targetRow, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        sheet.getRange(targetRow, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        sheet.getRange(targetRow, 5).setFormula(`=IFERROR(XLOOKUP(B\${targetRow};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
+        sheet.getRange(targetRow, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        sheet.getRange(targetRow, 7).setFormula(`=C\${targetRow}+D\${targetRow}+F\${targetRow}`);
         
         sheet.getRange(targetRow, 6).setNumberFormat("#,##0đ");
         sheet.getRange(targetRow, 7).setNumberFormat("#,##0đ");
@@ -360,7 +368,7 @@ function doPost(e) {
           data.referrerName,
           "chờ đơn đầu",
           "",
-          `=IF(ISBLANK(B${nextRow}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B${nextRow}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A${nextRow}); MONTH(A${nextRow}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A${nextRow}; 0)))`,
+          `=IF(ISBLANK(B\${nextRow}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B\${nextRow}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A\${nextRow}); MONTH(A\${nextRow}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A\${nextRow}; 0)))`,
           "",
           ""
         ]);
@@ -436,6 +444,89 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
+    if (data.action === 'get_first_order_congrats') {
+      // Kiểm tra bảo mật (Token)
+      if (data.token !== API_TOKEN) {
+        return ContentService.createTextOutput(JSON.stringify({
+          success: false,
+          error: "Unauthorized: Mã bảo mật không hợp lệ!"
+        })).setMimeType(ContentService.MimeType.JSON);
+      }
+      
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+      let congrats = [];
+      
+      if (sheet) {
+        const lastRow = sheet.getLastRow();
+        if (lastRow >= 3) {
+          const range = sheet.getRange(3, 1, lastRow - 2, 12);
+          const values = range.getValues();
+          const completedOrdersByUser = {};
+          
+          for (let i = 0; i < values.length; i++) {
+            const row = values[i];
+            const reportDate = String(row[0]).trim();
+            const zaloName = String(row[1]).trim();
+            const userComm = parseFloat(row[6]) || 0;
+            const status = String(row[7]).trim().toLowerCase();
+            const zaloId = String(row[10]).replace(/'/g, "").trim();
+            const congratulated = String(row[11]).trim();
+            
+            const isCompleted = status === "đã hoàn thành" || status === "complete" || status === "thành công" || status === "completed" || status === "waiting for payment" || status === "hoàn thành";
+            
+            if (zaloId && isCompleted) {
+              if (!completedOrdersByUser[zaloId]) {
+                completedOrdersByUser[zaloId] = [];
+              }
+              completedOrdersByUser[zaloId].push({
+                rowIndex: i + 3,
+                reportDate: reportDate,
+                zaloName: zaloName,
+                userComm: userComm,
+                congratulated: congratulated
+              });
+            }
+          }
+          
+          for (const zaloId in completedOrdersByUser) {
+            const userOrders = completedOrdersByUser[zaloId];
+            userOrders.sort((a, b) => a.rowIndex - b.rowIndex);
+            
+            const firstOrder = userOrders[0];
+            
+            if (firstOrder.congratulated !== "y") {
+              const dateParts = firstOrder.reportDate.split('/');
+              let isRecent = true;
+              if (dateParts.length === 3) {
+                const day = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10);
+                const year = parseInt(dateParts[2], 10);
+                if (year < 2026 || (year === 2026 && month < 7) || (year === 2026 && month === 7 && day < 19)) {
+                  isRecent = false;
+                  sheet.getRange(firstOrder.rowIndex, 12).setValue("y");
+                }
+              }
+              
+              if (isRecent) {
+                sheet.getRange(firstOrder.rowIndex, 12).setValue("y");
+                congrats.push({
+                  zaloId: zaloId,
+                  zaloName: firstOrder.zaloName || getZaloNameById(zaloId) || "Khách",
+                  amount: firstOrder.userComm
+                });
+              }
+            }
+          }
+        }
+      }
+      
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        congrats: congrats
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
     if (data.action === 'sync_orders' && data.orders) {
       // Kiểm tra bảo mật (Token)
       if (data.token !== API_TOKEN) {
@@ -452,6 +543,16 @@ function doPost(e) {
       // Nếu sheet chưa tồn tại thì tạo mới
       if (!sheet) {
         sheet = ss.insertSheet(sheetName);
+      } else {
+        // Tự động tắt bộ lọc (Filter) nếu đang bật để tránh lỗi "Thao tác này không được hỗ trợ trên dải ô có một hàng đã bị lọc bỏ"
+        try {
+          var activeFilter = sheet.getFilter();
+          if (activeFilter) {
+            activeFilter.remove();
+          }
+        } catch (eFilter) {
+          console.log("Không thể tắt bộ lọc: " + eFilter.toString());
+        }
       }
       
       // Khởi tạo Header ở hàng 2 nếu sheet chưa có đủ dữ liệu
@@ -593,15 +694,15 @@ function doPost(e) {
           const targetRowIndex = Math.max(lastRow, 2) + inserted + 1;
           const rowData = [
             order.report_date,
-            `=IFERROR(XLOOKUP(K${targetRowIndex};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
+            `=IFERROR(XLOOKUP(K\${targetRowIndex};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
             order.order_sn,
             order.item_name,
             order.commission,
-            `=E${targetRowIndex}*0,9`,
-            `=E${targetRowIndex}*0,9*0,8`,
+            `=E\${targetRowIndex}*0,9`,
+            `=E\${targetRowIndex}*0,9*0,8`,
             order.checkout_status,
             "Chưa TT",
-            `=E${targetRowIndex}*0,9*0,2`,
+            `=E\${targetRowIndex}*0,9*0,2`,
             order.sub_id ? "'" + order.sub_id : ""
           ];
           const targetRange = sheet.getRange(targetRowIndex, 1, 1, rowData.length);
@@ -793,9 +894,9 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         let matchYYYY = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
         let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
         if (matchYYYY) {
-          rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
+          rowDateStr = `\${matchYYYY[1]}-\${matchYYYY[2].padStart(2, '0')}-\${matchYYYY[3].padStart(2, '0')}`;
         } else if (matchDD) {
-          rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
+          rowDateStr = `\${matchDD[3]}-\${matchDD[2].padStart(2, '0')}-\${matchDD[1].padStart(2, '0')}`;
         } else {
           rowDateStr = str;
         }
@@ -810,7 +911,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
           displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
         } else if (rowDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
           let parts = rowDateStr.split('-');
-          displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+          displayDate = `\${parts[2]}/\${parts[1]}/\${parts[0]}`;
         } else {
           displayDate = String(orderDate).split(' ')[0];
         }
@@ -1003,9 +1104,9 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
         let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
         
         if (matchYYYY) {
-          rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
+          rowDateStr = `\${matchYYYY[1]}-\${matchYYYY[2].padStart(2, '0')}-\${matchYYYY[3].padStart(2, '0')}`;
         } else if (matchDD) {
-          rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
+          rowDateStr = `\${matchDD[3]}-\${matchDD[2].padStart(2, '0')}-\${matchDD[1].padStart(2, '0')}`;
         } else {
           rowDateStr = str;
         }
@@ -1020,7 +1121,7 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
           displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
         } else if (rowDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
           let parts = rowDateStr.split('-');
-          displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+          displayDate = `\${parts[2]}/\${parts[1]}/\${parts[0]}`;
         } else {
           displayDate = String(orderDate).split(' ')[0]; // Fallback
         }
@@ -1032,7 +1133,7 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
         else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') orderStatus = 'Đơn hủy';
         
         const paymentStatus = String(row[8]).trim(); // Cột I
-        const commission = Number(row[6]) || 0; // Cột G
+        const commission = Number(row[6]) || 0; // Cột G (Hoa hồng khách nhận)
         
         if (orderStatus !== 'Đơn hủy') {
           totalCommission += commission;
@@ -1129,9 +1230,9 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
           let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
           
           if (matchYYYY) {
-            rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
+            rowDateStr = `\${matchYYYY[1]}-\${matchYYYY[2].padStart(2, '0')}-\${matchYYYY[3].padStart(2, '0')}`;
           } else if (matchDD) {
-            rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
+            rowDateStr = `\${matchDD[3]}-\${matchDD[2].padStart(2, '0')}-\${matchDD[1].padStart(2, '0')}`;
           } else {
             rowDateStr = str;
           }
@@ -1370,9 +1471,9 @@ function checkAndTriggerReferralReward(ss, sheet, cleanSubId, orderReportDate, t
       const nextRowIdx = sheet.getLastRow() + 1;
       const rewardRow = [
         orderReportDate,
-        `=IFERROR(XLOOKUP(K${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
+        `=IFERROR(XLOOKUP(K\${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
         "Thưởng GT",
-        `Thưởng giới thiệu thành viên mới @${newUserName} phát sinh đơn đầu tiên`,
+        `Thưởng giới thiệu thành viên mới @\${newUserName} phát sinh đơn đầu tiên`,
         13889, // 13889 * 0.9 * 0.8 = 10000đ
         12500, // 13889 * 0.9
         10000, // Nhận đúng 10.000đ
@@ -1572,7 +1673,7 @@ function calculateMonthlyReferralBonus(month, year) {
   const dataValues = dataSheet.getRange(3, 1, dataLastRow - 2, 11).getValues();
   const userOrderCountMap = {};
   const userCommissionMap = {};
-  const targetPrefix = `${year}-${String(month).padStart(2, '0')}`;
+  const targetPrefix = `\${year}-\${String(month).padStart(2, '0')}`;
   
   for (let i = 0; i < dataValues.length; i++) {
     const orderDateStr = String(dataValues[i][0]).trim(); // Cột A: orderReportDate
@@ -1599,7 +1700,7 @@ function calculateMonthlyReferralBonus(month, year) {
   
   // Định dạng ngày báo cáo thưởng (ngày cuối của tháng)
   const lastDay = new Date(year, month, 0).getDate();
-  const reportDateStr = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+  const reportDateStr = `\${year}-\${String(month).padStart(2, '0')}-\${String(lastDay).padStart(2, '0')}`;
   
   for (const referrerId in referrerMap) {
     const referralsList = referrerMap[referrerId];
@@ -1631,7 +1732,7 @@ function calculateMonthlyReferralBonus(month, year) {
       const ref = referralsList[rIdx];
       const rowIdx = ref.rowIdx;
       const rangeH = refSheet.getRange(rowIdx, 8);
-      rangeH.setFormula(`=IF(ISBLANK(B${rowIdx}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B${rowIdx}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A${rowIdx}); MONTH(A${rowIdx}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A${rowIdx}; 0)))`);
+      rangeH.setFormula(`=IF(ISBLANK(B\${rowIdx}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B\${rowIdx}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A\${rowIdx}); MONTH(A\${rowIdx}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A\${rowIdx}; 0)))`);
       rangeH.setBackground(null); // Để định dạng có điều kiện tự tô màu
       
       const rangeI = refSheet.getRange(rowIdx, 9);
@@ -1641,7 +1742,7 @@ function calculateMonthlyReferralBonus(month, year) {
       if (rIdx === 0 && bonusRate > 0) {
         const currentBonusRateStr = String(rangeI.getValue()).trim();
         const currentAnnounced = String(rangeJ.getValue()).trim();
-        const targetRateStr = `${bonusRate * 100}%`;
+        const targetRateStr = `\${bonusRate * 100}%`;
         
         rangeI.setValue(targetRateStr).setBackground(null).setFontColor(null).setFontWeight(null);
         
@@ -1660,7 +1761,7 @@ function calculateMonthlyReferralBonus(month, year) {
     
     const referrerComm = userCommissionMap[referrerId] || 0;
     if (referrerComm <= 0) {
-      resultLogs.push(`- @${nameMap[referrerId] || referrerId}: Đạt mốc ${validReferralCount} người nhưng không phát sinh hoa hồng cá nhân để nhận thưởng thêm.`);
+      resultLogs.push(`- @\${nameMap[referrerId] || referrerId}: Đạt mốc \${validReferralCount} người nhưng không phát sinh hoa hồng cá nhân để nhận thưởng thêm.`);
       continue;
     }
     
@@ -1675,7 +1776,7 @@ function calculateMonthlyReferralBonus(month, year) {
       const subId = String(dataValues[i][10]).replace(/'/g, "").trim();
       const desc = String(dataValues[i][3]).trim();
       
-      if (orderId === "Thưởng GT Mốc" && subId === referrerId && desc.includes(`Tháng ${month}/${year}`)) {
+      if (orderId === "Thưởng GT Mốc" && subId === referrerId && desc.includes(`Tháng \${month}/\${year}`)) {
         alreadyRewarded = true;
         existingRowIndex = i + 3;
         break;
@@ -1695,9 +1796,9 @@ function calculateMonthlyReferralBonus(month, year) {
     
     const rewardRow = [
       reportDateStr,
-      `=IFERROR(XLOOKUP(K${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
+      `=IFERROR(XLOOKUP(K\${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
       "Thưởng GT Mốc",
-      `Thưởng giới thiệu mốc ${validReferralCount} người - Tháng ${month}/${year} (${bonusRate*100}% hoa hồng)`,
+      `Thưởng giới thiệu mốc \${validReferralCount} người - Tháng \${month}/\${year} (\${bonusRate*100}% hoa hồng)`,
       rawShopeeComm,
       commAfterTax,
       bonusAmount,
@@ -1721,7 +1822,7 @@ function calculateMonthlyReferralBonus(month, year) {
       updatedCount++;
     }
     
-    resultLogs.push(`- @${nameMap[referrerId] || referrerId}: Nhận thêm ${bonusRate*100}% = ${bonusAmount.toLocaleString("vi-VN")}đ (Giới thiệu thành công ${validReferralCount} người: ${qualifiedNames.join(", ")})`);
+    resultLogs.push(`- @\${nameMap[referrerId] || referrerId}: Nhận thêm \${bonusRate*100}% = \${bonusAmount.toLocaleString("vi-VN")}đ (Giới thiệu thành công \${validReferralCount} người: \${qualifiedNames.join(", ")})`);
   }
   
   // Tự động thiết lập quy tắc định dạng có điều kiện (tô màu trạng thái tự động)
@@ -1732,12 +1833,17 @@ function calculateMonthlyReferralBonus(month, year) {
   }
 
   if (resultLogs.length === 0) {
-    return `Kết quả tính thưởng tháng ${month}/${year}:\nKhông có thành viên nào đạt mốc tối thiểu 5 người giới thiệu hợp lệ trong tháng.`;
+    return `Kết quả tính thưởng tháng \${month}/\${year}:
+Không có thành viên nào đạt mốc tối thiểu 5 người giới thiệu hợp lệ trong tháng.`;
   }
   
-  return `Kết quả tính thưởng tháng ${month}/${year}:\n` +
-         `Đã thêm mới: ${addedCount} dòng, cập nhật đè: ${updatedCount} dòng.\n\n` +
-         `Chi tiết:\n` + resultLogs.join("\n");
+  return `Kết quả tính thưởng tháng \${month}/\${year}:
+` +
+         `Đã thêm mới: \${addedCount} dòng, cập nhật đè: \${updatedCount} dòng.
+
+` +
+         `Chi tiết:
+` + resultLogs.join("\n");
 }
 
 // === TỰ ĐỘNG THIẾT LẬP QUY TẮC ĐỊNH DẠNG CÓ ĐIỀU KIỆN CHO TRANG GIỚI THIỆU ===
@@ -1885,11 +1991,11 @@ function upgradeSheetLayoutInternal() {
   const lastRow = sheet.getLastRow();
   if (lastRow >= 2) {
     for (let r = 2; r <= lastRow; r++) {
-      sheet.getRange(r, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-      sheet.getRange(r, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-      sheet.getRange(r, 5).setFormula(`=IFERROR(XLOOKUP(B${r};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
-      sheet.getRange(r, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-      sheet.getRange(r, 7).setFormula(`=C${r}+D${r}+F${r}`);
+      sheet.getRange(r, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+      sheet.getRange(r, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+      sheet.getRange(r, 5).setFormula(`=IFERROR(XLOOKUP(B\${r};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
+      sheet.getRange(r, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+      sheet.getRange(r, 7).setFormula(`=C\${r}+D\${r}+F\${r}`);
       
       sheet.getRange(r, 6).setNumberFormat("#,##0đ");
       sheet.getRange(r, 7).setNumberFormat("#,##0đ");
@@ -1905,15 +2011,13 @@ function upgradeSheetLayoutInternal() {
 
 // Hàm chuyển link hoàn tiền tự động (Shopee rút gọn, Lazada không rút gọn)
 function convertLinkAndGetCommission(productUrl, subId) {
-  // --- XỬ LÝ LẤY LINK VÀ GIÁ TIKTOK SHOP THỰC TẾ QUA RIOHUB API ---
-  const isTikTok = productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1;
-  if (isTikTok) {
-    var rioRes = convertTikTokLinkWithRio(productUrl, subId);
-    if (rioRes && rioRes.success) {
-      return rioRes;
-    }
-  }
   try {
+    // 0. Kiểm tra nếu là link TikTok Shop -> Gọi RioHub API
+    const isTikTok = productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1;
+    if (isTikTok) {
+      return convertTikTokLinkWithRio(productUrl, subId);
+    }
+
     let productName = "";
     let price = 0;
     let rate = 0;
@@ -1921,6 +2025,8 @@ function convertLinkAndGetCommission(productUrl, subId) {
     let shortLink = "";
     let affiliateLink = "";
     let imageUrl = "";
+    let shopeeRate = 0;
+    let sellerRate = 0;
     
     // 1. Kiểm tra loại sàn để tạo Link Affiliate chính chủ
     const isLazada = productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1;
@@ -2096,13 +2202,149 @@ function convertLinkAndGetCommission(productUrl, subId) {
       } catch (ePage) {}
 
       value = price > 0 && rate > 0 ? Math.round(price * rate / 100) : 0;
+      shopeeRate = rate;
     } else {
       // --- XỬ LÝ LẤY LINK SHOPEE (CÓ RÚT GỌN CLOUDFLARE) ---
-      const cleanUrl = cleanShopeeUrl(productUrl);
+      let resolvedProductUrl = resolveRedirect(productUrl);
+      
+      // 1. Tải thông tin hoa hồng Shopee & Giải mã short link từ AddLiveTag công khai
+      try {
+        const addLiveTagUrl = "https://addlivetag.com/product/?q=" + encodeURIComponent(resolvedProductUrl);
+        const response = UrlFetchApp.fetch(addLiveTagUrl, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "Accept": "text/html"
+          },
+          muteHttpExceptions: true
+        });
+        
+        if (response.getResponseCode() === 200) {
+          const html = response.getContentText();
+          
+          // Trích xuất link sản phẩm chuẩn (shopee.vn/product/shopId/itemId) từ AddLiveTag HTML nếu có
+          const prodMatch = html.match(/https:\/\/shopee\.vn\/product\/(\d+)\/(\d+)/) || 
+                            html.match(/https:\/\/shopee\.vn\/[^\s"'<>]+-i\.(\d+)\.(\d+)/);
+          if (prodMatch && prodMatch[1] && prodMatch[2]) {
+            resolvedProductUrl = "https://shopee.vn/product/" + prodMatch[1] + "/" + prodMatch[2];
+          }
+
+          // Parse JSON-LD
+          const schemaMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+          if (schemaMatch) {
+            try {
+              const schema = JSON.parse(schemaMatch[1]);
+              if (schema["@type"] === "Product") {
+                productName = schema.name || "";
+                if (schema.offers && schema.offers.price) {
+                  price = parseInt(schema.offers.price, 10) || 0;
+                }
+              }
+            } catch(e) {}
+          }
+          
+          if (!productName) {
+            const titleMatch = html.match(/property="og:title"\s+content="([^"]+)"/i) || 
+                               html.match(/content="([^"]+)"\s+property="og:title"/i);
+            if (titleMatch) {
+              const parts = titleMatch[1].split("—");
+              productName = parts.length >= 2 ? parts.slice(1).join("—").replace(/\s*\|\s*AddLiveTag/i, "").trim() : titleMatch[1].replace(/\s*\|\s*AddLiveTag/i, "").trim();
+            }
+          }
+          
+          // Parse hoa hồng Shopee
+          const descMatch = html.match(/<meta name="description" content="([^"]+)"/i);
+          const textToParse = descMatch ? descMatch[1] : html;
+          
+          shopeeRate = 0;
+          sellerRate = 0;
+          
+          const fullMatch = textToParse.match(/([0-9.,]+)\s*[đd₫]\s*\(\s*([0-9.,]+)\s*%\s*\)/i) ||
+                            textToParse.match(/(?:tổng|tong|hoàn|hoa hồng)\s*([0-9.,]+)\s*[đd₫]?\s*\(\s*([0-9.,]+)\s*%\s*\)/i);
+          if (fullMatch) {
+            value = parseInt(fullMatch[1].replace(/[.,]/g, ""), 10) || 0;
+            rate = parseFloat(fullMatch[2].replace(",", "."));
+          } else {
+            const valMatch = textToParse.match(/(?:tổng|tong|hoàn|hoa hồng)?\s*([0-9.,]{4,10})\s*[đd₫]/i);
+            if (valMatch) {
+              value = parseInt(valMatch[1].replace(/[.,]/g, ""), 10) || 0;
+            }
+            const rateMatch = textToParse.match(/([0-9.,]+)\s*%/i);
+            if (rateMatch) {
+              rate = parseFloat(rateMatch[1].replace(",", "."));
+            }
+          }
+          
+          const shopeeMatch = textToParse.match(/Shopee\s*([0-9.,]+)\s*%/i);
+          const sellerMatch = textToParse.match(/Seller\s*([0-9.,]+)\s*%/i);
+          shopeeRate = shopeeMatch ? parseFloat(shopeeMatch[1].replace(",", ".")) : (sellerMatch ? (rate - parseFloat(sellerMatch[1].replace(",", "."))) : rate);
+          sellerRate = sellerMatch ? parseFloat(sellerMatch[1].replace(",", ".")) : 0;
+          
+          // Tự động điều chỉnh tỷ lệ hoa hồng cơ bản theo chính sách đặc biệt tài khoản của sếp
+          const nameLower = (productName || "").toLowerCase();
+          
+          const isPetProduct = nameLower.indexOf("chó") !== -1 || nameLower.indexOf("mèo") !== -1 || 
+                               nameLower.indexOf("thú cưng") !== -1 || nameLower.indexOf("pet") !== -1 || 
+                               nameLower.indexOf("cát vệ sinh") !== -1 || nameLower.indexOf("pate") !== -1 || 
+                               nameLower.indexOf("royal canin") !== -1 || nameLower.indexOf("whiskas") !== -1 || 
+                               nameLower.indexOf("ve rận") !== -1;
+                               
+          const isMotorcycle = nameLower.indexOf("xe máy") !== -1 || nameLower.indexOf("xe may") !== -1 || 
+                               nameLower.indexOf("ô tô") !== -1 || nameLower.indexOf("o to") !== -1 || 
+                               nameLower.indexOf("xe hơi") !== -1 || nameLower.indexOf("salaya") !== -1 || 
+                               nameLower.indexOf("nhông sên") !== -1 || nameLower.indexOf("nhớt") !== -1 || 
+                               nameLower.indexOf("dầu nhớt") !== -1 || nameLower.indexOf("bao tay") !== -1 || 
+                               nameLower.indexOf("tay nắm") !== -1 || nameLower.indexOf("kính chiếu hậu") !== -1 || 
+                               nameLower.indexOf("gương xe") !== -1 || nameLower.indexOf("pô xe") !== -1 ||
+                               nameLower.indexOf("mũ bảo hiểm") !== -1 || nameLower.indexOf("mu bao hiem") !== -1 ||
+                               nameLower.indexOf("nón bảo hiểm") !== -1 || nameLower.indexOf("non bao hiem") !== -1;
+                               
+          if (shopeeRate > 0 || sellerRate > 0) {
+            if (isPetProduct) {
+              shopeeRate = 0.0;
+            } else if (isMotorcycle) {
+              shopeeRate = 3.5;
+            } else {
+              shopeeRate = 8.0; // Hầu hết các ngành hàng còn lại (điện thoại, mỹ phẩm, mẹ bé, thời trang, gia dụng...) đều được 8%
+            }
+          }
+          
+          rate = shopeeRate + sellerRate;
+          
+          // Tính toán hoa hồng cơ bản có áp trần 40k
+          let calculatedShopeeComm = 0;
+          if (shopeeRate > 0 && price > 0) {
+            calculatedShopeeComm = Math.round(price * (shopeeRate / 100));
+          }
+          
+          let basicCommVal = calculatedShopeeComm;
+          if (shopeeRate > 0 && calculatedShopeeComm > 40000) {
+            basicCommVal = 40000;
+          }
+          
+          // Hoa hồng Xtra người bán
+          let sellerCommVal = 0;
+          if (sellerRate > 0 && price > 0) {
+            sellerCommVal = Math.round(price * (sellerRate / 100));
+          }
+          
+          // Tổng hoa hồng
+          value = basicCommVal + sellerCommVal;
+          
+          // Parse ảnh sản phẩm Shopee
+          const imgMatch = html.match(/property="og:image"\s+content="([^"]+)"/i) || 
+                           html.match(/content="([^"]+)"\s+property="og:image"/i);
+          if (imgMatch) {
+            imageUrl = imgMatch[1];
+          }
+        }
+      } catch (e) {}
+
+      // 2. Tạo link Affiliate chuẩn chính chủ từ link đã được làm sạch
+      const cleanUrl = cleanShopeeUrl(resolvedProductUrl);
       const affId = "17359760464"; // Mã Shopee Affiliate của sếp
       affiliateLink = "https://s.shopee.vn/an_redir?origin_link=" + encodeURIComponent(cleanUrl) + "&affiliate_id=" + affId + "&sub_id=" + subId;
       
-      // Rút gọn link bằng Cloudflare API của sếp
+      // 3. Rút gọn link bằng Cloudflare API của sếp
       try {
         const cfUrl = "https://shoppesale.io.vn/create-link-secure-api";
         const cfResponse = UrlFetchApp.fetch(cfUrl, {
@@ -2129,110 +2371,6 @@ function convertLinkAndGetCommission(productUrl, subId) {
           shortLink = affiliateLink;
         }
       }
-      
-      // Tải thông tin hoa hồng Shopee từ AddLiveTag công khai (Giải mã short link trước)
-      try {
-        var targetUrl = productUrl;
-        try {
-          var redirectRes = UrlFetchApp.fetch(productUrl, { followRedirects: true, muteHttpExceptions: true });
-          targetUrl = redirectRes.getRedirectUrl() || redirectRes.getUrl() || productUrl;
-        } catch (eRedir) {}
-
-        const addLiveTagUrl = "https://addlivetag.com/product/?q=" + encodeURIComponent(targetUrl);
-        const response = UrlFetchApp.fetch(addLiveTagUrl, {
-          headers: {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Accept": "text/html"
-          },
-          muteHttpExceptions: true
-        });
-        
-        if (response.getResponseCode() === 200) {
-          const html = response.getContentText();
-          
-          // Parse JSON-LD
-          const schemaMatch = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
-          if (schemaMatch) {
-            try {
-              const schema = JSON.parse(schemaMatch[1]);
-              if (schema["@type"] === "Product") {
-                productName = schema.name || "";
-                if (schema.offers && schema.offers.price) {
-                  price = parseInt(schema.offers.price, 10) || 0;
-                }
-              }
-            } catch(e) {}
-          }
-          
-          if (!productName) {
-            const titleMatch = html.match(/property="og:title"\s+content="([^"]+)"/i) || 
-                               html.match(/content="([^"]+)"\s+property="og:title"/i);
-            if (titleMatch) {
-              const parts = titleMatch[1].split("—");
-              productName = parts.length >= 2 ? parts.slice(1).join("—").replace(/\s*\|\s*AddLiveTag/i, "").trim() : titleMatch[1].replace(/\s*\|\s*AddLiveTag/i, "").trim();
-            }
-          }
-          
-          // Parse hoa hồng Shopee & Seller Extra (Trích xuất chuẩn từ affiliate-bot.js)
-          // Reset shopeeRate & sellerRate
-          shopeeRate = 0;
-          sellerRate = 0;
-          const descMatch = html.match(/<meta name="description" content="([^"]+)"/i);
-          if (descMatch) {
-            const desc = descMatch[1];
-            const commMatch = desc.match(/(?:tổng|tong)\s*([0-9.,]+)\s*[đd]?\s*\(\s*([0-9.,]+)\s*%\s*\)/i);
-            if (commMatch) {
-              value = parseInt(commMatch[1].replace(/[.,]/g, ""), 10) || 0;
-              rate = parseFloat(commMatch[2].replace(",", "."));
-            }
-            const shopeeMatch = desc.match(/Shopee\s*([0-9.,]+)\s*%/i);
-            const sellerMatch = desc.match(/(?:Seller|Xtra)\s*([0-9.,]+)\s*%/i);
-            if (shopeeMatch) shopeeRate = parseFloat(shopeeMatch[1].replace(",", ".")) || 0;
-            if (sellerMatch) sellerRate = parseFloat(sellerMatch[1].replace(",", ".")) || 0;
-
-            var nameLower = (productName || "").toLowerCase();
-            var isPetProduct = nameLower.indexOf("chó") !== -1 || nameLower.indexOf("mèo") !== -1 ||
-              nameLower.indexOf("thú cưng") !== -1 || nameLower.indexOf("pet") !== -1 ||
-              nameLower.indexOf("cát vệ sinh") !== -1 || nameLower.indexOf("pate") !== -1 ||
-              nameLower.indexOf("royal canin") !== -1 || nameLower.indexOf("whiskas") !== -1 ||
-              nameLower.indexOf("ve rận") !== -1;
-
-            var isMotorcycle = nameLower.indexOf("xe máy") !== -1 || nameLower.indexOf("xe may") !== -1 ||
-              nameLower.indexOf("ô tô") !== -1 || nameLower.indexOf("o to") !== -1 ||
-              nameLower.indexOf("xe hơi") !== -1 || nameLower.indexOf("salaya") !== -1 ||
-              nameLower.indexOf("nhông sên") !== -1 || nameLower.indexOf("nhớt") !== -1 ||
-              nameLower.indexOf("dầu nhớt") !== -1 || nameLower.indexOf("bao tay") !== -1 ||
-              nameLower.indexOf("tay nắm") !== -1 || nameLower.indexOf("kính chiếu hậu") !== -1 ||
-              nameLower.indexOf("gương xe") !== -1 || nameLower.indexOf("pô xe") !== -1 ||
-              nameLower.indexOf("mũ bảo hiểm") !== -1 || nameLower.indexOf("mu bao hiem") !== -1 ||
-              nameLower.indexOf("nón bảo hiểm") !== -1 || nameLower.indexOf("non bao hiem") !== -1;
-
-            if (isPetProduct) {
-              shopeeRate = 0.0;
-            } else if (isMotorcycle) {
-              shopeeRate = 3.5;
-            } else {
-              if (!shopeeRate || shopeeRate < 8.0) { shopeeRate = 8.0; }
-            }
-
-            rate = shopeeRate + sellerRate;
-            var basicCommVal = 0;
-            if (shopeeRate > 0 && price > 0) {
-              basicCommVal = Math.round(price * (shopeeRate / 100));
-              if (basicCommVal > 40000) basicCommVal = 40000;
-            }
-            var sellerCommVal = (sellerRate > 0 && price > 0) ? Math.round(price * (sellerRate / 100)) : 0;
-            value = basicCommVal + sellerCommVal;
-          }
-          
-          // Parse ảnh sản phẩm Shopee
-          const imgMatch = html.match(/property="og:image"\s+content="([^"]+)"/i) || 
-                           html.match(/content="([^"]+)"\s+property="og:image"/i);
-          if (imgMatch) {
-            imageUrl = imgMatch[1];
-          }
-        }
-      } catch (e) {}
     }
     
     return {
@@ -2240,11 +2378,11 @@ function convertLinkAndGetCommission(productUrl, subId) {
       shortLink: shortLink,
       productName: productName || (isLazada ? "Sản phẩm Lazada" : "Sản phẩm Shopee"),
       price: price,
-      commissionRate: rate || (shopeeRate + sellerRate),
+      commissionRate: rate,
       commissionAmount: value,
+      imageUrl: imageUrl,
       shopeeRate: shopeeRate,
-      sellerRate: sellerRate,
-      imageUrl: imageUrl
+      sellerRate: sellerRate
     };
   } catch (e) {
     return { success: false, error: e.toString() };
@@ -2545,8 +2683,6 @@ function getZaloIdByName(zaloName) {
   return "";
 }
 
-
-
 function estimateLazadaRate(productName) {
   if (!productName) return 4.0;
   const name = productName.toLowerCase();
@@ -2747,97 +2883,75 @@ function getPaymentHistory(zaloId) {
   }
 }
 
-
-// ====================================================================
-// CHỨC NĂNG TÍCH HỢP RIOHUB API CONVERT LINK TIKTOK SHOP MOI NHAT
-// ====================================================================
-function convertTikTokLinkWithRio(rawUrl, subId) {
-  var RIO_API_KEY = 'rhk_5e184fd38ebff8c159abbe6fb302d875cc4f00c4bbf162bc';
-  var CREATOR_USERNAME = 'con.muon.noi6';
-  subId = subId || 'shoppesale_web';
-
-  if (rawUrl && rawUrl.indexOf('tiktok.com') !== -1) {
-    try {
-      var linkEndpoint = 'https://riohub.vn/api/v1/partner/tiktok/affiliate/links';
-      var payload = {
-        creator_username: CREATOR_USERNAME,
-        product_url: rawUrl,
-        sub_id: subId
-      };
-
-      var options = {
-        method: 'post',
-        contentType: 'application/json',
-        headers: { 'X-Riohub-Api-Key': RIO_API_KEY },
-        payload: JSON.stringify(payload),
-        muteHttpExceptions: true
-      };
-
-      var resp = UrlFetchApp.fetch(linkEndpoint, options);
-      var rioData = JSON.parse(resp.getContentText());
-
-      if (rioData && (rioData.affiliate_link || rioData.link)) {
-        var affLink = rioData.affiliate_link || rioData.link;
-        var productId = rioData.product_id;
-
-        var productName = 'Sản phẩm TikTok Shop';
-        var price = 0;
-        var commissionRate = 10.0;
-        var commissionAmount = 0;
-        var imageUrl = '';
-
-        if (productId) {
-          try {
-            var prodEndpoint = 'https://riohub.vn/api/v1/partner/tiktok/affiliate/products?creator_username=' + encodeURIComponent(CREATOR_USERNAME) + '&product_id=' + encodeURIComponent(productId);
-            var prodOptions = {
-              method: 'get',
-              headers: { 'X-Riohub-Api-Key': RIO_API_KEY },
-              muteHttpExceptions: true
-            };
-
-            var prodResp = UrlFetchApp.fetch(prodEndpoint, prodOptions);
-            var prodData = JSON.parse(prodResp.getContentText());
-
-            if (prodData && prodData.products && prodData.products.length > 0) {
-              var item = prodData.products[0];
-              if (item.title) productName = item.title;
-              if (item.main_image_url) imageUrl = item.main_image_url;
-
-              if (item.sales_price && (item.sales_price.minimum_amount || item.sales_price.amount)) {
-                price = parseFloat(item.sales_price.minimum_amount || item.sales_price.amount) || 0;
-              }
-
-              if (item.commission) {
-                if (item.commission.rate) {
-                  var rRate = parseFloat(item.commission.rate);
-                  commissionRate = rRate > 50 ? rRate / 100 : rRate;
-                }
-                if (item.commission.amount) {
-                  var mComm = String(item.commission.amount).match(/[\d.]+/);
-                  if (mComm) commissionAmount = Math.round(parseFloat(mComm[0]));
-                }
-              }
-
-              if (commissionAmount === 0 && price > 0 && commissionRate > 0) {
-                commissionAmount = Math.round(price * commissionRate / 100);
-              }
-            }
-          } catch (eProd) {}
+function resolveRedirect(url) {
+  try {
+    if (!url) return "";
+    if (url.indexOf("s.shopee.vn") !== -1 || url.indexOf("vn.shp.ee") !== -1 || url.indexOf("shope.ee") !== -1 || url.indexOf("shp.ee") !== -1 || url.indexOf("lzd.co") !== -1 || url.indexOf("s.lazada.vn") !== -1) {
+      const response = UrlFetchApp.fetch(url, {
+        followNewLocation: false,
+        muteHttpExceptions: true,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         }
+      });
+      const responseCode = response.getResponseCode();
+      if (responseCode >= 300 && responseCode < 400) {
+        const headers = response.getHeaders();
+        const loc = headers['Location'] || headers['location'];
+        if (loc && loc !== url) {
+          return resolveRedirect(loc);
+        }
+      }
+    }
+  } catch (e) {
+    Logger.log("Error in resolveRedirect: " + e.toString());
+  }
+  return url;
+}
 
+// === HÀM CHUYỂN ĐỔI LINK TIKTOK SHOP QUA RIOHUB API ===
+function convertTikTokLinkWithRio(productUrl, subId) {
+  try {
+    const rioApiUrl = "https://aff.riohub.net/aff/link/convert?apiKey=b76615b138676d6560ee1fbcad70362f3a8bce5a&platform=tiktok";
+    const payload = {
+      link: productUrl,
+      sub_id1: subId || ""
+    };
+    
+    const response = UrlFetchApp.fetch(rioApiUrl, {
+      method: "post",
+      contentType: "application/json",
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    });
+    
+    if (response.getResponseCode() === 200) {
+      const json = JSON.parse(response.getContentText());
+      if (json.code === 200 && json.data) {
+        const item = json.data;
+        const affiliateUrl = item.link_aff || item.link_raw || productUrl;
+        const productName = item.product_name || item.name || "Sản phẩm TikTok Shop";
+        const price = item.price || 0;
+        const rate = item.commission_rate || item.rate || 10.0;
+        const value = item.commission_value || (price > 0 ? Math.round(price * rate / 100) : 0);
+        const imageUrl = item.product_image || item.image || "";
+        
         return {
           success: true,
-          shortLink: affLink,
-          rawAffiliateLink: affLink,
+          shortLink: affiliateUrl,
           productName: productName,
           price: price,
-          commissionRate: commissionRate,
-          commissionAmount: commissionAmount,
+          commissionRate: rate,
+          commissionAmount: value,
           imageUrl: imageUrl,
-          platformName: 'TikTok Shop'
+          platformName: "TikTok Shop"
         };
+      } else if (json.message || json.error) {
+        return { success: false, error: json.message || json.error };
       }
-    } catch (eRio) {}
+    }
+    return { success: false, error: "HTTP Error: " + response.getResponseCode() };
+  } catch (e) {
+    return { success: false, error: e.toString() };
   }
-  return null;
 }
