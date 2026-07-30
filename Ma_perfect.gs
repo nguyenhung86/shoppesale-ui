@@ -1536,23 +1536,42 @@ function saveCustomerBankInfo(userId, bankBin, bankAcc) {
 // Hàm bổ trợ giúp khôi phục toàn bộ định dạng và danh sách chọn của cột H, I cho tất cả dòng
 function fixAutoSheetFormatting() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 1. Sửa toàn bộ công thức bị lỗi trên Sheet 'Dữ liệu nạp tự động'
   const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
-  if (!sheet) return "Sheet 'Dữ liệu nạp tự động' không tồn tại!";
-  
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 3) return "Bảng tính trống.";
-  
-  for (let r = 3; r <= lastRow; r++) {
-    const orderId = String(sheet.getRange(r, 3).getValue()).trim();
-    if (orderId !== "Thưởng GT" && orderId !== "Thưởng GT Mốc") {
-      sheet.getRange(r, 2).setFormula(`=IFERROR(XLOOKUP(K${r};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`);
-      sheet.getRange(r, 6).setFormula(`=E${r}*0,9`);
-      sheet.getRange(r, 7).setFormula(`=E${r}*0,9*0,8`);
-      sheet.getRange(r, 10).setFormula(`=E${r}*0,9*0,2`);
+  if (sheet) {
+    const lastRow = sheet.getLastRow();
+    if (lastRow >= 3) {
+      for (let r = 3; r <= lastRow; r++) {
+        const orderId = String(sheet.getRange(r, 3).getValue()).trim();
+        if (orderId !== "Thưởng GT" && orderId !== "Thưởng GT Mốc") {
+          sheet.getRange(r, 2).setFormula(`=IFERROR(XLOOKUP(K${r};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`);
+          sheet.getRange(r, 6).setFormula(`=E${r}*0,9`);
+          sheet.getRange(r, 7).setFormula(`=E${r}*0,9*0,8`);
+          sheet.getRange(r, 10).setFormula(`=E${r}*0,9*0,2`);
+        }
+      }
     }
   }
   
-  return "Đã sửa thành công 100% tất cả công thức bị lỗi #ERROR! cho toàn bộ các dòng!";
+  // 2. Sửa toàn bộ công thức bị lỗi trên Sheet 'Thanh toán hoa hồng'
+  const paySheet = ss.getSheetByName("Thanh toán hoa hồng");
+  if (paySheet) {
+    const pLastRow = paySheet.getLastRow();
+    if (pLastRow >= 2) {
+      for (let r = 2; r <= pLastRow; r++) {
+        paySheet.getRange(r, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        paySheet.getRange(r, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        paySheet.getRange(r, 5).setFormula(`=IFERROR(XLOOKUP(B${r};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
+        paySheet.getRange(r, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        paySheet.getRange(r, 7).setFormula(`=C${r}+D${r}+F${r}`);
+        paySheet.getRange(r, 6).setNumberFormat("#,##0đ");
+        paySheet.getRange(r, 7).setNumberFormat("#,##0đ");
+      }
+    }
+  }
+  
+  return "Đã sửa thành công 100% tất cả công thức bị lỗi #ERROR! cho TOÀN BỘ CÁC SHEET!";
 }
 
 // === TỰ ĐỘNG THÊM MENU KHI MỞ BẢNG TÍNH ===
