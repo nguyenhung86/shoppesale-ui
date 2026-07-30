@@ -1253,8 +1253,8 @@ function confirmPayout(userId) {
       const status = String(data[i][7]).trim().toLowerCase(); // Cột H
       const payStatus = String(data[i][8]).trim(); // Cột I
       
-      const isCompleted = (status === 'completed' || status === 'hoàn thành');
-      if (rowSubId === searchSubId && isCompleted && payStatus !== "Đã TT") {
+      const isNotCancelled = (status !== 'invalid' && status !== 'cancelled' && status !== 'đơn hủy' && status !== 'không đủ điều kiện');
+      if (rowSubId === searchSubId && isNotCancelled && payStatus !== "Đã TT") {
         orderSheet.getRange(i + 3, 9).setValue("Đã TT");
         updatedCount++;
       }
