@@ -670,7 +670,7 @@ function doPost(e) {
           // --- XỬ LÝ KHUYẾN MẠI GIỚI THIỆU THÀNH VIÊN MỚI PHÁT SINH ĐƠN ĐẦU ---
           const cleanSubId = order.sub_id ? String(order.sub_id).replace(/'/g, "").trim() : String(existingSubId).replace(/'/g, "").trim();
           const orderStatusLower = String(order.checkout_status).trim().toLowerCase();
-          const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành');
+          const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'waiting_for_payment');
           
           if (cleanSubId && isCompleted) {
             // Kiểm tra ngày áp dụng (từ 1/7/2026)
@@ -737,7 +737,7 @@ function doPost(e) {
           if (order.sub_id) {
             const cleanSubId = String(order.sub_id).replace(/'/g, "").trim();
             const orderStatusLower = String(order.checkout_status).trim().toLowerCase();
-            const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành');
+            const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'waiting_for_payment');
             
             if (isCompleted) {
               // Chỉ áp dụng thưởng từ ngày 1/7/2026
@@ -1174,7 +1174,7 @@ function getPayoutDashboardData() {
       userStats[subId] = { unpaid: 0, paid: 0, unpaidReferral: 0 };
     }
     
-    const isCompleted = (status === 'completed' || status === 'hoàn thành');
+    const isCompleted = (status === 'completed' || status === 'hoàn thành' || status === 'waiting for payment' || status === 'waiting_for_payment');
     const isReferral = (orderId === "Thưởng GT" || orderId === "Thưởng GT Mốc");
 
     if (payStatus === "Đã TT") {
