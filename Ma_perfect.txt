@@ -33,7 +33,6 @@ function doGet(e) {
       var translatedName = getZaloNameById(query);
       var isZaloIdValid = false;
       if (translatedName) {
-        query = translatedName;
         isZaloIdValid = true;
       }
       var res = unifiedSearch(query, "", "");
@@ -828,30 +827,48 @@ function unifiedSearch(query, startDateStr, endDateStr) {
       return { success: false, error: 'Không tìm thấy dữ liệu' };
     }
     
-    const dataRange = sheet.getRange(3, 1, lastRow - 2, 10);
+    const dataRange = sheet.getRange(3, 1, lastRow - 2, 11);
     const data = dataRange.getValues();
     
-    // Tách các mã đơn hàng có thể có (bằng dấu phẩy)
     const possibleOrderIds = cleanQuery.split(',').map(id => id.trim()).filter(id => id !== '');
+    const translatedName = getZaloNameById(cleanQuery);
     
-    // Thử tìm chính xác theo mã đơn hàng trước
-    let orderMatches = [];
-    for (let j = 0; j < possibleOrderIds.length; j++) {
-      let currentId = possibleOrderIds[j];
-      for (let i = 0; i < data.length; i++) {
-        const row = data[i];
-        if (String(row[2]).trim() === currentId) {
-          let orderStatus = String(row[7]).trim();
-          let orderStatusLower = orderStatus.toLowerCase();
-          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
-            orderStatus = 'Đơn hủy';
-          } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
-            orderStatus = 'Hoàn thành';
-          } else {
-            orderStatus = 'Đang chờ xác nhận';
-          }
+    let totalCommission = 0;
+    let totalReceived = 0;
+    let totalPending = 0;
+    let totalCompleted = 0;
+    let customerResults = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const rowOrderSn = String(row[2]).trim(); // Cột C
+      const rowZaloName = String(row[1]).trim(); // Cột B
+      const rowSubId = String(row[10] || '').trim().replace(/'/g, ''); // Cột K (Sub ID / ID Zalo)
+      
+      const isMatch = possibleOrderIds.includes(rowOrderSn) || 
+                      rowSubId === cleanQuery || 
+                      rowZaloName.toLowerCase() === cleanQuery.toLowerCase() ||
+                      (translatedName && rowZaloName.toLowerCase() === translatedName.toLowerCase());
+      
+      if (isMatch) {
+        let orderStatus = String(row[7]).trim();
+        let orderStatusLower = orderStatus.toLowerCase();
+        if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+          orderStatus = 'Đơn hủy';
+        } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
+          orderStatus = 'Hoàn thành';
+        } else {
+          orderStatus = 'Đang chờ xác nhận';
+        }
+        
         const paymentStatus = String(row[8]).trim(); // Cột I
         const commission = Number(row[6]) || 0; // Cột G
+        let rowDateStr = String(row[0]);
+        let displayDate = rowDateStr;
+        if (rowDateStr && rowDateStr.includes('-')) {
+          let parts = rowDateStr.split('-');
+          if (parts.length >= 3) displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
         
         if (orderStatus !== 'Đơn hủy') {
           totalCommission += commission;
@@ -878,7 +895,6 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         });
       }
     }
-  }
     
     if (customerResults.length > 0) {
       return {
