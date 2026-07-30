@@ -855,7 +855,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         let orderStatusLower = orderStatus.toLowerCase();
         if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
           orderStatus = 'Đơn hủy';
-        } else if (orderStatusLower.includes('chờ giao') || orderStatusLower.includes('shipping')) {
+        } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
           orderStatus = 'Đang giao';
         } else {
           orderStatus = 'Hoàn thành';

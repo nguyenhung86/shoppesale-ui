@@ -18,9 +18,9 @@ function getPlatform(orderId) {
 }
 
 function getOrderCategory(status, paymentStatus) {
-  if (!status) return "completed";
-  const cleaned = String(status).toLowerCase();
-  const payClean = String(paymentStatus || '').toLowerCase();
+  if (!status) return "pending";
+  const cleaned = String(status).trim().toLowerCase();
+  const payClean = String(paymentStatus || '').trim().toLowerCase();
   
   if (payClean === "đã tt" || payClean.includes("thanh toán")) {
     return "completed";
@@ -28,13 +28,13 @@ function getOrderCategory(status, paymentStatus) {
   if (cleaned.includes("hủy") || cleaned.includes("invalid") || cleaned.includes("cancelled") || cleaned.includes("không đủ điều kiện") || cleaned.includes("đơn hủy")) {
     return "cancelled";
   }
-  if (cleaned.includes("hoàn thành") || cleaned.includes("completed") || cleaned.includes("waiting for payment") || cleaned.includes("thưởng gt") || cleaned.includes("đang xử lý")) {
-    return "completed";
-  }
-  if (cleaned.includes("đang giao") || cleaned.includes("chờ giao") || cleaned.includes("shipping") || cleaned.includes("in transit")) {
+  if (cleaned === "pending" || cleaned.includes("đang giao") || cleaned.includes("chờ giao") || cleaned.includes("đang xử lý") || cleaned.includes("processing") || cleaned.includes("shipping")) {
     return "pending";
   }
-  return "completed";
+  if (cleaned.includes("hoàn thành") || cleaned.includes("completed") || cleaned.includes("waiting for payment") || cleaned.includes("thưởng gt")) {
+    return "completed";
+  }
+  return "pending";
 }
 
 function renderOrders(filteredOrders, formatVND) {
