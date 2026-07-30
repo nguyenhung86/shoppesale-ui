@@ -68,7 +68,26 @@ function renderOrders(filteredOrders, formatVND) {
     }
     
     const cashbackAmount = formatVND(o.commission);
-    const dateStr = o.orderDate || 'Không rõ ngày';
+    let rawDate = o.orderDate || '';
+    let dateStr = 'Không rõ ngày';
+    if (rawDate) {
+      let str = String(rawDate).trim();
+      if (str.includes('GMT') || str.includes('T00:') || str.includes('Jan') || str.includes('Feb') || str.includes('Mar') || str.includes('Apr') || str.includes('May') || str.includes('Jun') || str.includes('Jul') || str.includes('Aug') || str.includes('Sep') || str.includes('Oct') || str.includes('Nov') || str.includes('Dec')) {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) {
+          const yyyy = d.getFullYear();
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const dd = String(d.getDate()).padStart(2, '0');
+          dateStr = `${yyyy}-${mm}-${dd}`;
+        } else {
+          dateStr = str;
+        }
+      } else {
+        if (str.includes('T')) str = str.split('T')[0];
+        if (str.includes(' ')) str = str.split(' ')[0];
+        dateStr = str;
+      }
+    }
     const itemName = o.itemName || 'Sản phẩm hoàn tiền';
     const payStatusText = o.paymentStatus === 'Đã TT' ? '✓ Đã thanh toán' : '⏳ Chờ thanh toán';
     
@@ -151,12 +170,23 @@ function renderDashboard(response, query, formatVND) {
   const parseOrderDate = (dateVal) => {
     if (!dateVal) return 0;
     const dateStr = String(dateVal).trim();
-    const parts = dateStr.split('/');
-    if (parts.length === 3) {
-      const day = parseInt(parts[0], 10);
-      const month = parseInt(parts[1], 10) - 1;
-      const year = parseInt(parts[2], 10);
-      return new Date(year, month, day).getTime();
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const year = parseInt(parts[2], 10);
+        return new Date(year, month, day).getTime();
+      }
+    }
+    if (dateStr.includes('-')) {
+      const parts = dateStr.split('T')[0].split('-');
+      if (parts.length === 3 && parts[0].length === 4) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        return new Date(year, month, day).getTime();
+      }
     }
     const parsed = Date.parse(dateStr);
     return isNaN(parsed) ? 0 : parsed;

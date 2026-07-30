@@ -863,11 +863,18 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         
         const paymentStatus = String(row[8]).trim(); // Cột I
         const commission = Number(row[6]) || 0; // Cột G
-        let rowDateStr = String(row[0]);
-        let displayDate = rowDateStr;
-        if (rowDateStr && rowDateStr.includes('-')) {
-          let parts = rowDateStr.split('-');
-          if (parts.length >= 3) displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        let rowDate = row[0];
+        let displayDate = "";
+        if (rowDate instanceof Date) {
+          const yyyy = rowDate.getFullYear();
+          const mm = String(rowDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(rowDate.getDate()).padStart(2, '0');
+          displayDate = `${yyyy}-${mm}-${dd}`;
+        } else {
+          let str = String(rowDate).trim();
+          if (str.includes('T')) str = str.split('T')[0];
+          if (str.includes(' ')) str = str.split(' ')[0];
+          displayDate = str;
         }
         
         if (orderStatus !== 'Đơn hủy') {
