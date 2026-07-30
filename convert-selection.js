@@ -527,11 +527,14 @@ function handleConvert() {
           // Lưu lịch sử chuyển đổi vào localStorage
           saveConvertHistory(platform, rawUrl, shortLink, productName, price, commissionRate, commissionAmount, imageUrl);
         } else {
-          if (/tiktok/i.test(rawUrl)) {
-          alert("⚠️ Sản phẩm TikTok này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!");
-        } else {
-          alert("Lỗi: " + (response ? response.error : "Không thể chuyển đổi link"));
-        }
+          let platformName = "Shopee";
+        if (/tiktok/i.test(rawUrl)) platformName = "TikTok";
+        else if (/lazada/i.test(rawUrl)) platformName = "Lazada";
+        else if (/shopeefood/i.test(rawUrl)) platformName = "ShopeeFood";
+        else if (/shopee/i.test(rawUrl)) platformName = "Shopee";
+        
+        const customErrMsg = `⚠️ Sản phẩm ${platformName} này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!`;
+        alert(customErrMsg);
         }
       } catch (err) {
         console.error("Lỗi chuyển đổi:", err);
