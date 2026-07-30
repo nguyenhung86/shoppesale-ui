@@ -1175,13 +1175,15 @@ function getPayoutDashboardData() {
     if (!userId) continue;
     const stats = userStats[userId] || { unpaid: 0, paid: 0, unpaidReferral: 0 };
     const sheetUnpaid = Number(customers[i][6]) || 0; // Lấy trực tiếp Cột G (Cần Thanh Toán) từ Sheet
+    const sheetReferral = (Number(customers[i][3]) || 0) + (Number(customers[i][5]) || 0); // Cột D + Cột F (Thưởng Giới Thiệu + Thưởng Mốc)
     const finalUnpaid = sheetUnpaid > 0 ? sheetUnpaid : stats.unpaid;
+    const finalUnpaidReferral = sheetReferral > 0 ? sheetReferral : stats.unpaidReferral;
     
     resultList.push({
       userId: userId,
       userName: name,
       unpaid: finalUnpaid,
-      unpaidReferral: stats.unpaidReferral,
+      unpaidReferral: finalUnpaidReferral,
       paid: stats.paid,
       qrCodeUrl: qrUrl,
       bankBin: bankBin,
