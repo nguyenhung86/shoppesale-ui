@@ -316,6 +316,14 @@ function doPost(e) {
         sheet.getRange(targetRow, 6).setNumberFormat("#,##0đ");
         sheet.getRange(targetRow, 7).setNumberFormat("#,##0đ");
 
+        // Tự động khôi phục lại bộ lọc (Filter) ở hàng 2 cho toàn bộ dữ liệu
+        try {
+          const fLastRow = sheet.getLastRow();
+          if (fLastRow >= 2 && !sheet.getFilter()) {
+            sheet.getRange(2, 1, fLastRow - 1, 12).createFilter();
+          }
+        } catch(eF) {}
+
         return ContentService.createTextOutput(JSON.stringify({
           success: true,
           status: "inserted"
@@ -777,6 +785,14 @@ function doPost(e) {
           console.error("Lỗi tự động khôi phục định dạng: " + e.toString());
         }
       }
+      
+      // Tự động khôi phục lại bộ lọc (Filter) ở hàng 2 cho toàn bộ dữ liệu
+      try {
+        const fLastRow = sheet.getLastRow();
+        if (fLastRow >= 2 && !sheet.getFilter()) {
+          sheet.getRange(2, 1, fLastRow - 1, 11).createFilter();
+        }
+      } catch(eF) {}
       
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
@@ -1582,7 +1598,17 @@ function fixAutoSheetFormatting() {
     }
   }
   
-  return "Đã sửa siêu tốc 100% tất cả công thức bị lỗi #ERROR! trong chớp mắt!";
+  // Tự động bật bộ lọc (Filter) hàng 2 cho cả 2 sheet nếu bị tắt
+  try {
+    if (sheet && sheet.getLastRow() >= 2 && !sheet.getFilter()) {
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).createFilter();
+    }
+    if (paySheet && paySheet.getLastRow() >= 2 && !paySheet.getFilter()) {
+      paySheet.getRange(2, 1, paySheet.getLastRow() - 1, 12).createFilter();
+    }
+  } catch(eF) {}
+
+  return "Đã sửa siêu tốc 100% tất cả công thức và tự động duy trì bộ lọc (Filter) hàng 2 thành công!";
 }
 
 // === TỰ ĐỘNG THÊM MENU KHI MỞ BẢNG TÍNH ===
