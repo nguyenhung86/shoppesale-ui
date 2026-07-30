@@ -2912,14 +2912,7 @@ function convertTikTokLinkWithRio(productUrl, subId) {
         platformName: "TikTok Shop"
       };
     } else {
-      let errMsg = "Không thể chuyển đổi link TikTok Shop này.";
-      if (json && json.error) {
-        if (json.error.message) errMsg = json.error.message;
-        else if (typeof json.error === "string") errMsg = json.error;
-      }
-      if (errMsg.indexOf("Cannot extract product_id") !== -1) {
-        errMsg = "Link TikTok này không chứa sản phẩm TikTok Shop có hoa hồng tiếp thị liên kết.";
-      }
+      let errMsg = "⚠️ Sản phẩm TikTok này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!";
       return { success: false, error: errMsg };
     }
   } catch (e) {

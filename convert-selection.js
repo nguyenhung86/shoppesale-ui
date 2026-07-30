@@ -248,7 +248,7 @@ function handleConvert() {
             } else if (rioData && (rioData.message || rioData.error)) {
               response = {
                 success: false,
-                error: rioData.message || rioData.error
+                error: "⚠️ Sản phẩm TikTok này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!"
               };
             }
           } catch(eRio) {
@@ -527,7 +527,11 @@ function handleConvert() {
           // Lưu lịch sử chuyển đổi vào localStorage
           saveConvertHistory(platform, rawUrl, shortLink, productName, price, commissionRate, commissionAmount, imageUrl);
         } else {
+          if (/tiktok/i.test(rawUrl)) {
+          alert("⚠️ Sản phẩm TikTok này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!");
+        } else {
           alert("Lỗi: " + (response ? response.error : "Không thể chuyển đổi link"));
+        }
         }
       } catch (err) {
         console.error("Lỗi chuyển đổi:", err);
