@@ -933,12 +933,15 @@ function unifiedSearch(query, startDateStr, endDateStr) {
           displayDate = String(orderDate).split(' ')[0];
         }
 
-        let orderStatus = String(row[7]).trim(); // Cột H
+        let orderStatus = String(row[7]).trim();
         let orderStatusLower = orderStatus.toLowerCase();
-        if (orderStatusLower === 'pending') orderStatus = 'Đang chờ xác nhận';
-        else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') orderStatus = 'Hoàn thành';
-    else orderStatus = 'Đang chờ xác nhận';
-        else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') orderStatus = 'Đơn hủy';
+        if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+          orderStatus = 'Đơn hủy';
+        } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
+          orderStatus = 'Hoàn thành';
+        } else {
+          orderStatus = 'Đang chờ xác nhận';
+        }
         
         const paymentStatus = String(row[8]).trim(); // Cột I
         const commission = Number(row[6]) || 0; // Cột G
@@ -1144,12 +1147,15 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
           displayDate = String(orderDate).split(' ')[0]; // Fallback
         }
 
-        let orderStatus = String(row[7]).trim(); // Cột H
+        let orderStatus = String(row[7]).trim();
         let orderStatusLower = orderStatus.toLowerCase();
-        if (orderStatusLower === 'pending') orderStatus = 'Đang chờ xác nhận';
-        else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') orderStatus = 'Hoàn thành';
-    else orderStatus = 'Đang chờ xác nhận';
-        else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') orderStatus = 'Đơn hủy';
+        if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+          orderStatus = 'Đơn hủy';
+        } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
+          orderStatus = 'Hoàn thành';
+        } else {
+          orderStatus = 'Đang chờ xác nhận';
+        }
         
         const paymentStatus = String(row[8]).trim(); // Cột I
         const commission = Number(row[6]) || 0; // Cột G (Hoa hồng khách nhận)
