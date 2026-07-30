@@ -968,10 +968,10 @@ function searchOrder(orderIdsStr) {
           let orderStatusLower = orderStatus.toLowerCase();
           if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
             orderStatus = 'Đơn hủy';
-          } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
-            orderStatus = 'Hoàn thành';
-          } else {
+          } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
             orderStatus = 'Đang chờ xác nhận';
+          } else {
+            orderStatus = 'Hoàn thành';
           }
         const paymentStatus = String(row[8]).trim(); // Cột I
         const commission = Number(row[6]) || 0; // Cột G (Hoa hồng khách nhận)
@@ -1089,10 +1089,10 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
           let orderStatusLower = orderStatus.toLowerCase();
           if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
             orderStatus = 'Đơn hủy';
-          } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
-            orderStatus = 'Hoàn thành';
-          } else {
+          } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
             orderStatus = 'Đang chờ xác nhận';
+          } else {
+            orderStatus = 'Hoàn thành';
           }
           const paymentStatus = String(row[8]).trim(); // Cột I
           const commission = Number(row[6]) || 0; // Cột G (Hoa hồng khách nhận)
