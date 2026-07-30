@@ -1252,7 +1252,12 @@ function saveCustomerQrCode(userId, base64Image) {
     }
     return { success: false, error: "Không tìm thấy khách hàng" };
   } catch (e) {
-    return { success: false, error: e.toString() };
+    let platformName = "Shopee";
+    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
+    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
+    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
+    
+    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
   }
 }
 
@@ -1287,7 +1292,12 @@ function confirmPayout(userId) {
     
     return { success: true, updatedCount: updatedCount };
   } catch (e) {
-    return { success: false, error: e.toString() };
+    let platformName = "Shopee";
+    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
+    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
+    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
+    
+    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
   }
 }
 
@@ -1378,7 +1388,12 @@ function saveCustomerBankInfo(userId, bankBin, bankAcc) {
     }
     return { success: false, error: "Không tìm thấy khách hàng" };
   } catch (e) {
-    return { success: false, error: e.toString() };
+    let platformName = "Shopee";
+    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
+    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
+    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
+    
+    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
   }
 }
 
@@ -2304,7 +2319,12 @@ var finalResult = {
     } catch(eSave) {}
     return finalResult;
   } catch (e) {
-    return { success: false, error: e.toString() };
+    let platformName = "Shopee";
+    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
+    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
+    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
+    
+    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
   }
 }
 
@@ -2428,7 +2448,12 @@ function getLeaderboardData() {
     const top20 = list.slice(0, 20); // Mở rộng lấy top 20 thành viên xuất sắc nhất
     return { success: true, data: top20 };
   } catch (e) {
-    return { success: false, error: e.toString() };
+    let platformName = "Shopee";
+    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
+    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
+    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
+    
+    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
   }
 }
 
@@ -2798,7 +2823,12 @@ function getPaymentHistory(zaloId) {
     
     return { success: true, data: transfers };
   } catch (e) {
-    return { success: false, error: e.toString() };
+    let platformName = "Shopee";
+    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
+    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
+    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
+    
+    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
   }
 }
 
@@ -2916,7 +2946,12 @@ function convertTikTokLinkWithRio(productUrl, subId) {
       return { success: false, error: errMsg };
     }
   } catch (e) {
-    return { success: false, error: e.toString() };
+    let platformName = "Shopee";
+    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
+    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
+    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
+    
+    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
   }
 }
 
