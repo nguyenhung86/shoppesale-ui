@@ -307,11 +307,11 @@ function doPost(e) {
 
         sheet.getRange(targetRow, 1).setValue(data.userName);
         sheet.getRange(targetRow, 2).setValue("'" + data.userId);
-        sheet.getRange(targetRow, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-        sheet.getRange(targetRow, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-        sheet.getRange(targetRow, 5).setFormula(`=IFERROR(XLOOKUP(B\${targetRow};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
-        sheet.getRange(targetRow, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-        sheet.getRange(targetRow, 7).setFormula(`=C\${targetRow}+D\${targetRow}+F\${targetRow}`);
+        sheet.getRange(targetRow, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        sheet.getRange(targetRow, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        sheet.getRange(targetRow, 5).setFormula(`=IFERROR(XLOOKUP(B${targetRow};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
+        sheet.getRange(targetRow, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${targetRow}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+        sheet.getRange(targetRow, 7).setFormula(`=C${targetRow}+D${targetRow}+F${targetRow}`);
         
         sheet.getRange(targetRow, 6).setNumberFormat("#,##0đ");
         sheet.getRange(targetRow, 7).setNumberFormat("#,##0đ");
@@ -368,7 +368,7 @@ function doPost(e) {
           data.referrerName,
           "chờ đơn đầu",
           "",
-          `=IF(ISBLANK(B\${nextRow}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B\${nextRow}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A\${nextRow}); MONTH(A\${nextRow}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A\${nextRow}; 0)))`,
+          `=IF(ISBLANK(B${nextRow}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B${nextRow}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A${nextRow}); MONTH(A${nextRow}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A${nextRow}; 0)))`,
           "",
           ""
         ]);
@@ -694,15 +694,15 @@ function doPost(e) {
           const targetRowIndex = Math.max(lastRow, 2) + inserted + 1;
           const rowData = [
             order.report_date,
-            `=IFERROR(XLOOKUP(K\${targetRowIndex};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
+            `=IFERROR(XLOOKUP(K${targetRowIndex};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
             order.order_sn,
             order.item_name,
             order.commission,
-            `=E\${targetRowIndex}*0,9`,
-            `=E\${targetRowIndex}*0,9*0,8`,
+            `=E${targetRowIndex}*0,9`,
+            `=E${targetRowIndex}*0,9*0,8`,
             order.checkout_status,
             "Chưa TT",
-            `=E\${targetRowIndex}*0,9*0,2`,
+            `=E${targetRowIndex}*0,9*0,2`,
             order.sub_id ? "'" + order.sub_id : ""
           ];
           const targetRange = sheet.getRange(targetRowIndex, 1, 1, rowData.length);
@@ -894,9 +894,9 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         let matchYYYY = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
         let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
         if (matchYYYY) {
-          rowDateStr = `\${matchYYYY[1]}-\${matchYYYY[2].padStart(2, '0')}-\${matchYYYY[3].padStart(2, '0')}`;
+          rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
         } else if (matchDD) {
-          rowDateStr = `\${matchDD[3]}-\${matchDD[2].padStart(2, '0')}-\${matchDD[1].padStart(2, '0')}`;
+          rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
         } else {
           rowDateStr = str;
         }
@@ -911,7 +911,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
           displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
         } else if (rowDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
           let parts = rowDateStr.split('-');
-          displayDate = `\${parts[2]}/\${parts[1]}/\${parts[0]}`;
+          displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
         } else {
           displayDate = String(orderDate).split(' ')[0];
         }
@@ -1104,9 +1104,9 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
         let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
         
         if (matchYYYY) {
-          rowDateStr = `\${matchYYYY[1]}-\${matchYYYY[2].padStart(2, '0')}-\${matchYYYY[3].padStart(2, '0')}`;
+          rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
         } else if (matchDD) {
-          rowDateStr = `\${matchDD[3]}-\${matchDD[2].padStart(2, '0')}-\${matchDD[1].padStart(2, '0')}`;
+          rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
         } else {
           rowDateStr = str;
         }
@@ -1121,7 +1121,7 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
           displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
         } else if (rowDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
           let parts = rowDateStr.split('-');
-          displayDate = `\${parts[2]}/\${parts[1]}/\${parts[0]}`;
+          displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
         } else {
           displayDate = String(orderDate).split(' ')[0]; // Fallback
         }
@@ -1230,9 +1230,9 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
           let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
           
           if (matchYYYY) {
-            rowDateStr = `\${matchYYYY[1]}-\${matchYYYY[2].padStart(2, '0')}-\${matchYYYY[3].padStart(2, '0')}`;
+            rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
           } else if (matchDD) {
-            rowDateStr = `\${matchDD[3]}-\${matchDD[2].padStart(2, '0')}-\${matchDD[1].padStart(2, '0')}`;
+            rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
           } else {
             rowDateStr = str;
           }
@@ -1471,9 +1471,9 @@ function checkAndTriggerReferralReward(ss, sheet, cleanSubId, orderReportDate, t
       const nextRowIdx = sheet.getLastRow() + 1;
       const rewardRow = [
         orderReportDate,
-        `=IFERROR(XLOOKUP(K\${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
+        `=IFERROR(XLOOKUP(K${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
         "Thưởng GT",
-        `Thưởng giới thiệu thành viên mới @\${newUserName} phát sinh đơn đầu tiên`,
+        `Thưởng giới thiệu thành viên mới @${newUserName} phát sinh đơn đầu tiên`,
         13889, // 13889 * 0.9 * 0.8 = 10000đ
         12500, // 13889 * 0.9
         10000, // Nhận đúng 10.000đ
@@ -1673,7 +1673,7 @@ function calculateMonthlyReferralBonus(month, year) {
   const dataValues = dataSheet.getRange(3, 1, dataLastRow - 2, 11).getValues();
   const userOrderCountMap = {};
   const userCommissionMap = {};
-  const targetPrefix = `\${year}-\${String(month).padStart(2, '0')}`;
+  const targetPrefix = `${year}-${String(month).padStart(2, '0')}`;
   
   for (let i = 0; i < dataValues.length; i++) {
     const orderDateStr = String(dataValues[i][0]).trim(); // Cột A: orderReportDate
@@ -1700,7 +1700,7 @@ function calculateMonthlyReferralBonus(month, year) {
   
   // Định dạng ngày báo cáo thưởng (ngày cuối của tháng)
   const lastDay = new Date(year, month, 0).getDate();
-  const reportDateStr = `\${year}-\${String(month).padStart(2, '0')}-\${String(lastDay).padStart(2, '0')}`;
+  const reportDateStr = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
   
   for (const referrerId in referrerMap) {
     const referralsList = referrerMap[referrerId];
@@ -1732,7 +1732,7 @@ function calculateMonthlyReferralBonus(month, year) {
       const ref = referralsList[rIdx];
       const rowIdx = ref.rowIdx;
       const rangeH = refSheet.getRange(rowIdx, 8);
-      rangeH.setFormula(`=IF(ISBLANK(B\${rowIdx}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B\${rowIdx}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A\${rowIdx}); MONTH(A\${rowIdx}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A\${rowIdx}; 0)))`);
+      rangeH.setFormula(`=IF(ISBLANK(B${rowIdx}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B${rowIdx}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A${rowIdx}); MONTH(A${rowIdx}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A${rowIdx}; 0)))`);
       rangeH.setBackground(null); // Để định dạng có điều kiện tự tô màu
       
       const rangeI = refSheet.getRange(rowIdx, 9);
@@ -1742,7 +1742,7 @@ function calculateMonthlyReferralBonus(month, year) {
       if (rIdx === 0 && bonusRate > 0) {
         const currentBonusRateStr = String(rangeI.getValue()).trim();
         const currentAnnounced = String(rangeJ.getValue()).trim();
-        const targetRateStr = `\${bonusRate * 100}%`;
+        const targetRateStr = `${bonusRate * 100}%`;
         
         rangeI.setValue(targetRateStr).setBackground(null).setFontColor(null).setFontWeight(null);
         
@@ -1761,7 +1761,7 @@ function calculateMonthlyReferralBonus(month, year) {
     
     const referrerComm = userCommissionMap[referrerId] || 0;
     if (referrerComm <= 0) {
-      resultLogs.push(`- @\${nameMap[referrerId] || referrerId}: Đạt mốc \${validReferralCount} người nhưng không phát sinh hoa hồng cá nhân để nhận thưởng thêm.`);
+      resultLogs.push(`- @${nameMap[referrerId] || referrerId}: Đạt mốc ${validReferralCount} người nhưng không phát sinh hoa hồng cá nhân để nhận thưởng thêm.`);
       continue;
     }
     
@@ -1776,7 +1776,7 @@ function calculateMonthlyReferralBonus(month, year) {
       const subId = String(dataValues[i][10]).replace(/'/g, "").trim();
       const desc = String(dataValues[i][3]).trim();
       
-      if (orderId === "Thưởng GT Mốc" && subId === referrerId && desc.includes(`Tháng \${month}/\${year}`)) {
+      if (orderId === "Thưởng GT Mốc" && subId === referrerId && desc.includes(`Tháng ${month}/${year}`)) {
         alreadyRewarded = true;
         existingRowIndex = i + 3;
         break;
@@ -1796,9 +1796,9 @@ function calculateMonthlyReferralBonus(month, year) {
     
     const rewardRow = [
       reportDateStr,
-      `=IFERROR(XLOOKUP(K\${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
+      `=IFERROR(XLOOKUP(K${nextRowIdx};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`,
       "Thưởng GT Mốc",
-      `Thưởng giới thiệu mốc \${validReferralCount} người - Tháng \${month}/\${year} (\${bonusRate*100}% hoa hồng)`,
+      `Thưởng giới thiệu mốc ${validReferralCount} người - Tháng ${month}/${year} (${bonusRate*100}% hoa hồng)`,
       rawShopeeComm,
       commAfterTax,
       bonusAmount,
@@ -1822,7 +1822,7 @@ function calculateMonthlyReferralBonus(month, year) {
       updatedCount++;
     }
     
-    resultLogs.push(`- @\${nameMap[referrerId] || referrerId}: Nhận thêm \${bonusRate*100}% = \${bonusAmount.toLocaleString("vi-VN")}đ (Giới thiệu thành công \${validReferralCount} người: \${qualifiedNames.join(", ")})`);
+    resultLogs.push(`- @${nameMap[referrerId] || referrerId}: Nhận thêm ${bonusRate*100}% = ${bonusAmount.toLocaleString("vi-VN")}đ (Giới thiệu thành công ${validReferralCount} người: ${qualifiedNames.join(", ")})`);
   }
   
   // Tự động thiết lập quy tắc định dạng có điều kiện (tô màu trạng thái tự động)
@@ -1833,13 +1833,13 @@ function calculateMonthlyReferralBonus(month, year) {
   }
 
   if (resultLogs.length === 0) {
-    return `Kết quả tính thưởng tháng \${month}/\${year}:
+    return `Kết quả tính thưởng tháng ${month}/${year}:
 Không có thành viên nào đạt mốc tối thiểu 5 người giới thiệu hợp lệ trong tháng.`;
   }
   
-  return `Kết quả tính thưởng tháng \${month}/\${year}:
+  return `Kết quả tính thưởng tháng ${month}/${year}:
 ` +
-         `Đã thêm mới: \${addedCount} dòng, cập nhật đè: \${updatedCount} dòng.
+         `Đã thêm mới: ${addedCount} dòng, cập nhật đè: ${updatedCount} dòng.
 
 ` +
          `Chi tiết:
@@ -1991,11 +1991,11 @@ function upgradeSheetLayoutInternal() {
   const lastRow = sheet.getLastRow();
   if (lastRow >= 2) {
     for (let r = 2; r <= lastRow; r++) {
-      sheet.getRange(r, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-      sheet.getRange(r, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-      sheet.getRange(r, 5).setFormula(`=IFERROR(XLOOKUP(B\${r};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
-      sheet.getRange(r, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B\${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
-      sheet.getRange(r, 7).setFormula(`=C\${r}+D\${r}+F\${r}`);
+      sheet.getRange(r, 3).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "waiting for payment"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "completed"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT") + SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT"; 'Dữ liệu nạp tự động'!C:C; "<>Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!H:H; "hoàn thành"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+      sheet.getRange(r, 4).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+      sheet.getRange(r, 5).setFormula(`=IFERROR(XLOOKUP(B${r};'Giới thiệu'!D:D;'Giới thiệu'!I:I;"";0;-1);"")`);
+      sheet.getRange(r, 6).setFormula(`=SUMIFS('Dữ liệu nạp tự động'!G:G; 'Dữ liệu nạp tự động'!K:K; B${r}; 'Dữ liệu nạp tự động'!C:C; "Thưởng GT Mốc"; 'Dữ liệu nạp tự động'!I:I; "Chưa TT")`);
+      sheet.getRange(r, 7).setFormula(`=C${r}+D${r}+F${r}`);
       
       sheet.getRange(r, 6).setNumberFormat("#,##0đ");
       sheet.getRange(r, 7).setNumberFormat("#,##0đ");
