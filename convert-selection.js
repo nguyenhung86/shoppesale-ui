@@ -441,11 +441,13 @@ function handleConvert() {
               </div>
               <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
-                  <div style="font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.2;">
-                    ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : finalRate + '%'}
-                  </div>
-                  <div style="font-size: 13px; color: #ea580c; margin-top: 4px; font-weight: 600;">
-                    (${breakdownStr})
+                  <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.2;">
+                      ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : finalRate + '%'}
+                    </span>
+                    <span style="font-size: 13px; color: #ea580c; font-weight: 600;">
+                      (${breakdownStr})
+                    </span>
                   </div>
                   ${displayPrice > 0 ? `
                   <div style="font-size: 13px; color: #64748b; margin-top: 2px; font-weight: 500;">
