@@ -841,108 +841,15 @@ function unifiedSearch(query, startDateStr, endDateStr) {
       for (let i = 0; i < data.length; i++) {
         const row = data[i];
         if (String(row[2]).trim() === currentId) {
-          let orderStatus = String(row[7]).trim(); // Cột H
+          let orderStatus = String(row[7]).trim();
           let orderStatusLower = orderStatus.toLowerCase();
-          if (orderStatusLower === 'pending') {
-            orderStatus = 'Đang chờ xác nhận';
-          } else if (orderStatusLower === 'waiting for payment' || orderStatusLower === 'completed') {
-            orderStatus = 'Hoàn thành';
-          } else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') {
+          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
             orderStatus = 'Đơn hủy';
+          } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
+            orderStatus = 'Hoàn thành';
+          } else {
+            orderStatus = 'Đang chờ xác nhận';
           }
-          
-          orderMatches.push({
-            orderId: currentId,
-            itemName: row[3],          // Cột D
-            commission: row[6],        // Cột G
-            orderStatus: orderStatus,  // Cột H
-            paymentStatus: row[8],     // Cột I
-            found: true
-          });
-          break;
-        }
-      }
-    }
-    
-    // Nếu tìm thấy ít nhất 1 mã đơn hàng khớp chính xác, hoặc nếu chuỗi tìm kiếm có chứa dấu phẩy
-    if (orderMatches.length > 0 || (cleanQuery.includes(',') && possibleOrderIds.length > 0)) {
-      // Bổ sung các mã không tìm thấy vào kết quả của tra cứu đơn hàng
-      for (let j = 0; j < possibleOrderIds.length; j++) {
-        const currentId = possibleOrderIds[j];
-        const isMatched = orderMatches.some(m => m.orderId === currentId);
-        if (!isMatched) {
-          orderMatches.push({
-            orderId: currentId,
-            found: false
-          });
-        }
-      }
-      return {
-        success: true,
-        searchType: 'orderId',
-        data: orderMatches
-      };
-    }
-    
-    // 2. Nếu không tìm thấy mã đơn hàng khớp chính xác nào, ta thực hiện tìm kiếm theo Tên khách hàng
-    const searchName = cleanQuery.toLowerCase();
-    const filterStart = startDateStr ? startDateStr.trim() : null;
-    const filterEnd = endDateStr ? endDateStr.trim() : null;
-    const tz = ss.getSpreadsheetTimeZone();
-    
-    let customerResults = [];
-    let totalCommission = 0;
-    let totalReceived = 0;
-    let totalPending = 0;
-    let totalCompleted = 0;
-    
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const nameInCell = String(row[1]).trim().toLowerCase(); // Cột B
-      
-      let dateValid = true;
-      let orderDate = row[0]; // Cột A
-      
-      let rowDateStr = "";
-      if (orderDate instanceof Date) {
-        rowDateStr = Utilities.formatDate(orderDate, tz, "yyyy-MM-dd");
-      } else {
-        let str = String(orderDate).trim();
-        let matchYYYY = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-        let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
-        if (matchYYYY) {
-          rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
-        } else if (matchDD) {
-          rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
-        } else {
-          rowDateStr = str;
-        }
-      }
-      
-      if (filterStart && rowDateStr < filterStart) dateValid = false;
-      if (filterEnd && rowDateStr > filterEnd) dateValid = false;
-      
-      if (dateValid && nameInCell !== '' && nameInCell.includes(searchName)) {
-        let displayDate = "";
-        if (orderDate instanceof Date) {
-          displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
-        } else if (rowDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          let parts = rowDateStr.split('-');
-          displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-        } else {
-          displayDate = String(orderDate).split(' ')[0];
-        }
-
-        let orderStatus = String(row[7]).trim();
-        let orderStatusLower = orderStatus.toLowerCase();
-        if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
-          orderStatus = 'Đơn hủy';
-        } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
-          orderStatus = 'Hoàn thành';
-        } else {
-          orderStatus = 'Đang chờ xác nhận';
-        }
-        
         const paymentStatus = String(row[8]).trim(); // Cột I
         const commission = Number(row[6]) || 0; // Cột G
         
@@ -971,6 +878,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         });
       }
     }
+  }
     
     if (customerResults.length > 0) {
       return {
@@ -1033,130 +941,15 @@ function searchOrder(orderIdsStr) {
         const row = data[i];
         // Mã đơn hàng ở cột C (index 2)
         if (String(row[2]).trim() === currentId) {
-          let orderStatus = String(row[7]).trim(); // Cột H
-          
-          // Chuyển đổi hiển thị tiếng Việt
+          let orderStatus = String(row[7]).trim();
           let orderStatusLower = orderStatus.toLowerCase();
-          if (orderStatusLower === 'pending') {
-            orderStatus = 'Đang chờ xác nhận';
-          } else if (orderStatusLower === 'waiting for payment' || orderStatusLower === 'completed') {
-            orderStatus = 'Hoàn thành';
-          } else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') {
+          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
             orderStatus = 'Đơn hủy';
+          } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
+            orderStatus = 'Hoàn thành';
+          } else {
+            orderStatus = 'Đang chờ xác nhận';
           }
-          
-          results.push({
-            orderId: currentId,
-            itemName: row[3],          // Cột D: Tên sản phẩm
-            commission: row[6],        // Cột G: Hoa hồng khách nhận
-            orderStatus: orderStatus,  // Cột H: Trạng thái đơn hàng (đã dịch)
-            paymentStatus: row[8],     // Cột I: Trạng thái thanh toán
-            found: true
-          });
-          found = true;
-          break;
-        }
-      }
-      
-      if (!found) {
-        results.push({
-          orderId: currentId,
-          found: false
-        });
-      }
-    }
-    
-    return {
-      success: true,
-      data: results
-    };
-  } catch (err) {
-    return { success: false, error: 'Đã xảy ra lỗi hệ thống: ' + err.toString() };
-  }
-}
-
-// === Hàm phục vụ tra cứu theo tên khách hàng ===
-function searchCustomer(customerNameStr, startDateStr, endDateStr) {
-  try {
-    if (!customerNameStr || String(customerNameStr).trim() === '') {
-      return { success: false, error: 'Vui lòng nhập tên khách hàng' };
-    }
-    
-    const searchName = String(customerNameStr).trim().toLowerCase();
-    
-    const filterStart = startDateStr ? startDateStr.trim() : null;
-    const filterEnd = endDateStr ? endDateStr.trim() : null;
-    
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
-    const tz = ss.getSpreadsheetTimeZone();
-    
-    if (!sheet) {
-      return { success: false, error: 'Hệ thống chưa có dữ liệu.' };
-    }
-    
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 3) {
-      return { success: false, error: 'Không tìm thấy dữ liệu' };
-    }
-    
-    const dataRange = sheet.getRange(3, 1, lastRow - 2, 10);
-    const data = dataRange.getValues();
-    
-    let results = [];
-    let totalCommission = 0;
-    let totalReceived = 0;
-    let totalPending = 0;
-    let totalCompleted = 0;
-    
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      const nameInCell = String(row[1]).trim().toLowerCase(); // Cột B
-      
-      let dateValid = true;
-      let orderDate = row[0]; // Cột A
-      
-      let rowDateStr = "";
-      if (orderDate instanceof Date) {
-        rowDateStr = Utilities.formatDate(orderDate, tz, "yyyy-MM-dd");
-      } else {
-        let str = String(orderDate).trim();
-        let matchYYYY = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-        let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
-        
-        if (matchYYYY) {
-          rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
-        } else if (matchDD) {
-          rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
-        } else {
-          rowDateStr = str;
-        }
-      }
-      
-      if (filterStart && rowDateStr < filterStart) dateValid = false;
-      if (filterEnd && rowDateStr > filterEnd) dateValid = false;
-      
-      if (dateValid && nameInCell !== '' && nameInCell.includes(searchName)) {
-        let displayDate = "";
-        if (orderDate instanceof Date) {
-          displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
-        } else if (rowDateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
-          let parts = rowDateStr.split('-');
-          displayDate = `${parts[2]}/${parts[1]}/${parts[0]}`;
-        } else {
-          displayDate = String(orderDate).split(' ')[0]; // Fallback
-        }
-
-        let orderStatus = String(row[7]).trim();
-        let orderStatusLower = orderStatus.toLowerCase();
-        if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
-          orderStatus = 'Đơn hủy';
-        } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
-          orderStatus = 'Hoàn thành';
-        } else {
-          orderStatus = 'Đang chờ xác nhận';
-        }
-        
         const paymentStatus = String(row[8]).trim(); // Cột I
         const commission = Number(row[6]) || 0; // Cột G (Hoa hồng khách nhận)
         
@@ -1185,6 +978,7 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
         });
       }
     }
+  }
     
     if (results.length === 0) {
       return { success: false, error: 'Không tìm thấy đơn hàng nào cho khách hàng này.' };
@@ -1268,13 +1062,15 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
         }
         
         if (dateValid) {
-          let orderStatus = String(row[7]).trim(); // Cột H
+          let orderStatus = String(row[7]).trim();
           let orderStatusLower = orderStatus.toLowerCase();
-          if (orderStatusLower === 'pending') orderStatus = 'Đang chờ xác nhận';
-          else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') orderStatus = 'Hoàn thành';
-    else orderStatus = 'Đang chờ xác nhận';
-          else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') orderStatus = 'Đơn hủy';
-
+          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+            orderStatus = 'Đơn hủy';
+          } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
+            orderStatus = 'Hoàn thành';
+          } else {
+            orderStatus = 'Đang chờ xác nhận';
+          }
           const paymentStatus = String(row[8]).trim(); // Cột I
           const commission = Number(row[6]) || 0; // Cột G (Hoa hồng khách nhận)
 
