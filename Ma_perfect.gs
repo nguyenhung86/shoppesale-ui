@@ -1174,11 +1174,13 @@ function getPayoutDashboardData() {
     
     if (!userId) continue;
     const stats = userStats[userId] || { unpaid: 0, paid: 0, unpaidReferral: 0 };
+    const sheetUnpaid = Number(customers[i][6]) || 0; // Lấy trực tiếp Cột G (Cần Thanh Toán) từ Sheet
+    const finalUnpaid = sheetUnpaid > 0 ? sheetUnpaid : stats.unpaid;
     
     resultList.push({
       userId: userId,
       userName: name,
-      unpaid: stats.unpaid,
+      unpaid: finalUnpaid,
       unpaidReferral: stats.unpaidReferral,
       paid: stats.paid,
       qrCodeUrl: qrUrl,
