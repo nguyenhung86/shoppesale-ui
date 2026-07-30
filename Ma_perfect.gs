@@ -319,7 +319,7 @@ function doPost(e) {
         try {
           const fLastRow = sheet.getLastRow();
           if (fLastRow >= 2 && !sheet.getFilter()) {
-            sheet.getRange(2, 1, fLastRow - 1, 12).createFilter();
+            sheet.getRange(1, 1, fLastRow, 12).createFilter();
           }
         } catch(eF) {}
 
@@ -1462,7 +1462,7 @@ function fixAutoSheetFormatting() {
       sheet.getRange(2, 1, sheet.getLastRow() - 1, 11).createFilter();
     }
     if (paySheet && paySheet.getLastRow() >= 2 && !paySheet.getFilter()) {
-      paySheet.getRange(2, 1, paySheet.getLastRow() - 1, 12).createFilter();
+      paySheet.getRange(1, 1, paySheet.getLastRow(), 12).createFilter();
     }
   } catch(eF) {}
 
@@ -2966,13 +2966,24 @@ function ensureAllSheetsFilters(ss) {
       const lastRow = sh.getLastRow();
       const lastCol = sh.getLastColumn();
       
-      if (lastRow >= 1 && lastCol >= 1 && !sh.getFilter()) {
+      if (lastRow >= 1 && lastCol >= 1) {
         try {
-          if (sName === "Dữ liệu nạp tự động") {
-            if (lastRow >= 2) {
+          const currentFilter = sh.getFilter();
+          if (sName === "Thanh toán hoa hồng") {
+            if (currentFilter && currentFilter.getRange().getRow() !== 1) {
+              currentFilter.remove();
+            }
+            if (!sh.getFilter()) {
+              sh.getRange(1, 1, lastRow, Math.max(lastCol, 12)).createFilter();
+            }
+          } else if (sName === "Dữ liệu nạp tự động") {
+            if (currentFilter && currentFilter.getRange().getRow() !== 2) {
+              currentFilter.remove();
+            }
+            if (!sh.getFilter() && lastRow >= 2) {
               sh.getRange(2, 1, lastRow - 1, Math.max(lastCol, 11)).createFilter();
             }
-          } else {
+          } else if (!currentFilter) {
             sh.getRange(1, 1, lastRow, lastCol).createFilter();
           }
         } catch(eFilter) {}
