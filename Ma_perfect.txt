@@ -2889,8 +2889,8 @@ function convertTikTokLinkWithRio(productUrl, subId) {
                   rate = (parseFloat(item.commission.rate) / 100) || 10.0;
                 }
                 if (item.commission.amount) {
-                  const m = String(item.commission.amount).match(/[\d.]+/);
-                  if (m) value = Math.round(parseFloat(m[0])) || 0;
+                  const rawParts = String(item.commission.amount).split("-").map(p => Math.round(parseFloat(p.trim()) || 0)).filter(v => v > 0);
+                  if (rawParts.length > 0) value = Math.max(...rawParts) || 0;
                 }
               }
               if (value === 0 && price > 0 && rate > 0) {
