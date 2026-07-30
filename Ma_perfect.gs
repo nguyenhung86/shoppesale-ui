@@ -855,10 +855,10 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         let orderStatusLower = orderStatus.toLowerCase();
         if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
           orderStatus = 'Đơn hủy';
-        } else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') {
-          orderStatus = 'Hoàn thành';
+        } else if (orderStatusLower.includes('chờ giao') || orderStatusLower.includes('shipping')) {
+          orderStatus = 'Đang giao';
         } else {
-          orderStatus = 'Đang chờ xác nhận';
+          orderStatus = 'Hoàn thành';
         }
         
         const paymentStatus = String(row[8]).trim(); // Cột I

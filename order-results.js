@@ -17,16 +17,24 @@ function getPlatform(orderId) {
   return "Shopee";
 }
 
-function getOrderCategory(status) {
-  if (!status) return "pending";
-  const cleaned = status.toLowerCase();
-  if (cleaned.includes("hoàn thành") || cleaned.includes("completed")) {
+function getOrderCategory(status, paymentStatus) {
+  if (!status) return "completed";
+  const cleaned = String(status).toLowerCase();
+  const payClean = String(paymentStatus || '').toLowerCase();
+  
+  if (payClean === "đã tt" || payClean.includes("thanh toán")) {
     return "completed";
   }
-  if (cleaned.includes("hủy") || cleaned.includes("invalid") || cleaned.includes("đơn hủy")) {
+  if (cleaned.includes("hủy") || cleaned.includes("invalid") || cleaned.includes("cancelled") || cleaned.includes("không đủ điều kiện") || cleaned.includes("đơn hủy")) {
     return "cancelled";
   }
-  return "pending";
+  if (cleaned.includes("hoàn thành") || cleaned.includes("completed") || cleaned.includes("waiting for payment") || cleaned.includes("thưởng gt") || cleaned.includes("đang xử lý")) {
+    return "completed";
+  }
+  if (cleaned.includes("đang giao") || cleaned.includes("chờ giao") || cleaned.includes("shipping") || cleaned.includes("in transit")) {
+    return "pending";
+  }
+  return "completed";
 }
 
 function renderOrders(filteredOrders, formatVND) {
@@ -44,7 +52,7 @@ function renderOrders(filteredOrders, formatVND) {
   
   listContainer.innerHTML = filteredOrders.map(o => {
     const platform = getPlatform(o.orderId);
-    const category = getOrderCategory(o.orderStatus);
+    const category = getOrderCategory(o.orderStatus, o.paymentStatus);
     
     let borderLeftColor = '#18ad60'; // completed
     let statusText = 'ĐÃ HOÀN TẤT';
@@ -216,7 +224,7 @@ function renderDashboard(response, query, formatVND) {
   let cancelledCount = 0;
   
   ordersList.forEach(o => {
-    const cat = getOrderCategory(o.orderStatus);
+    const cat = getOrderCategory(o.orderStatus, o.paymentStatus);
     const commission = Number(o.commission) || 0;
     const isPaid = o.paymentStatus === 'Đã TT';
     
@@ -287,7 +295,7 @@ function renderDashboard(response, query, formatVND) {
       if (activeBadge) activeBadge.style.background = '#fff0eb';
       
       const tabName = tab.dataset.tab;
-      const filtered = ordersList.filter(o => getOrderCategory(o.orderStatus) === tabName);
+      const filtered = ordersList.filter(o => getOrderCategory(o.orderStatus, o.paymentStatus) === tabName);
       renderOrders(filtered, formatVND);
     });
   });
@@ -325,7 +333,7 @@ function renderDashboard(response, query, formatVND) {
     }
   });
   
-  const initialFiltered = ordersList.filter(o => getOrderCategory(o.orderStatus) === initialTab);
+  const initialFiltered = ordersList.filter(o => getOrderCategory(o.orderStatus, o.paymentStatus) === initialTab);
   renderOrders(initialFiltered, formatVND);
 }
 
@@ -497,7 +505,7 @@ function syncRealDataToUI() {
     let totalReceived = 0;
     
     ordersList.forEach(o => {
-      const cat = getOrderCategory(o.orderStatus);
+      const cat = getOrderCategory(o.orderStatus, o.paymentStatus);
       const commission = Number(o.commission) || 0;
       const isPaid = o.paymentStatus === 'Đã TT';
       
