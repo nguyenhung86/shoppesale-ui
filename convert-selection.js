@@ -439,13 +439,13 @@ function handleConvert() {
               <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
                 Hoa hồng ước tính: <svg style="width: 14px; height: 14px; fill: #94a3b8;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
               </div>
-              <div style="display: flex; justify-content: space-between; align-items: flex-end;">
-                <div>
-                  <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
-                    <span style="font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.2;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 8px;">
+                <div style="flex: 1; min-width: 0;">
+                  <div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap; overflow: hidden;">
+                    <span style="font-size: clamp(18px, 4.8vw, 24px); font-weight: 800; color: #0f172a; line-height: 1.2; white-space: nowrap;">
                       ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : finalRate + '%'}
                     </span>
-                    <span style="font-size: 13px; color: #ea580c; font-weight: 600;">
+                    <span style="font-size: clamp(11px, 3.2vw, 13px); color: #ea580c; font-weight: 600; white-space: nowrap;">
                       (${breakdownStr})
                     </span>
                   </div>
@@ -455,7 +455,7 @@ function handleConvert() {
                   </div>
                   ` : ''}
                 </div>
-                <div style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 700;">
+                <div style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0; margin-bottom: 2px;">
                   ${Number(finalRate).toFixed(2)}%
                 </div>
               </div>
