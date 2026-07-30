@@ -792,6 +792,7 @@ function doPost(e) {
         if (fLastRow >= 2 && !sheet.getFilter()) {
           sheet.getRange(2, 1, fLastRow - 1, 11).createFilter();
         }
+        ensureAllSheetsFilters(ss);
       } catch(eF) {}
       
       return ContentService.createTextOutput(JSON.stringify({
@@ -1608,11 +1609,13 @@ function fixAutoSheetFormatting() {
     }
   } catch(eF) {}
 
-  return "Đã sửa siêu tốc 100% tất cả công thức và tự động duy trì bộ lọc (Filter) hàng 2 thành công!";
+  ensureAllSheetsFilters(ss);
+  return "Đã sửa siêu tốc 100% tất cả công thức và tự động bật bộ lọc (Filter) cho TOÀN BỘ CÁC TAB thành công!";
 }
 
 // === TỰ ĐỘNG THÊM MENU KHI MỞ BẢNG TÍNH ===
 function onOpen() {
+  ensureAllSheetsFilters();
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
@@ -3080,4 +3083,30 @@ function convertTikTokLinkWithRio(productUrl, subId) {
   } catch (e) {
     return { success: false, error: e.toString() };
   }
+}
+
+// === HÀM TỰ ĐỘNG BẬT BỘ LỌC (FILTER) CHO TOÀN BỘ CÁC TAB / SHEET TRONG BẢNG TÍNH ===
+function ensureAllSheetsFilters(ss) {
+  try {
+    if (!ss) ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    for (let i = 0; i < sheets.length; i++) {
+      const sh = sheets[i];
+      const sName = sh.getName();
+      const lastRow = sh.getLastRow();
+      const lastCol = sh.getLastColumn();
+      
+      if (lastRow >= 1 && lastCol >= 1 && !sh.getFilter()) {
+        try {
+          if (sName === "Dữ liệu nạp tự động") {
+            if (lastRow >= 2) {
+              sh.getRange(2, 1, lastRow - 1, Math.max(lastCol, 11)).createFilter();
+            }
+          } else {
+            sh.getRange(1, 1, lastRow, lastCol).createFilter();
+          }
+        } catch(eFilter) {}
+      }
+    }
+  } catch(e) {}
 }
