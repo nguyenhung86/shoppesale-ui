@@ -671,7 +671,7 @@ function doPost(e) {
           // --- XỬ LÝ KHUYẾN MẠI GIỚI THIỆU THÀNH VIÊN MỚI PHÁT SINH ĐƠN ĐẦU ---
           const cleanSubId = order.sub_id ? String(order.sub_id).replace(/'/g, "").trim() : String(existingSubId).replace(/'/g, "").trim();
           const orderStatusLower = String(order.checkout_status).trim().toLowerCase();
-          const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'hoàn thành');
+          const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành');
           
           if (cleanSubId && isCompleted) {
             // Kiểm tra ngày áp dụng (từ 1/7/2026)
@@ -738,7 +738,7 @@ function doPost(e) {
           if (order.sub_id) {
             const cleanSubId = String(order.sub_id).replace(/'/g, "").trim();
             const orderStatusLower = String(order.checkout_status).trim().toLowerCase();
-            const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'hoàn thành');
+            const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành');
             
             if (isCompleted) {
               // Chỉ áp dụng thưởng từ ngày 1/7/2026
@@ -936,7 +936,8 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         let orderStatus = String(row[7]).trim(); // Cột H
         let orderStatusLower = orderStatus.toLowerCase();
         if (orderStatusLower === 'pending') orderStatus = 'Đang chờ xác nhận';
-        else if (orderStatusLower === 'waiting for payment' || orderStatusLower === 'completed') orderStatus = 'Hoàn thành';
+        else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') orderStatus = 'Hoàn thành';
+    else orderStatus = 'Đang chờ xác nhận';
         else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') orderStatus = 'Đơn hủy';
         
         const paymentStatus = String(row[8]).trim(); // Cột I
@@ -1146,7 +1147,8 @@ function searchCustomer(customerNameStr, startDateStr, endDateStr) {
         let orderStatus = String(row[7]).trim(); // Cột H
         let orderStatusLower = orderStatus.toLowerCase();
         if (orderStatusLower === 'pending') orderStatus = 'Đang chờ xác nhận';
-        else if (orderStatusLower === 'waiting for payment' || orderStatusLower === 'completed') orderStatus = 'Hoàn thành';
+        else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') orderStatus = 'Hoàn thành';
+    else orderStatus = 'Đang chờ xác nhận';
         else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') orderStatus = 'Đơn hủy';
         
         const paymentStatus = String(row[8]).trim(); // Cột I
@@ -1263,7 +1265,8 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
           let orderStatus = String(row[7]).trim(); // Cột H
           let orderStatusLower = orderStatus.toLowerCase();
           if (orderStatusLower === 'pending') orderStatus = 'Đang chờ xác nhận';
-          else if (orderStatusLower === 'waiting for payment' || orderStatusLower === 'completed') orderStatus = 'Hoàn thành';
+          else if (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành') orderStatus = 'Hoàn thành';
+    else orderStatus = 'Đang chờ xác nhận';
           else if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled') orderStatus = 'Đơn hủy';
 
           const paymentStatus = String(row[8]).trim(); // Cột I
@@ -1346,7 +1349,7 @@ function getPayoutDashboardData() {
       userStats[subId] = { unpaid: 0, paid: 0, unpaidReferral: 0 };
     }
     
-    const isCompleted = (status === 'completed' || status === 'waiting for payment' || status === 'hoàn thành');
+    const isCompleted = (status === 'completed' || status === 'hoàn thành');
     const isReferral = (orderId === "Thưởng GT" || orderId === "Thưởng GT Mốc");
 
     if (payStatus === "Đã TT") {
@@ -1446,7 +1449,7 @@ function confirmPayout(userId) {
       const status = String(data[i][7]).trim().toLowerCase(); // Cột H
       const payStatus = String(data[i][8]).trim(); // Cột I
       
-      const isCompleted = (status === 'completed' || status === 'waiting for payment' || status === 'hoàn thành');
+      const isCompleted = (status === 'completed' || status === 'hoàn thành');
       if (rowSubId === searchSubId && isCompleted && payStatus !== "Đã TT") {
         orderSheet.getRange(i + 3, 9).setValue("Đã TT");
         updatedCount++;
@@ -1573,6 +1576,16 @@ function fixAutoSheetFormatting() {
       sheet.getRange(3, 6, lastRow - 2, 1).setFormulas(fFormulas);
       sheet.getRange(3, 7, lastRow - 2, 1).setFormulas(gFormulas);
       sheet.getRange(3, 10, lastRow - 2, 1).setFormulas(jFormulas);
+
+      // Sửa lại các đơn 'Waiting for payment' đang bị nhầm thành 'Pending'
+      const hValues = sheet.getRange(3, 8, lastRow - 2, 1).getValues();
+      for (let r = 0; r < hValues.length; r++) {
+        const val = String(hValues[r][0]).trim().toLowerCase();
+        if (val === 'waiting for payment' || val === 'waiting_for_payment') {
+          sheet.getRange(r + 3, 8).setValue('Pending');
+        }
+      }
+
     }
   }
   
@@ -1746,7 +1759,7 @@ function calculateMonthlyReferralBonus(month, year) {
     if (!orderDateStr.startsWith(targetPrefix)) continue;
     if (orderId === "Thưởng GT" || orderId === "Thưởng GT Mốc") continue;
     
-    if (status === "completed" || status === "waiting for payment" || status === "hoàn thành" || status === "waiting_for_payment") {
+    if (status === "completed" || status === "hoàn thành") {
       userOrderCountMap[subId] = (userOrderCountMap[subId] || 0) + 1;
     }
     
