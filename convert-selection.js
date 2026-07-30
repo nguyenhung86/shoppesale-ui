@@ -437,7 +437,7 @@ function handleConvert() {
             <!-- Pricing & Commission Info (Chuẩn 100% phong cách Bot Zalo) -->
             <div style="border-top: 1px solid #f1f5f9; padding-top: 16px; margin-bottom: 20px;">
               <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
-                Bạn nhận ước tính <svg style="width: 14px; height: 14px; fill: #94a3b8;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                Hoa hồng ước tính: <svg style="width: 14px; height: 14px; fill: #94a3b8;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
               </div>
               <div style="display: flex; justify-content: space-between; align-items: flex-end;">
                 <div>
