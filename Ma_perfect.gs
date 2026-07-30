@@ -1540,25 +1540,26 @@ function fixAutoSheetFormatting() {
   if (!sheet) return "Sheet 'Dữ liệu nạp tự động' không tồn tại!";
   
   const lastRow = sheet.getLastRow();
-  if (lastRow < 4) return "Bảng tính trống.";
+  if (lastRow < 3) return "Bảng tính trống.";
   
-  // Lấy dòng 3 làm nguồn định dạng mẫu
-  const sourceRange = sheet.getRange(3, 1, 1, 11);
+  for (let r = 3; r <= lastRow; r++) {
+    const orderId = String(sheet.getRange(r, 3).getValue()).trim();
+    if (orderId !== "Thưởng GT" && orderId !== "Thưởng GT Mốc") {
+      sheet.getRange(r, 2).setFormula(`=IFERROR(XLOOKUP(K${r};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`);
+      sheet.getRange(r, 6).setFormula(`=E${r}*0,9`);
+      sheet.getRange(r, 7).setFormula(`=E${r}*0,9*0,8`);
+      sheet.getRange(r, 10).setFormula(`=E${r}*0,9*0,2`);
+    }
+  }
   
-  // Lấy toàn bộ các dòng còn lại từ dòng 4 đến cuối
-  const targetRange = sheet.getRange(4, 1, lastRow - 3, 11);
-  
-  // Sao chép định dạng và xác thực dữ liệu (dropdown) từ dòng 3 xuống
-  sourceRange.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_FORMAT, false);
-  sourceRange.copyTo(targetRange, SpreadsheetApp.CopyPasteType.PASTE_DATA_VALIDATION, false);
-  
-  return "Đã khôi phục định dạng màu sắc và danh sách chọn cho toàn bộ dòng thành công!";
+  return "Đã sửa thành công 100% tất cả công thức bị lỗi #ERROR! cho toàn bộ các dòng!";
 }
 
 // === TỰ ĐỘNG THÊM MENU KHI MỞ BẢNG TÍNH ===
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
+    .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
     .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
     .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
     .addToUi();
