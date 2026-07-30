@@ -1434,6 +1434,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
+    .addItem('Khôi phục dòng Thưởng GT bị xóa (Lê Anh Quân -> Anh Quân)', 'restoreMissingReferralRow')
     .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
     .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
     .addToUi();
@@ -2924,4 +2925,35 @@ function ensureAllSheetsFilters(ss) {
       }
     }
   } catch(e) {}
+}
+
+// === HÀM TỰ ĐỘNG KHÔI PHỤC DÒNG THƯỞNG GIỚI THIỆU LÊ ANH QUÂN VỪA BỊ XÓA ===
+function restoreMissingReferralRow() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+  if (!sheet) return "Sheet 'Dữ liệu nạp tự động' không tồn tại!";
+  
+  const lastRow = sheet.getLastRow();
+  const targetRow = Math.max(lastRow, 2) + 1;
+  
+  const rowData = [
+    "2026-07-28",
+    "Lê Anh Quân",
+    "Thưởng GT",
+    "Thưởng giới thiệu thành viên mới @Anh Quân phát sinh đơn hàng đầu tiên",
+    13889,
+    `=E${targetRow}*0,9`,
+    `=E${targetRow}*0,9*0,8`,
+    "Waiting for payment",
+    "Chưa TT",
+    `=E${targetRow}*0,9*0,2`,
+    "'6164261313796816983"
+  ];
+  
+  sheet.getRange(targetRow, 1, 1, rowData.length).setValues([rowData]);
+  sheet.getRange(targetRow, 5, 1, 3).setNumberFormat("#,##0đ");
+  sheet.getRange(targetRow, 10, 1, 1).setNumberFormat("#,##0đ");
+  
+  ensureAllSheetsFilters(ss);
+  return "Đã khôi phục lại dòng Thưởng giới thiệu cho @Lê Anh Quân thành công!";
 }
