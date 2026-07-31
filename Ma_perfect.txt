@@ -681,7 +681,7 @@ function doPost(e) {
                               
           if (isCancelled) {
             normStatus = "Invalid";
-          } else if (isCompleted) {
+          } else if (isOrderCompleted) {
             normStatus = "Waiting for payment";
           } else {
             normStatus = "Pending";
@@ -783,7 +783,7 @@ function doPost(e) {
             const orderStatusLower = String(order.checkout_status).trim().toLowerCase();
             const isOrderCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'waiting_for_payment');
             
-            if (isCompleted) {
+            if (isOrderCompleted) {
               // Chỉ áp dụng thưởng từ ngày 1/7/2026
               let isApplicableDate = false;
               try {
@@ -1223,7 +1223,7 @@ function getPayoutDashboardData() {
 
     if (payStatus === "Đã TT") {
       userStats[subId].paid += commission;
-    } else if (isCompleted) {
+    } else if (isOrderCompleted) {
       userStats[subId].unpaid += commission;
       if (isReferral) {
         userStats[subId].unpaidReferral += commission;
