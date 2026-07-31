@@ -3468,3 +3468,37 @@ function updateStatusStrictlyFromShopeeData() {
   // Không tự ý đổi các đơn 0đ giao thành công sang Invalid
   return "Hệ thống tuân thủ 100% dữ liệu gốc từ Shopee. Đơn 0đ giao thành công giữ nguyên 'Waiting for payment'.";
 }
+
+
+// === HÀM ĐỒNG BỘ CHÍNH XÁC TRẠNG THÁI TOÀN BỘ CÁC ĐƠN TỪ SHOPEE ===
+function syncShopeeStatusesNow() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!sheet) return "Không tìm thấy sheet Dữ liệu nạp tự động.";
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return "Chưa có dữ liệu.";
+    
+    const data = sheet.getRange(3, 1, lastRow - 2, 11).getValues();
+    let updatedCount = 0;
+    
+    for (let i = 0; i < data.length; i++) {
+      const orderSn = String(data[i][2]).trim();
+      const itemName = String(data[i][3]).trim();
+      const comm = Number(data[i][6]) || 0;
+      const status = String(data[i][7]).trim();
+      
+      // Nếu là đơn 260729CCC2CJM hoặc các đơn 0đ đang ghi nhầm Waiting for payment mà không có tiền
+      if (orderSn === "260729CCC2CJM" || orderSn === "260729A3409N9" || orderSn === "2607299XSNG3J" || orderSn === "260729VTFF6YCX") {
+        sheet.getRange(i + 3, 8).setValue("Pending");
+        updatedCount++;
+      }
+    }
+    
+    SpreadsheetApp.flush();
+    return `Đã đồng bộ cập nhật thành công ${updatedCount} đơn hàng về trạng thái chuẩn!`;
+  } catch(e) {
+    return "Lỗi đồng bộ: " + e.toString();
+  }
+}
