@@ -3502,3 +3502,33 @@ function syncShopeeStatusesNow() {
     return "Lỗi đồng bộ: " + e.toString();
   }
 }
+
+
+// === HÀM CHUYỂN ĐƠN 2607290A3409N9 SANG INVALID ===
+function fixOrder2607290A3409N9ToInvalid() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!sheet) return;
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return;
+    
+    const range = sheet.getRange(3, 1, lastRow - 2, 11).getValues();
+    let count = 0;
+    
+    for (let i = 0; i < range.length; i++) {
+      const orderSn = String(range[i][2]).trim();
+      const comm = Number(range[i][6]) || 0;
+      
+      if (orderSn === "2607290A3409N9" || orderSn === "260729CCC2CJM" || orderSn === "2607299XSNG3J" || orderSn === "260729VTFF6YCX") {
+        sheet.getRange(i + 3, 8).setValue("Invalid");
+        count++;
+      }
+    }
+    
+    SpreadsheetApp.flush();
+    return "Đã chuyển " + count + " đơn sang Invalid thành công!";
+  } catch(e) {
+    return "Lỗi: " + e.toString();
+  }
+}
