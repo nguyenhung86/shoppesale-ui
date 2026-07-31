@@ -1495,6 +1495,7 @@ function onOpen() {
   ensureAllSheetsFilters();
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
+    .addItem('📊 Báo cáo đối soát thanh toán TOÀN BỘ KHÁCH HÀNG', 'generateFullPaymentAuditReport')
     .addItem('✅ Khôi phục 5 đơn bôi vàng về Đã TT', 'restore51078PaidOrdersToPaid')
     .addItem('🧹 Dọn dẹp & sửa đơn 0đ sang Invalid', 'fixCancelledOrdersWithZeroCommission')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
