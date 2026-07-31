@@ -653,7 +653,7 @@ function doPost(e) {
           // Đã tồn tại -> Cập nhật cột Hoa Hồng (cột 5) và Trạng Thái (cột 8)
           sheet.getRange(existingRowIndex, 5).setValue(order.commission);
           const commNum = Number(order.commission) || 0;
-          const finalStatus = commNum <= 0 ? "Invalid" : order.checkout_status;
+          const finalStatus = order.checkout_status;
           sheet.getRange(existingRowIndex, 8).setValue(finalStatus);
           
           // Cập nhật Tên sản phẩm nếu trước đó chưa đúng hoặc trống
@@ -709,7 +709,7 @@ function doPost(e) {
             order.commission,
             `=E${targetRowIndex}*0,9`,
             `=E${targetRowIndex}*0,9*0,8`,
-            (Number(order.commission) || 0) <= 0 ? "Invalid" : order.checkout_status,
+            order.checkout_status,
             "Chưa TT",
             `=E${targetRowIndex}*0,9*0,2`,
             order.sub_id ? "'" + order.sub_id : ""
@@ -729,7 +729,7 @@ function doPost(e) {
             order_sn: cleanOrderSn,
             item_name: cleanItemName,
             commission: incomingComm,
-            checkout_status: (Number(order.commission) || 0) <= 0 ? "Invalid" : order.checkout_status,
+            checkout_status: order.checkout_status,
             sub_id: order.sub_id ? String(order.sub_id).trim() : "",
             matched: true
           });
@@ -855,7 +855,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
       if (isMatch) {
         let orderStatus = String(row[7]).trim();
         let orderStatusLower = orderStatus.toLowerCase();
-        if (commission <= 0 || orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+        if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện' || orderStatusLower.includes('hủy')) {
           orderStatus = 'Đơn hủy';
         } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
           orderStatus = 'Đang giao';
@@ -968,7 +968,7 @@ function searchOrder(orderIdsStr) {
         if (String(row[2]).trim() === currentId) {
           let orderStatus = String(row[7]).trim();
           let orderStatusLower = orderStatus.toLowerCase();
-          if (commission <= 0 || orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện' || orderStatusLower.includes('hủy')) {
             orderStatus = 'Đơn hủy';
           } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
             orderStatus = 'Đang chờ xác nhận';
@@ -1089,7 +1089,7 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
         if (dateValid) {
           let orderStatus = String(row[7]).trim();
           let orderStatusLower = orderStatus.toLowerCase();
-          if (commission <= 0 || orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện' || orderStatusLower.includes('hủy')) {
             orderStatus = 'Đơn hủy';
           } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
             orderStatus = 'Đang chờ xác nhận';
