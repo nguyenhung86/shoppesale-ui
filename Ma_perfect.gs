@@ -3167,3 +3167,164 @@ function auditPendingOrdersAgainstPaymentHistory() {
     return "Lỗi đối soát: " + e.toString();
   }
 }
+
+
+// === 1. HÀM TẠO BÁO CÁO ĐỐI SOÁT THANH TOÁN AN TOÀN CHO TOÀN BỘ KHÁCH HÀNG ===
+function generateFullPaymentAuditReport() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const orderSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    const historySheet = ss.getSheetByName("Lịch sử thanh toán");
+    
+    if (!orderSheet) return "Không tìm thấy sheet 'Dữ liệu nạp tự động'.";
+    
+    const orderLastRow = orderSheet.getLastRow();
+    if (orderLastRow < 3) return "Chưa có dữ liệu đơn hàng.";
+    
+    let historyMap = {};
+    if (historySheet && historySheet.getLastRow() >= 2) {
+      const histData = historySheet.getRange(2, 1, historySheet.getLastRow() - 1, 5).getValues();
+      for (let i = 0; i < histData.length; i++) {
+        const name = String(histData[i][0]).trim().toLowerCase();
+        const subId = String(histData[i][1]).trim();
+        const amt = Number(histData[i][2]) || 0;
+        
+        const key = subId ? subId : name;
+        historyMap[key] = (historyMap[key] || 0) + amt;
+      }
+    }
+    
+    const orders = orderSheet.getRange(3, 1, orderLastRow - 2, 11).getValues();
+    let userOrdersMap = {};
+    for (let i = 0; i < orders.length; i++) {
+      const row = orders[i];
+      const name = String(row[1]).trim();
+      const orderSn = String(row[2]).trim();
+      const comm = Number(row[6]) || 0;
+      const status = String(row[7]).trim().toLowerCase();
+      const payStatus = String(row[8]).trim();
+      const subId = String(row[10]).replace(/'/g, '').trim();
+      
+      const key = subId ? subId : name.toLowerCase();
+      if (!key) continue;
+      
+      if (!userOrdersMap[key]) {
+        userOrdersMap[key] = {
+          name: name,
+          subId: subId,
+          totalSheetPaid: 0,
+          pendingPaidCount: 0,
+          pendingPaidOrders: []
+        };
+      }
+      
+      if (payStatus === "Đã TT") {
+        userOrdersMap[key].totalSheetPaid += comm;
+        if (status === "pending") {
+          userOrdersMap[key].pendingPaidCount++;
+          userOrdersMap[key].pendingPaidOrders.push({ orderSn, comm, rowIndex: i + 3 });
+        }
+      }
+    }
+    
+    let reportSheet = ss.getSheetByName("Báo cáo đối soát thanh toán");
+    if (!reportSheet) {
+      reportSheet = ss.insertSheet("Báo cáo đối soát thanh toán");
+    } else {
+      reportSheet.clear();
+    }
+    
+    const headers = [
+      "Tên Zalo", "ID Zalo / Sub ID", "Tổng Tiền Thực Tế Đã CK (Lịch sử)", 
+      "Tổng Hoa Hồng Đã TT (Sheet)", "Chênh Lệch (CK - Sheet)", "Số Đơn Pending Đang Ghi Đã TT", "Đánh Giá / Khuyến Nghị"
+    ];
+    reportSheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground("#4a86e8").setFontColor("#ffffff");
+    
+    let reportRows = [];
+    let issueCount = 0;
+    
+    for (let key in userOrdersMap) {
+      const user = userOrdersMap[key];
+      const actualCk = historyMap[key] || historyMap[user.name.toLowerCase()] || 0;
+      const sheetPaid = user.totalSheetPaid;
+      const diff = actualCk - sheetPaid;
+      
+      let evalText = "🟢 KHỚP 100% (CHUẨN)";
+      if (Math.abs(diff) > 500) {
+        issueCount++;
+        if (diff < -500) {
+          evalText = `🔴 CHÊNH LỆCH: Sheet dư ${Math.abs(diff).toLocaleString('vi-VN')}đ so với tiền đã CK thực tế (${user.pendingPaidCount} đơn Pending đang Đã TT)`;
+        } else {
+          evalText = `🟡 CHÊNH LỆCH: Tiền đã CK nhiều hơn Sheet ${diff.toLocaleString('vi-VN')}đ`;
+        }
+      }
+      
+      reportRows.push([
+        user.name,
+        user.subId ? "'" + user.subId : "",
+        actualCk,
+        sheetPaid,
+        diff,
+        user.pendingPaidCount,
+        evalText
+      ]);
+    }
+    
+    if (reportRows.length > 0) {
+      reportSheet.getRange(2, 1, reportRows.length, headers.length).setValues(reportRows);
+      reportSheet.getRange(2, 3, reportRows.length, 3).setNumberFormat('#,##0 "đ"');
+      reportSheet.autoResizeColumns(1, headers.length);
+    }
+    
+    ss.setActiveSheet(reportSheet);
+    return `Đã xuất Báo cáo đối soát ra tab 'Báo cáo đối soát thanh toán'! Tìm thấy ${issueCount} khách có chênh lệch cần kiểm tra.`;
+  } catch(e) {
+    return "Lỗi tạo báo cáo: " + e.toString();
+  }
+}
+
+// === 2. HÀM KHÔI PHÚC CHÍNH XÁC 5 ĐƠN ĐÃ CHUYỂN KHOẢN VÀO SÁNG NAY VỀ 'ĐÃ TT' ===
+function restore51078PaidOrdersToPaid() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!sheet) return "Không tìm thấy sheet 'Dữ liệu nạp tự động'.";
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return "Không có dữ liệu.";
+    
+    const targetPaidSns = [
+      "260729VUBAW4EA",
+      "26073032RUUBK1",
+      "2607302X7Y3E1H",
+      "2607302X246K3Q",
+      "2607302U0Y8C2F"
+    ];
+    
+    const targetUnpaidSns = [
+      "260727QE3HAS58",
+      "260728UCUGKU1M"
+    ];
+    
+    const range = sheet.getRange(3, 1, lastRow - 2, 11);
+    const data = range.getValues();
+    let updatedPaid = 0;
+    let updatedUnpaid = 0;
+    
+    for (let i = 0; i < data.length; i++) {
+      const orderSn = String(data[i][2]).trim(); // Cột C
+      if (targetPaidSns.includes(orderSn)) {
+        sheet.getRange(i + 3, 9).setValue("Đã TT");
+        updatedPaid++;
+      } else if (targetUnpaidSns.includes(orderSn)) {
+        sheet.getRange(i + 3, 9).setValue("Chưa TT");
+        updatedUnpaid++;
+      }
+    }
+    
+    SpreadsheetApp.flush();
+    return "Đã khôi phục thành công " + updatedPaid + " đơn bôi vàng về 'Đã TT' và " + updatedUnpaid + " đơn bôi đỏ về 'Chưa TT' chuẩn đét 100%!";
+  } catch(e) {
+    return "Lỗi khôi phục: " + e.toString();
+  }
+}
