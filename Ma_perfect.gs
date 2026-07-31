@@ -652,7 +652,9 @@ function doPost(e) {
           
           // Đã tồn tại -> Cập nhật cột Hoa Hồng (cột 5) và Trạng Thái (cột 8)
           sheet.getRange(existingRowIndex, 5).setValue(order.commission);
-          sheet.getRange(existingRowIndex, 8).setValue(order.checkout_status);
+          const commNum = Number(order.commission) || 0;
+          const finalStatus = commNum <= 0 ? "Invalid" : order.checkout_status;
+          sheet.getRange(existingRowIndex, 8).setValue(finalStatus);
           
           // Cập nhật Tên sản phẩm nếu trước đó chưa đúng hoặc trống
           if ((!match.item_name || match.item_name === "undefined") && order.item_name) {
@@ -707,7 +709,7 @@ function doPost(e) {
             order.commission,
             `=E${targetRowIndex}*0,9`,
             `=E${targetRowIndex}*0,9*0,8`,
-            order.checkout_status,
+            (Number(order.commission) || 0) <= 0 ? "Invalid" : order.checkout_status,
             "Chưa TT",
             `=E${targetRowIndex}*0,9*0,2`,
             order.sub_id ? "'" + order.sub_id : ""
@@ -727,7 +729,7 @@ function doPost(e) {
             order_sn: cleanOrderSn,
             item_name: cleanItemName,
             commission: incomingComm,
-            checkout_status: order.checkout_status,
+            checkout_status: (Number(order.commission) || 0) <= 0 ? "Invalid" : order.checkout_status,
             sub_id: order.sub_id ? String(order.sub_id).trim() : "",
             matched: true
           });
@@ -853,7 +855,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
       if (isMatch) {
         let orderStatus = String(row[7]).trim();
         let orderStatusLower = orderStatus.toLowerCase();
-        if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+        if (commission <= 0 || orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
           orderStatus = 'Đơn hủy';
         } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
           orderStatus = 'Đang giao';
@@ -966,7 +968,7 @@ function searchOrder(orderIdsStr) {
         if (String(row[2]).trim() === currentId) {
           let orderStatus = String(row[7]).trim();
           let orderStatusLower = orderStatus.toLowerCase();
-          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+          if (commission <= 0 || orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
             orderStatus = 'Đơn hủy';
           } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
             orderStatus = 'Đang chờ xác nhận';
@@ -1087,7 +1089,7 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
         if (dateValid) {
           let orderStatus = String(row[7]).trim();
           let orderStatusLower = orderStatus.toLowerCase();
-          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
+          if (commission <= 0 || orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện') {
             orderStatus = 'Đơn hủy';
           } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
             orderStatus = 'Đang chờ xác nhận';
@@ -2990,4 +2992,38 @@ function ensureAllSheetsFilters(ss) {
       }
     }
   } catch(e) {}
+}
+
+
+// === HÀM TỰ ĐỘNG QUÉT VÀ SỬA TẤT CẢ ĐƠN HOA HỒNG = 0Đ SANG TRẠNG THÁI INVALID (HỦY) ===
+function fixCancelledOrdersWithZeroCommission() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!sheet) return "Không tìm thấy sheet 'Dữ liệu nạp tự động'.";
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return "Chưa có dữ liệu.";
+    
+    const range = sheet.getRange(3, 1, lastRow - 2, 11);
+    const data = range.getValues();
+    let fixedCount = 0;
+    
+    for (let i = 0; i < data.length; i++) {
+      const row = data[i];
+      const commE = Number(row[4]) || 0; // Cột E (Hoa hồng VNĐ)
+      const commG = Number(row[6]) || 0; // Cột G (HH 80%)
+      const status = String(row[7]).trim(); // Cột H (Trạng thái)
+      
+      if ((commE <= 0 || commG <= 0) && status !== "Invalid" && status !== "Cancelled" && status !== "Đơn hủy") {
+        const targetRow = i + 3;
+        sheet.getRange(targetRow, 8).setValue("Invalid");
+        fixedCount++;
+      }
+    }
+    SpreadsheetApp.flush();
+    return "Đã tự động sửa " + fixedCount + " đơn hoa hồng 0đ sang trạng thái Invalid thành công!";
+  } catch (e) {
+    return "Lỗi khi sửa đơn: " + e.toString();
+  }
 }
