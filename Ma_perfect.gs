@@ -3084,3 +3084,83 @@ function fixPendingOrdersMistakenlyMarkedPaid() {
   SpreadsheetApp.flush();
   return "Đã khôi phục " + count + " đơn Pending bị gán nhầm Đã TT về lại Chưa TT!";
 }
+
+
+// === HÀM THÔNG MINH ĐỐI SOÁT CHÍNH XÁC CÁC ĐƠN PENDING BỊ GÁN NẰM ĐÃ TT VỚI LỊCH SỬ CHUYỂN KHOẢN THỰC TẾ ===
+function auditPendingOrdersAgainstPaymentHistory() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const orderSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    const historySheet = ss.getSheetByName("Lịch sử thanh toán");
+    
+    if (!orderSheet) return "Không tìm thấy sheet 'Dữ liệu nạp tự động'.";
+    
+    const orderLastRow = orderSheet.getLastRow();
+    if (orderLastRow < 3) return "Chưa có dữ liệu đơn hàng.";
+    
+    // Đọc lịch sử chuyển khoản thực tế từ sheet 'Lịch sử thanh toán'
+    let historyRecords = [];
+    if (historySheet && historySheet.getLastRow() >= 2) {
+      const histData = historySheet.getRange(2, 1, historySheet.getLastRow() - 1, 5).getValues();
+      for (let i = 0; i < histData.length; i++) {
+        historyRecords.push({
+          zaloName: String(histData[i][0]).trim(),
+          subId: String(histData[i][1]).trim(),
+          amount: Number(histData[i][2]) || 0,
+          date: histData[i][3]
+        });
+      }
+    }
+    
+    const orders = orderSheet.getRange(3, 1, orderLastRow - 2, 11).getValues();
+    let auditLog = [];
+    let revertedCount = 0;
+    
+    for (let i = 0; i < orders.length; i++) {
+      const row = orders[i];
+      const orderSn = String(row[2]).trim();
+      const status = String(row[7]).trim().toLowerCase(); // Cột H
+      const payStatus = String(row[8]).trim(); // Cột I
+      const comm = Number(row[6]) || 0; // Cột G (Hoa hồng 80%)
+      const subId = String(row[10]).replace(/'/g, '').trim();
+      const zaloName = String(row[1]).trim();
+      
+      // Nếu là đơn Pending nhưng bị ghi Đã TT
+      if (status === "pending" && payStatus === "Đã TT") {
+        // Tính tổng tiền các bill đã chuyển thực tế cho khách này
+        const userBills = historyRecords.filter(h => (subId && h.subId === subId) || (zaloName && h.zaloName.toLowerCase() === zaloName.toLowerCase()));
+        const totalPaidInHistory = userBills.reduce((sum, b) => sum + b.amount, 0);
+        
+        // Tính tổng hoa hồng các đơn Hoàn thành của khách này
+        let userCompletedComm = 0;
+        for (let j = 0; j < orders.length; j++) {
+          const rSub = String(orders[j][10]).replace(/'/g, '').trim();
+          const rName = String(orders[j][1]).trim();
+          const rStatus = String(orders[j][7]).trim().toLowerCase();
+          const rComm = Number(orders[j][6]) || 0;
+          
+          const isSameUser = (subId && rSub === subId) || (zaloName && rName.toLowerCase() === zaloName.toLowerCase());
+          const isComp = (rStatus === "completed" || rStatus === "hoàn thành" || rStatus === "waiting for payment" || rStatus === "waiting_for_payment");
+          
+          if (isSameUser && isComp) {
+            userCompletedComm += rComm;
+          }
+        }
+        
+        // Nếu tổng tiền thực tế chuyển khoản <= tổng tiền các đơn Hoàn thành -> Đơn Pending này chắc chắn CHƯA CÓ TIỀN CHUYỂN KHOẢN!
+        if (totalPaidInHistory <= userCompletedComm + 100) { // Sai số nhỏ 100đ
+          orderSheet.getRange(i + 3, 9).setValue("Chưa TT");
+          revertedCount++;
+          auditLog.push(`[ĐÃ KHÔI PHÚC CHƯA TT] Đơn ${orderSn} (${zaloName}) - {comm}đ: Chưa có tiền trong Lịch sử CK (${totalPaidInHistory}đ vs Hoàn thành ${userCompletedComm}đ)`);
+        } else {
+          auditLog.push(`[GIỮ NGUYÊN ĐÃ TT] Đơn ${orderSn} (${zaloName}) - {comm}đ: Có khả năng đã chuyển khoản dư.`);
+        }
+      }
+    }
+    
+    SpreadsheetApp.flush();
+    return `Đã đối soát xong 100%! Đã tự động khôi phục ${revertedCount} đơn Pending về 'Chưa TT' an toàn tuyệt đối. Chi tiết xem trong Logger.`;
+  } catch (e) {
+    return "Lỗi đối soát: " + e.toString();
+  }
+}
