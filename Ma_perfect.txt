@@ -1218,7 +1218,7 @@ function getPayoutDashboardData() {
       userStats[subId] = { unpaid: 0, paid: 0, unpaidReferral: 0 };
     }
     
-    const isCompleted = (status === 'completed' || status === 'hoàn thành' || status === 'waiting for payment' || status === 'waiting_for_payment');
+    const isOrderCompleted = (status === 'completed' || status === 'hoàn thành' || status === 'waiting for payment' || status === 'waiting_for_payment');
     const isReferral = (orderId === "Thưởng GT" || orderId === "Thưởng GT Mốc");
 
     if (payStatus === "Đã TT") {
