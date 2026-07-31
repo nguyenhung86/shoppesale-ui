@@ -4,6 +4,11 @@ const API_TOKEN = "DongChau@Secure2026"; // Mã bí mật bảo mật chống b�
 function doGet(e) {
   if (e && e.parameter) {
     const action = e.parameter.action;
+        if (action === 'fixOrder2607290A3409N9ToInvalid') {
+      const resMsg = fixAllCancelledOrdersToInvalidNow();
+      return ContentService.createTextOutput(JSON.stringify({ success: true, message: resMsg }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
     if (action === 'test') {
       return ContentService.createTextOutput(JSON.stringify({ status: "ok" }))
         .setMimeType(ContentService.MimeType.JSON);
