@@ -1303,8 +1303,8 @@ function confirmPayout(userId) {
       const status = String(data[i][7]).trim().toLowerCase(); // Cột H
       const payStatus = String(data[i][8]).trim(); // Cột I
       
-      const isNotCancelled = (status !== 'invalid' && status !== 'cancelled' && status !== 'đơn hủy' && status !== 'không đủ điều kiện');
-      if (rowSubId === searchSubId && isNotCancelled && payStatus !== "Đã TT") {
+      const isCompleted = (status === 'completed' || status === 'hoàn thành' || status === 'waiting for payment' || status === 'waiting_for_payment');
+      if (rowSubId === searchSubId && isCompleted && payStatus !== "Đã TT") {
         orderSheet.getRange(i + 3, 9).setValue("Đã TT");
         updatedCount++;
       }
@@ -3061,4 +3061,26 @@ function fixOrderToInvalid(orderSn) {
       sheet.getRange(i + 3, 8).setValue("Invalid");
     }
   }
+}
+
+
+// === HÀM KHÔI PHÚC CÁC ĐƠN PENDING BỊ GÁN NHẦM ĐÃ TT VỀ CHƯA TT ===
+function fixPendingOrdersMistakenlyMarkedPaid() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+  if (!sheet) return;
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 3) return;
+  const range = sheet.getRange(3, 1, lastRow - 2, 11).getValues();
+  let count = 0;
+  for (let i = 0; i < range.length; i++) {
+    const status = String(range[i][7]).trim().toLowerCase(); // Cột H (Trạng Thái)
+    const payStatus = String(range[i][8]).trim(); // Cột I (Chốt)
+    if (status === "pending" && payStatus === "Đã TT") {
+      sheet.getRange(i + 3, 9).setValue("Chưa TT");
+      count++;
+    }
+  }
+  SpreadsheetApp.flush();
+  return "Đã khôi phục " + count + " đơn Pending bị gán nhầm Đã TT về lại Chưa TT!";
 }
