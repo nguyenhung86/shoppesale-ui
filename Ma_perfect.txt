@@ -1495,6 +1495,8 @@ function onOpen() {
   ensureAllSheetsFilters();
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
+    .addItem('🔍 Tự động đối soát & khôi phục đơn Pending', 'auditPendingOrdersAgainstPaymentHistory')
+    .addItem('🧹 Dọn dẹp & sửa đơn 0đ sang Invalid', 'fixCancelledOrdersWithZeroCommission')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
     .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
     .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
