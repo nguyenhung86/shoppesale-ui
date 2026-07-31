@@ -662,10 +662,21 @@ function doPost(e) {
           const rawInStatus = String(order.checkout_status || "").trim();
           const inLower = rawInStatus.toLowerCase();
           let normStatus = rawInStatus;
-          if (inLower.includes("hủy") || inLower.includes("invalid") || inLower.includes("cancelled") || inLower.includes("canceled") || inLower.includes("không đủ điều kiện") || inLower.includes("unpaid") || inLower.includes("return") || inLower.includes("refund")) {
+          const nfcLower = rawInStatus.normalize("NFC").toLowerCase();
+          const nonAccLower = nfcLower.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/g, "d");
+          
+          const isCancelled = nfcLower.includes("hủy") || nfcLower.includes("invalid") || nfcLower.includes("cancelled") || nfcLower.includes("canceled") || nfcLower.includes("không đủ điều kiện") || nfcLower.includes("unpaid") || nfcLower.includes("return") || nfcLower.includes("refund") ||
+                              nonAccLower.includes("huy") || nonAccLower.includes("khong du dieu kien");
+                              
+          const isCompleted = nfcLower.includes("hoàn thành") || nfcLower.includes("completed") || nfcLower.includes("waiting for payment") || nfcLower.includes("waiting_for_payment") ||
+                              nonAccLower.includes("hoan thanh");
+                              
+          if (isCancelled) {
             normStatus = "Invalid";
-          } else if (inLower.includes("hoàn thành") || inLower.includes("completed") || inLower.includes("waiting for payment") || inLower.includes("waiting_for_payment")) {
+          } else if (isCompleted) {
             normStatus = "Waiting for payment";
+          } else {
+            normStatus = "Pending";
           }
           sheet.getRange(existingRowIndex, 8).setValue(normStatus);
           
@@ -685,9 +696,9 @@ function doPost(e) {
           // --- XỬ LÝ KHUYẾN MẠI GIỚI THIỆU THÀNH VIÊN MỚI PHÁT SINH ĐƠN ĐẦU ---
           const cleanSubId = order.sub_id ? String(order.sub_id).replace(/'/g, "").trim() : String(existingSubId).replace(/'/g, "").trim();
           const orderStatusLower = String(order.checkout_status).trim().toLowerCase();
-          const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'waiting_for_payment');
+          const isOrderCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'waiting_for_payment');
           
-          if (cleanSubId && isCompleted) {
+          if (cleanSubId && isOrderCompleted) {
             // Kiểm tra ngày áp dụng (từ 1/7/2026)
             let isApplicableDate = false;
             try {
@@ -762,7 +773,7 @@ function doPost(e) {
           if (order.sub_id) {
             const cleanSubId = String(order.sub_id).replace(/'/g, "").trim();
             const orderStatusLower = String(order.checkout_status).trim().toLowerCase();
-            const isCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'waiting_for_payment');
+            const isOrderCompleted = (orderStatusLower === 'completed' || orderStatusLower === 'hoàn thành' || orderStatusLower === 'waiting for payment' || orderStatusLower === 'waiting_for_payment');
             
             if (isCompleted) {
               // Chỉ áp dụng thưởng từ ngày 1/7/2026
