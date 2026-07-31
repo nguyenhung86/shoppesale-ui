@@ -201,6 +201,11 @@ if (action === 'saveLazadaRate') {
       return ContentService.createTextOutput(JSON.stringify(res))
         .setMimeType(ContentService.MimeType.JSON);
     }
+    if (action === 'getBanhmysuaOrdersDetails') {
+      const res = getBanhmysuaOrdersDetails();
+      return ContentService.createTextOutput(JSON.stringify(res))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
   }
   const output = HtmlService.createHtmlOutputFromFile('index');
   output.setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -3326,5 +3331,48 @@ function restore51078PaidOrdersToPaid() {
     return "Đã khôi phục thành công " + updatedPaid + " đơn bôi vàng về 'Đã TT' và " + updatedUnpaid + " đơn bôi đỏ về 'Chưa TT' chuẩn đét 100%!";
   } catch(e) {
     return "Lỗi khôi phục: " + e.toString();
+  }
+}
+
+
+// === HÀM TRA CỨU ĐƠN HÀNG CỦA BANHMYSUA ===
+function getBanhmysuaOrdersDetails() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!sheet) return { success: false, error: "Sheet không tồn tại" };
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return { success: false, error: "Chưa có dữ liệu" };
+    
+    const data = sheet.getRange(3, 1, lastRow - 2, 11).getValues();
+    let userOrders = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      const name = String(data[i][1]).trim();
+      const orderSn = String(data[i][2]).trim();
+      const comm = Number(data[i][6]) || 0;
+      const status = String(data[i][7]).trim();
+      const payStatus = String(data[i][8]).trim();
+      const subId = String(data[i][10]).replace(/'/g, '').trim();
+      const orderDate = data[i][0];
+      const itemName = String(data[i][3] || '').trim(); // Tên sản phẩm
+      
+      if (subId === "3519333995387418891" || name.toLowerCase().indexOf("banhmysua") !== -1) {
+        userOrders.push({
+          rowIndex: i + 3,
+          date: orderDate,
+          orderSn: orderSn,
+          itemName: itemName,
+          commission: comm,
+          status: status,
+          payStatus: payStatus
+        });
+      }
+    }
+    
+    return { success: true, count: userOrders.length, orders: userOrders };
+  } catch(e) {
+    return { success: false, error: e.toString() };
   }
 }
