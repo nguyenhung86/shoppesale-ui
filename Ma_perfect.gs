@@ -1500,6 +1500,7 @@ function onOpen() {
   ensureAllSheetsFilters();
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
+    .addItem('📋 Tra cứu danh sách đơn đã chuyển Đã TT đợt này', 'showOrdersMarkedPaidTodayPrompt')
     .addItem('📊 Báo cáo đối soát thanh toán TOÀN BỘ KHÁCH HÀNG', 'generateFullPaymentAuditReport')
     .addItem('✅ Khôi phục 5 đơn bôi vàng về Đã TT', 'restore51078PaidOrdersToPaid')
     .addItem('🧹 Dọn dẹp & sửa đơn 0đ sang Invalid', 'fixCancelledOrdersWithZeroCommission')
@@ -3374,5 +3375,91 @@ function getBanhmysuaOrdersDetails() {
     return { success: true, count: userOrders.length, orders: userOrders };
   } catch(e) {
     return { success: false, error: e.toString() };
+  }
+}
+
+
+// === HÀM TRA CỨU DANH SÁCH CÁC ĐƠN ĐÃ CHUYỂN SANG 'ĐÃ TT' TRONG NGÀY ===
+function showOrdersMarkedPaidTodayPrompt() {
+  try {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt(
+      'Tra Cứu Đơn Đã Chuyển Đã TT',
+      'Nhập Ngày Đặt Hàng / Ngày Chốt cần tra cứu (Ví dụ: 31/07/2026 hoặc để trống để xem tất cả đơn Hoàn Thành đã chốt):',
+      ui.ButtonSet.OK_CANCEL
+    );
+    
+    if (response.getSelectedButton() !== ui.Button.OK) return;
+    
+    const inputDateStr = response.getResponseText().trim();
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const orderSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!orderSheet) return;
+    
+    const lastRow = orderSheet.getLastRow();
+    if (lastRow < 3) return;
+    
+    const orders = orderSheet.getRange(3, 1, lastRow - 2, 11).getValues();
+    
+    let reportSheet = ss.getSheetByName("Danh sách đơn đã TT đợt mới");
+    if (!reportSheet) {
+      reportSheet = ss.insertSheet("Danh sách đơn đã TT đợt mới");
+    } else {
+      reportSheet.clear();
+    }
+    
+    const headers = ["STT", "Mã Đơn Hàng", "Tên Zalo", "ID Zalo / Sub ID", "Ngày Đặt Hàng", "Tên Sản Phẩm", "Hoa Hồng (80%)", "Trạng Thái Giao", "Trạng Thái Chốt"];
+    reportSheet.getRange(1, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground("#388e3c").setFontColor("#ffffff");
+    
+    let reportRows = [];
+    let count = 0;
+    
+    for (let i = 0; i < orders.length; i++) {
+      const row = orders[i];
+      const orderDate = row[0];
+      const name = String(row[1]).trim();
+      const orderSn = String(row[2]).trim();
+      const itemName = String(row[3]).trim();
+      const comm = Number(row[6]) || 0;
+      const status = String(row[7]).trim();
+      const payStatus = String(row[8]).trim();
+      const subId = String(row[10]).replace(/'/g, '').trim();
+      
+      let dateDisplay = "";
+      if (orderDate instanceof Date) {
+        dateDisplay = Utilities.formatDate(orderDate, Session.getScriptTimeZone(), "dd/MM/yyyy");
+      } else {
+        dateDisplay = String(orderDate).trim();
+      }
+      
+      // Lọc các đơn đã chốt Đã TT
+      if (payStatus === "Đã TT") {
+        if (!inputDateStr || dateDisplay.indexOf(inputDateStr) !== -1) {
+          count++;
+          reportRows.push([
+            count,
+            orderSn,
+            name,
+            "'" + subId,
+            dateDisplay,
+            itemName,
+            comm,
+            status,
+            payStatus
+          ]);
+        }
+      }
+    }
+    
+    if (reportRows.length > 0) {
+      reportSheet.getRange(2, 1, reportRows.length, headers.length).setValues(reportRows);
+      reportSheet.getRange(2, 7, reportRows.length, 1).setNumberFormat('#,##0 "đ"');
+      reportSheet.autoResizeColumns(1, headers.length);
+    }
+    
+    ss.setActiveSheet(reportSheet);
+    ui.alert(`Đã xuất ${count} đơn hàng 'Đã TT' ra tab 'Danh sách đơn đã TT đợt mới'!`);
+  } catch(e) {
+    SpreadsheetApp.getUi().alert("Lỗi: " + e.toString());
   }
 }
