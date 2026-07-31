@@ -1500,6 +1500,7 @@ function onOpen() {
   ensureAllSheetsFilters();
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
+    .addItem('🧹 Dọn dẹp đơn hủy sang Invalid', 'fixCancelledOrdersWithZeroCommissionPrompt')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
     .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
     .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
