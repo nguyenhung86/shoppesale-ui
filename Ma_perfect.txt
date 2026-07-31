@@ -654,7 +654,15 @@ function doPost(e) {
           sheet.getRange(existingRowIndex, 5).setValue(order.commission);
           const commNum = Number(order.commission) || 0;
           const finalStatus = order.checkout_status;
-          sheet.getRange(existingRowIndex, 8).setValue(finalStatus);
+          const rawInStatus = String(order.checkout_status || "").trim();
+          const inLower = rawInStatus.toLowerCase();
+          let normStatus = rawInStatus;
+          if (inLower.includes("hủy") || inLower.includes("invalid") || inLower.includes("cancelled") || inLower.includes("canceled") || inLower.includes("không đủ điều kiện")) {
+            normStatus = "Invalid";
+          } else if (inLower.includes("hoàn thành") || inLower.includes("completed") || inLower.includes("waiting for payment") || inLower.includes("waiting_for_payment")) {
+            normStatus = "Waiting for payment";
+          }
+          sheet.getRange(existingRowIndex, 8).setValue(normStatus);
           
           // Cập nhật Tên sản phẩm nếu trước đó chưa đúng hoặc trống
           if ((!match.item_name || match.item_name === "undefined") && order.item_name) {
@@ -709,7 +717,12 @@ function doPost(e) {
             order.commission,
             `=E${targetRowIndex}*0,9`,
             `=E${targetRowIndex}*0,9*0,8`,
-            order.checkout_status,
+            (() => {
+            const st = String(order.checkout_status || "").trim().toLowerCase();
+            if (st.includes("hủy") || st.includes("invalid") || st.includes("cancelled") || st.includes("canceled") || st.includes("không đủ điều kiện")) return "Invalid";
+            if (st.includes("hoàn thành") || st.includes("completed") || st.includes("waiting for payment") || st.includes("waiting_for_payment")) return "Waiting for payment";
+            return order.checkout_status || "Pending";
+          })(),
             "Chưa TT",
             `=E${targetRowIndex}*0,9*0,2`,
             order.sub_id ? "'" + order.sub_id : ""
@@ -729,7 +742,12 @@ function doPost(e) {
             order_sn: cleanOrderSn,
             item_name: cleanItemName,
             commission: incomingComm,
-            checkout_status: order.checkout_status,
+            checkout_status: (() => {
+            const st = String(order.checkout_status || "").trim().toLowerCase();
+            if (st.includes("hủy") || st.includes("invalid") || st.includes("cancelled") || st.includes("canceled") || st.includes("không đủ điều kiện")) return "Invalid";
+            if (st.includes("hoàn thành") || st.includes("completed") || st.includes("waiting for payment") || st.includes("waiting_for_payment")) return "Waiting for payment";
+            return order.checkout_status || "Pending";
+          })(),
             sub_id: order.sub_id ? String(order.sub_id).trim() : "",
             matched: true
           });
@@ -3025,5 +3043,22 @@ function fixCancelledOrdersWithZeroCommission() {
     return "Đã tự động sửa " + fixedCount + " đơn hoa hồng 0đ sang trạng thái Invalid thành công!";
   } catch (e) {
     return "Lỗi khi sửa đơn: " + e.toString();
+  }
+}
+
+
+// === HÀM SỬA NHANH MỘT HOẶC NHIỀU ĐƠN HỦY SANG INVALID THỦ CÔNG / TỰ ĐỘNG ===
+function fixOrderToInvalid(orderSn) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+  if (!sheet) return;
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 3) return;
+  const range = sheet.getRange(3, 3, lastRow - 2, 6).getValues();
+  for (let i = 0; i < range.length; i++) {
+    const sn = String(range[i][0]).trim();
+    if (!orderSn || sn === orderSn || sn.includes(orderSn)) {
+      sheet.getRange(i + 3, 8).setValue("Invalid");
+    }
   }
 }
