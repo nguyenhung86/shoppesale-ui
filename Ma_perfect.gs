@@ -657,7 +657,7 @@ function doPost(e) {
           const rawInStatus = String(order.checkout_status || "").trim();
           const inLower = rawInStatus.toLowerCase();
           let normStatus = rawInStatus;
-          if (inLower.includes("hủy") || inLower.includes("invalid") || inLower.includes("cancelled") || inLower.includes("canceled") || inLower.includes("không đủ điều kiện")) {
+          if (inLower.includes("hủy") || inLower.includes("invalid") || inLower.includes("cancelled") || inLower.includes("canceled") || inLower.includes("không đủ điều kiện") || inLower.includes("unpaid") || inLower.includes("return") || inLower.includes("refund")) {
             normStatus = "Invalid";
           } else if (inLower.includes("hoàn thành") || inLower.includes("completed") || inLower.includes("waiting for payment") || inLower.includes("waiting_for_payment")) {
             normStatus = "Waiting for payment";
