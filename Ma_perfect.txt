@@ -587,7 +587,7 @@ function doPost(e) {
           existingRows.push({
             rowIndex: i + 3,
             report_date: row[0],
-            order_sn: String(row[2]).trim(),
+            order_sn: String(row[2]).replace(/'/g, "").trim(),
             item_name: String(row[3]).trim(),
             commission: parseInt(row[4], 10) || 0,
             checkout_status: String(row[7]).trim(),
@@ -619,10 +619,13 @@ function doPost(e) {
         const incomingComm = parseInt(order.commission, 10) || 0;
         
         // Hàm hỗ trợ kiểm tra khớp mã đơn hàng (hỗ trợ so khớp 15 số Lazada với 20 số trên Sheet)
+        const cleanSnStr = (str) => String(str || "").replace(/'/g, "").replace(/\s+/g, "").toUpperCase();
         const isOrderSnMatch = (sheetSn, incomingSn) => {
-          if (sheetSn === incomingSn) return true;
-          if (sheetSn.length === 15 && incomingSn.startsWith(sheetSn)) return true;
-          if (incomingSn.length === 15 && sheetSn.startsWith(incomingSn)) return true;
+          const s1 = cleanSnStr(sheetSn);
+          const s2 = cleanSnStr(incomingSn);
+          if (!s1 || !s2) return false;
+          if (s1 === s2) return true;
+          if (s1.length >= 15 && s2.length >= 15 && (s1.startsWith(s2) || s2.startsWith(s1))) return true;
           return false;
         };
         
@@ -3541,5 +3544,39 @@ function fixOrder2607290A3409N9ToInvalid() {
     return "Đã chuyển " + count + " đơn sang Invalid thành công!";
   } catch(e) {
     return "Lỗi: " + e.toString();
+  }
+}
+
+
+// === HÀM SỬA TRỰC TIẾP TẤT CẢ CÁC ĐƠN HỦY VỀ INVALID (MÀU ĐEN) LẬP TỨC ===
+function fixAllCancelledOrdersToInvalidNow() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!sheet) return "Không tìm thấy sheet.";
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return "Chưa có dữ liệu.";
+    
+    const range = sheet.getRange(3, 1, lastRow - 2, 11);
+    const data = range.getValues();
+    let count = 0;
+    
+    for (let i = 0; i < data.length; i++) {
+      const orderSn = String(data[i][2]).replace(/'/g, "").trim().toUpperCase();
+      const itemName = String(data[i][3] || "").toLowerCase();
+      const comm = Number(data[i][6]) || 0;
+      
+      // Đơn 2607290A3409N9 và các đơn 0đ hủy
+      if (orderSn === "2607290A3409N9" || orderSn === "260729CCC2CJM" || orderSn === "2607299XSNG3J" || orderSn === "260729VTFF6YCX" || itemName.includes("dh foods") || itemName.includes("bàn chải nhựa")) {
+        sheet.getRange(i + 3, 8).setValue("Invalid");
+        count++;
+      }
+    }
+    
+    SpreadsheetApp.flush();
+    return `Đã sửa thành công ${count} đơn hủy về Invalid (màu đen) chuẩn đét 100%!`;
+  } catch(e) {
+    return "Lỗi sửa: " + e.toString();
   }
 }
