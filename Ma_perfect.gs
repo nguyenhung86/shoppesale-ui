@@ -196,7 +196,9 @@ if (action === 'saveLazadaRate') {
     
     // ĐƯỜNG DẪN API LẤY BẢNG XẾP HẠNG HOA HỒNG THỰC TẾ
     if (action === 'getLeaderboard') {
-      const res = getLeaderboardData();
+      const month = e.parameter.month;
+      const year = e.parameter.year;
+      const res = getLeaderboardData(month, year);
       return ContentService.createTextOutput(JSON.stringify(res))
         .setMimeType(ContentService.MimeType.JSON);
     }
@@ -1362,6 +1364,22 @@ function checkAndTriggerReferralReward(ss, sheet, cleanSubId, orderReportDate, t
     const status = String(refData[rIdx][5]).trim();
     
     if (rowSubId === cleanSubId && status === "chờ đơn đầu") {
+      // Kiểm tra mốc 14 ngày kể từ ngày tham gia nhóm (Cột A)
+      const joinDateVal = refData[rIdx][0];
+      if (joinDateVal && orderReportDate) {
+        const jDate = (joinDateVal instanceof Date) ? joinDateVal : new Date(joinDateVal);
+        const oDate = (orderReportDate instanceof Date) ? orderReportDate : new Date(orderReportDate);
+        if (!isNaN(jDate.getTime()) && !isNaN(oDate.getTime())) {
+          const diffDays = (oDate.getTime() - jDate.getTime()) / (1000 * 60 * 60 * 24);
+          if (diffDays > 14) {
+            // Đã quá 14 ngày kể từ ngày tham gia nhóm -> Đổi trạng thái thành "hết hạn" và không tính thưởng
+            refSheet.getRange(rIdx + 2, 6).setValue("hết hạn");
+            refSheet.getRange(rIdx + 2, 7).setValue("");
+            continue;
+          }
+        }
+      }
+
       // Cập nhật trạng thái thành "đã thưởng" và reset trạng thái thông báo thành rỗng
       refSheet.getRange(rIdx + 2, 6).setValue("đã thưởng");
       refSheet.getRange(rIdx + 2, 7).setValue("");
@@ -2415,21 +2433,51 @@ function cleanShopeeUrl(url) {
 }
 
 // Hàm lấy dữ liệu bảng xếp hạng
-function getLeaderboardData() {
+function getLeaderboardData(targetMonth, targetYear) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // Thu thập danh sách các tháng có dữ liệu thực tế
+    const availablePeriods = {};
     
     // 1. Thống kê số lượng lượt mời từ sheet "Giới thiệu"
     const refSheet = ss.getSheetByName("Giới thiệu");
     const inviteMap = {};
+    const inviteNameMap = {};
     if (refSheet) {
       const refLastRow = refSheet.getLastRow();
       if (refLastRow >= 2) {
         const refData = refSheet.getRange(2, 1, refLastRow - 1, 5).getValues();
         for (let j = 0; j < refData.length; j++) {
+          const dateVal = refData[j][0];
+          
+          let m, y;
+          if (dateVal instanceof Date) {
+            m = dateVal.getMonth() + 1;
+            y = dateVal.getFullYear();
+          } else if (typeof dateVal === 'string') {
+            const parts = dateVal.split('/');
+            if (parts.length >= 3) {
+              m = parseInt(parts[1], 10);
+              y = parseInt(parts[2].split(' ')[0], 10);
+            }
+          }
+          
+          if (m && y) {
+            availablePeriods[`${m}-${y}`] = true;
+          }
+          
+          if (targetMonth && targetYear) {
+            if (String(m) !== String(targetMonth) || String(y) !== String(targetYear)) {
+              continue;
+            }
+          }
+          
           const referrerName = String(refData[j][4]).trim(); // Tên Người Giới Thiệu ở cột E (chỉ số 4)
           if (referrerName && referrerName !== "") {
-            inviteMap[referrerName] = (inviteMap[referrerName] || 0) + 1;
+            const key = referrerName.toLowerCase().replace(/\s+/g, ' ');
+            inviteMap[key] = (inviteMap[key] || 0) + 1;
+            inviteNameMap[key] = referrerName;
           }
         }
       }
@@ -2445,6 +2493,30 @@ function getLeaderboardData() {
         const data = sheet.getRange(3, 1, lastRow - 2, 10).getValues();
         for (let i = 0; i < data.length; i++) {
           const row = data[i];
+          const dateVal = row[0];
+          
+          let m, y;
+          if (dateVal instanceof Date) {
+            m = dateVal.getMonth() + 1;
+            y = dateVal.getFullYear();
+          } else if (typeof dateVal === 'string') {
+            const parts = dateVal.split('/');
+            if (parts.length >= 3) {
+              m = parseInt(parts[1], 10);
+              y = parseInt(parts[2].split(' ')[0], 10);
+            }
+          }
+          
+          if (m && y) {
+            availablePeriods[`${m}-${y}`] = true;
+          }
+          
+          if (targetMonth && targetYear) {
+            if (String(m) !== String(targetMonth) || String(y) !== String(targetYear)) {
+              continue;
+            }
+          }
+          
           const customerName = String(row[1]).trim();
           if (!customerName || customerName === "") continue;
           
@@ -2455,33 +2527,34 @@ function getLeaderboardData() {
           
           const commission = Number(row[6]) || 0;
           
-          if (!map[customerName]) {
-            map[customerName] = {
+          const key = customerName.toLowerCase().replace(/\s+/g, ' ');
+          if (!map[key]) {
+            map[key] = {
               name: customerName,
               commission: 0,
               orderCount: 0,
               inviteCount: 0
             };
           }
-          map[customerName].commission += commission;
-          map[customerName].orderCount += 1;
+          map[key].commission += commission;
+          map[key].orderCount += 1;
         }
       }
     }
     
     // Áp dụng số lượng mời vào kết quả
-    for (let name in map) {
-      map[name].inviteCount = inviteMap[name] || 0;
+    for (let key in map) {
+      map[key].inviteCount = inviteMap[key] || 0;
     }
     
     // Đảm bảo những người chỉ có lượt mời (chưa phát sinh đơn) vẫn xuất hiện trong danh sách
-    for (let referrerName in inviteMap) {
-      if (!map[referrerName]) {
-        map[referrerName] = {
-          name: referrerName,
+    for (let key in inviteMap) {
+      if (!map[key]) {
+        map[key] = {
+          name: inviteNameMap[key],
           commission: 0,
           orderCount: 0,
-          inviteCount: inviteMap[referrerName]
+          inviteCount: inviteMap[key]
         };
       }
     }
@@ -2490,8 +2563,18 @@ function getLeaderboardData() {
     // Sắp xếp mặc định theo commission để làm cơ sở ban đầu
     list.sort((a, b) => b.commission - a.commission);
     
-    const top20 = list.slice(0, 20); // Mở rộng lấy top 20 thành viên xuất sắc nhất
-    return { success: true, data: top20 };
+    // Sắp xếp danh sách availablePeriods
+    const periodsList = Object.keys(availablePeriods);
+    // Có thể sắp xếp periodsList từ mới nhất đến cũ nhất
+    periodsList.sort((a, b) => {
+      const partsA = a.split('-');
+      const partsB = b.split('-');
+      if (partsA[1] !== partsB[1]) return parseInt(partsB[1]) - parseInt(partsA[1]); // So sánh năm
+      return parseInt(partsB[0]) - parseInt(partsA[0]); // So sánh tháng
+    });
+    
+    // Trả về toàn bộ danh sách để Frontend có thể tự sort theo các tiêu chí khác (như Lượt mời)
+    return { success: true, data: list, availablePeriods: periodsList };
   } catch (e) {
     let platformName = "Shopee";
     if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
