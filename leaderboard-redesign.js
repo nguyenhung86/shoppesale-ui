@@ -1,5 +1,6 @@
 let cachedLeaderboard = null;
 let currentMetric = "commission"; // Mặc định là lọc theo commission (Hoa hồng)
+let currentPeriod = "7-2026"; // Mặc định tháng 7/2026
 
 function leaderboardPage() {
   return `
@@ -16,7 +17,12 @@ function leaderboardPage() {
             <button type="button" data-metric="orderCount">Số đơn</button>
             <button type="button" data-metric="inviteCount">Lượt mời</button>
           </div>
-          <button class="leaderboard-period" type="button">Tháng 7/2026 <span>⌄</span></button>
+          <div style="position: relative; display: inline-block;">
+            <button class="leaderboard-period" id="leaderboard-period-btn" type="button">Tháng 7/2026 <span>⌄</span></button>
+            <select id="leaderboard-period-select" onchange="window.handlePeriodSelectChange(this.value)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; -webkit-appearance: none;">
+              <option value="7-2026">Tháng 7/2026</option>
+            </select>
+          </div>
         </div>
         <p class="leaderboard-note"><b>↻</b> Dữ liệu được cập nhật tự động vào 09:00 mỗi ngày.</p>
 
@@ -231,12 +237,35 @@ function enhanceLeaderboard() {
   }
 
   // Tải dữ liệu thực tế từ Google Sheet
-  const url = CONFIG.API_URL + "?action=getLeaderboard";
+  let url = CONFIG.API_URL + "?action=getLeaderboard&t=" + Date.now();
+  if (currentPeriod !== "all") {
+    const parts = currentPeriod.split("-");
+    url += "&month=" + parts[0] + "&year=" + parts[1];
+  }
+
   fetch(url)
     .then(res => res.json())
     .then(response => {
       if (response.success && Array.isArray(response.data)) {
         cachedLeaderboard = response.data;
+        
+        if (response.availablePeriods && Array.isArray(response.availablePeriods)) {
+          const selectEl = document.getElementById('leaderboard-period-select');
+          if (selectEl) {
+            let optionsHtml = '';
+            response.availablePeriods.forEach(p => {
+              const parts = p.split('-');
+              const text = `Tháng ${parts[0]}/${parts[1]}`;
+              const selected = (p === currentPeriod) ? 'selected' : '';
+              optionsHtml += `<option value="${p}" ${selected}>${text}</option>`;
+            });
+            optionsHtml += `<option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>Tất cả thời gian</option>`;
+            if (selectEl.innerHTML !== optionsHtml) {
+              selectEl.innerHTML = optionsHtml;
+            }
+          }
+        }
+
         updateUI();
       } else {
         updateUI();
@@ -247,6 +276,38 @@ function enhanceLeaderboard() {
       updateUI();
     });
 }
+
+// Handler xử lý thay đổi tháng
+window.handlePeriodSelectChange = function(newPeriod) {
+  if (currentPeriod === newPeriod) return;
+  currentPeriod = newPeriod;
+  cachedLeaderboard = null; // Reset cache
+  
+  const btnEl = document.getElementById('leaderboard-period-btn');
+  if (btnEl) {
+    if (newPeriod === 'all') {
+      btnEl.innerHTML = 'Tất cả <span>⌄</span>';
+    } else {
+      const parts = newPeriod.split('-');
+      btnEl.innerHTML = `Tháng ${parts[0]}/${parts[1]} <span>⌄</span>`;
+    }
+  }
+
+  const container = document.querySelector(".leaderboard-container");
+  if (container) {
+    container.innerHTML = `
+      <div class="leaderboard-loading" style="text-align:center; padding:50px 0; color:#8490a3; font-weight:600;">
+        <span class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid #ff5722; border-top-color:transparent; border-radius:50%; animation:spin 0.8s linear infinite; margin-right:8px; vertical-align:middle;"></span>
+        Đang tải dữ liệu thực tế...
+      </div>`;
+  }
+
+  const view = document.querySelector('.leaderboard-view');
+  if (view) {
+    delete view.dataset.ready;
+  }
+  enhanceLeaderboard();
+};
 
 if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'ranking') render();
 requestAnimationFrame(enhanceLeaderboard);
