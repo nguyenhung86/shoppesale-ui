@@ -20,7 +20,19 @@ function leaderboardPage() {
           <div style="position: relative; display: inline-block;">
             <button class="leaderboard-period" id="leaderboard-period-btn" type="button">Tháng 7/2026 <span>⌄</span></button>
             <select id="leaderboard-period-select" onchange="window.handlePeriodSelectChange(this.value)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; -webkit-appearance: none;">
-              <option value="7-2026">Tháng 7/2026</option>
+              <option value="1-2026">Tháng 1/2026</option>
+              <option value="2-2026">Tháng 2/2026</option>
+              <option value="3-2026">Tháng 3/2026</option>
+              <option value="4-2026">Tháng 4/2026</option>
+              <option value="5-2026">Tháng 5/2026</option>
+              <option value="6-2026">Tháng 6/2026</option>
+              <option value="7-2026" selected>Tháng 7/2026</option>
+              <option value="8-2026">Tháng 8/2026</option>
+              <option value="9-2026">Tháng 9/2026</option>
+              <option value="10-2026">Tháng 10/2026</option>
+              <option value="11-2026">Tháng 11/2026</option>
+              <option value="12-2026">Tháng 12/2026</option>
+              <option value="all">Tất cả thời gian</option>
             </select>
           </div>
         </div>
@@ -81,13 +93,14 @@ function enhanceLeaderboard() {
       return;
     }
 
-    // Sắp xếp danh sách dựa trên metric đã chọn cho tất cả thành viên
+    // Sắp xếp danh sách dựa trên metric đã chọn và lấy top 10
     list.sort((a, b) => (b[metric] || 0) - (a[metric] || 0));
+    const top10 = list.slice(0, 10);
 
-    const first = list[0];
-    const second = list[1];
-    const third = list[2];
-    const remaining = list.slice(3); // Lấy tất cả thành viên còn lại (không giới hạn Top 10)
+    const first = top10[0];
+    const second = top10[1];
+    const third = top10[2];
+    const remaining = top10.slice(3);
 
     // Cập nhật tiêu đề Hero
     const heroMetricText = document.getElementById('hero-metric-name');
