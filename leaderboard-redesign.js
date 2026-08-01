@@ -81,14 +81,13 @@ function enhanceLeaderboard() {
       return;
     }
 
-    // Sắp xếp danh sách dựa trên metric đã chọn và lấy top 10
+    // Sắp xếp danh sách dựa trên metric đã chọn cho tất cả thành viên
     list.sort((a, b) => (b[metric] || 0) - (a[metric] || 0));
-    const top10 = list.slice(0, 10);
 
-    const first = top10[0];
-    const second = top10[1];
-    const third = top10[2];
-    const remaining = top10.slice(3);
+    const first = list[0];
+    const second = list[1];
+    const third = list[2];
+    const remaining = list.slice(3); // Lấy tất cả thành viên còn lại (không giới hạn Top 10)
 
     // Cập nhật tiêu đề Hero
     const heroMetricText = document.getElementById('hero-metric-name');
@@ -201,15 +200,13 @@ function enhanceLeaderboard() {
   }
 
   const fallbackList = [
-    { name: user.name, commission: userTotal, orderCount: userCount, inviteCount: 0, isUser: true },
-    { name: "Nguyễn Thu Hương", commission: Math.round(userTotal * 0.85) + 300000, orderCount: Math.round(userCount * 0.8) + 15, inviteCount: 8 },
-    { name: "Ella Quach", commission: Math.round(userTotal * 0.78) + 250000, orderCount: Math.round(userCount * 0.75) + 12, inviteCount: 14 },
-    { name: "Hoàng Anh", commission: Math.round(userTotal * 0.65) + 180000, orderCount: Math.round(userCount * 0.6) + 9, inviteCount: 5 },
-    { name: "Bích Hạnh Trần", commission: Math.round(userTotal * 0.55) + 120000, orderCount: Math.round(userCount * 0.5) + 6, inviteCount: 3 },
-    { name: "Trần Thùy", commission: Math.round(userTotal * 0.48) + 90000, orderCount: Math.round(userCount * 0.45) + 4, inviteCount: 2 },
-    { name: "Sam Đỗ Thị Hồng", commission: Math.round(userTotal * 0.42) + 70000, orderCount: Math.round(userCount * 0.4) + 3, inviteCount: 9 },
-    { name: "Trần Thanh Nhàn", commission: Math.round(userTotal * 0.35) + 50000, orderCount: Math.round(userCount * 0.3) + 2, inviteCount: 1 },
-    { name: "Yến Trần", commission: Math.round(userTotal * 0.28) + 30000, orderCount: Math.round(userCount * 0.25) + 1, inviteCount: 4 }
+    { name: "Hồng Vinh", commission: 2872772, orderCount: 42, inviteCount: 15 },
+    { name: "Minh Anh", commission: 849703, orderCount: 25, inviteCount: 8 },
+    { name: "Ella Quach", commission: 823725, orderCount: 20, inviteCount: 14 },
+    { name: "Bích Hạnh", commission: 703226, orderCount: 28, inviteCount: 6 },
+    { name: "Thùy Trang", commission: 463888, orderCount: 27, inviteCount: 5 },
+    { name: "Đỗ Hồng", commission: 438504, orderCount: 28, inviteCount: 3 },
+    { name: "Yến Nhi", commission: 387979, orderCount: 15, inviteCount: 4 }
   ];
 
   function updateUI() {
