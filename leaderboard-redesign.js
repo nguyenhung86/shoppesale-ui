@@ -1,13 +1,32 @@
 let cachedLeaderboard = null;
 let currentMetric = "commission"; // Mặc định là lọc theo commission (Hoa hồng)
-let currentPeriod = "7-2026"; // Mặc định tháng 7/2026
+const todayDate = new Date();
+let currentPeriod = `${todayDate.getMonth() + 1}-${todayDate.getFullYear()}`; // Tự động lấy Tháng/Năm hiện tại
 
 function leaderboardPage() {
+  const now = new Date();
+  const curM = now.getMonth() + 1;
+  const curY = now.getFullYear();
+  if (!currentPeriod) {
+    currentPeriod = `${curM}-${curY}`;
+  }
+  const parts = currentPeriod.split("-");
+  const periodText = currentPeriod === "all" ? "Tất cả" : `Tháng ${parts[0]}/${parts[1]}`;
+  const monthPad = parts[0].toString().padStart(2, '0');
+
+  let optionsHtml = '';
+  for (let m = 1; m <= 12; m++) {
+    const val = `${m}-${curY}`;
+    const selected = (val === currentPeriod) ? "selected" : "";
+    optionsHtml += `<option value="${val}" ${selected}>Tháng ${m}/${curY}</option>`;
+  }
+  optionsHtml += `<option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>Tất cả thời gian</option>`;
+
   return `
     <div class="leaderboard-view">
       <section class="leaderboard-hero">
         <div><span>THÀNH TÍCH CỘNG ĐỒNG</span><h1>Bảng xếp hạng <em id="hero-metric-name">hoa hồng</em></h1><p>Ghi nhận những thành viên có thành tích nổi bật trong tháng. Bảng xếp hạng được cập nhật mỗi ngày.</p></div>
-        <div class="leaderboard-hero-mark" aria-hidden="true"><i>♕</i><b>Top 3</b><small>tháng 07</small></div>
+        <div class="leaderboard-hero-mark" aria-hidden="true"><i>♕</i><b>Top 3</b><small id="hero-period-small">Tháng ${monthPad}</small></div>
       </section>
 
       <section class="leaderboard-card">
@@ -18,21 +37,9 @@ function leaderboardPage() {
             <button type="button" data-metric="inviteCount">Lượt mời</button>
           </div>
           <div style="position: relative; display: inline-block;">
-            <button class="leaderboard-period" id="leaderboard-period-btn" type="button">Tháng 7/2026 <span>⌄</span></button>
+            <button class="leaderboard-period" id="leaderboard-period-btn" type="button">${periodText} <span>⌄</span></button>
             <select id="leaderboard-period-select" onchange="window.handlePeriodSelectChange(this.value)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; -webkit-appearance: none;">
-              <option value="1-2026">Tháng 1/2026</option>
-              <option value="2-2026">Tháng 2/2026</option>
-              <option value="3-2026">Tháng 3/2026</option>
-              <option value="4-2026">Tháng 4/2026</option>
-              <option value="5-2026">Tháng 5/2026</option>
-              <option value="6-2026">Tháng 6/2026</option>
-              <option value="7-2026" selected>Tháng 7/2026</option>
-              <option value="8-2026">Tháng 8/2026</option>
-              <option value="9-2026">Tháng 9/2026</option>
-              <option value="10-2026">Tháng 10/2026</option>
-              <option value="11-2026">Tháng 11/2026</option>
-              <option value="12-2026">Tháng 12/2026</option>
-              <option value="all">Tất cả thời gian</option>
+              ${optionsHtml}
             </select>
           </div>
         </div>
@@ -289,12 +296,15 @@ window.handlePeriodSelectChange = function(newPeriod) {
   cachedLeaderboard = null; // Reset cache
   
   const btnEl = document.getElementById('leaderboard-period-btn');
+  const heroSmall = document.getElementById('hero-period-small');
   if (btnEl) {
     if (newPeriod === 'all') {
       btnEl.innerHTML = 'Tất cả <span>⌄</span>';
+      if (heroSmall) heroSmall.textContent = 'Tất cả';
     } else {
       const parts = newPeriod.split('-');
       btnEl.innerHTML = `Tháng ${parts[0]}/${parts[1]} <span>⌄</span>`;
+      if (heroSmall) heroSmall.textContent = `Tháng ${parts[0].padStart(2, '0')}`;
     }
   }
 
