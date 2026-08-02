@@ -2432,6 +2432,44 @@ function cleanShopeeUrl(url) {
   }
 }
 
+// Helper hàm bóc tách Tháng và Năm từ đủ loại định dạng ngày tháng
+function parseMonthYear(dateVal) {
+  if (!dateVal) return { m: 0, y: 0 };
+  if (dateVal instanceof Date) {
+    return { m: dateVal.getMonth() + 1, y: dateVal.getFullYear() };
+  }
+  const str = String(dateVal).trim();
+  if (!str) return { m: 0, y: 0 };
+  
+  const datePart = str.split(' ')[0];
+  if (datePart.includes('/')) {
+    const parts = datePart.split('/');
+    if (parts.length >= 3) {
+      if (parts[0].length === 4) {
+        return { m: parseInt(parts[1], 10), y: parseInt(parts[0], 10) };
+      } else {
+        return { m: parseInt(parts[1], 10), y: parseInt(parts[2], 10) };
+      }
+    }
+  } else if (datePart.includes('-')) {
+    const parts = datePart.split('-');
+    if (parts.length >= 3) {
+      if (parts[0].length === 4) {
+        return { m: parseInt(parts[1], 10), y: parseInt(parts[0], 10) };
+      } else {
+        return { m: parseInt(parts[1], 10), y: parseInt(parts[2], 10) };
+      }
+    }
+  }
+  
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) {
+    return { m: parsed.getMonth() + 1, y: parsed.getFullYear() };
+  }
+  
+  return { m: 0, y: 0 };
+}
+
 // Hàm lấy dữ liệu bảng xếp hạng
 function getLeaderboardData(targetMonth, targetYear) {
   try {
@@ -2450,18 +2488,7 @@ function getLeaderboardData(targetMonth, targetYear) {
         const refData = refSheet.getRange(2, 1, refLastRow - 1, 5).getValues();
         for (let j = 0; j < refData.length; j++) {
           const dateVal = refData[j][0];
-          
-          let m, y;
-          if (dateVal instanceof Date) {
-            m = dateVal.getMonth() + 1;
-            y = dateVal.getFullYear();
-          } else if (typeof dateVal === 'string') {
-            const parts = dateVal.split('/');
-            if (parts.length >= 3) {
-              m = parseInt(parts[1], 10);
-              y = parseInt(parts[2].split(' ')[0], 10);
-            }
-          }
+          const { m, y } = parseMonthYear(dateVal);
           
           if (m && y) {
             availablePeriods[`${m}-${y}`] = true;
@@ -2494,18 +2521,7 @@ function getLeaderboardData(targetMonth, targetYear) {
         for (let i = 0; i < data.length; i++) {
           const row = data[i];
           const dateVal = row[0];
-          
-          let m, y;
-          if (dateVal instanceof Date) {
-            m = dateVal.getMonth() + 1;
-            y = dateVal.getFullYear();
-          } else if (typeof dateVal === 'string') {
-            const parts = dateVal.split('/');
-            if (parts.length >= 3) {
-              m = parseInt(parts[1], 10);
-              y = parseInt(parts[2].split(' ')[0], 10);
-            }
-          }
+          const { m, y } = parseMonthYear(dateVal);
           
           if (m && y) {
             availablePeriods[`${m}-${y}`] = true;
