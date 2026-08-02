@@ -232,11 +232,6 @@ function enhanceLeaderboard() {
       isUser: m.name === user.name
     }));
 
-    const hasUser = list.some(m => m.isUser);
-    if (!hasUser && (userTotal > 0 || userCount > 0)) {
-      list.push({ name: user.name, commission: userTotal, orderCount: userCount, inviteCount: 0, isUser: true });
-    }
-
     renderLeaderboardUI(list, currentMetric);
   }
 
