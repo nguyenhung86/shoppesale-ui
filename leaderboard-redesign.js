@@ -234,10 +234,42 @@ function enhanceLeaderboard() {
     renderLeaderboardUI(list, currentMetric);
   }
 
-  // Nếu có cache, render luôn
+  // Nếu có cache RAM, render luôn
   if (cachedLeaderboard) {
     updateUI();
     return;
+  }
+
+  // Kiểm tra localStorage cache (hiệu lực trong 6 tiếng)
+  const localCacheKey = "lb_cache_data_" + currentPeriod;
+  const localTimeKey = "lb_cache_time_" + currentPeriod;
+  const nowTs = Date.now();
+  const cachedDataStr = localStorage.getItem(localCacheKey);
+  const cachedTimeStr = localStorage.getItem(localTimeKey);
+
+  if (cachedDataStr && cachedTimeStr && (nowTs - Number(cachedTimeStr) < 6 * 3600 * 1000)) {
+    try {
+      const parsedObj = JSON.parse(cachedDataStr);
+      if (parsedObj && Array.isArray(parsedObj.data)) {
+        cachedLeaderboard = parsedObj.data;
+        if (parsedObj.availablePeriods && Array.isArray(parsedObj.availablePeriods)) {
+          setTimeout(() => {
+            const selectEl = document.getElementById('leaderboard-period-select');
+            if (selectEl) {
+              let optionsHtml = `<option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>Tất cả thời gian</option>`;
+              parsedObj.availablePeriods.forEach(p => {
+                const parts = p.split('-');
+                optionsHtml += `<option value="${p}" ${p === currentPeriod ? 'selected' : ''}>Tháng ${parts[0]}/${parts[1]}</option>`;
+              });
+              selectEl.innerHTML = optionsHtml;
+              selectEl.value = currentPeriod;
+            }
+          }, 0);
+        }
+        updateUI();
+        return;
+      }
+    } catch(e) {}
   }
 
   // Tải dữ liệu thực tế từ Google Sheet
@@ -279,6 +311,15 @@ function enhanceLeaderboard() {
         }
 
         updateUI();
+
+        // Lưu cache lâu dài vào localStorage (hiệu lực 6 tiếng)
+        try {
+          localStorage.setItem(localCacheKey, JSON.stringify({
+            data: response.data,
+            availablePeriods: response.availablePeriods || []
+          }));
+          localStorage.setItem(localTimeKey, String(Date.now()));
+        } catch(e) {}
       } else {
         updateUI();
       }
