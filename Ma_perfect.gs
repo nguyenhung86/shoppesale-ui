@@ -66,6 +66,16 @@ function doGet(e) {
     }
     if (action === 'unifiedSearch') {
       var query = e.parameter.query || "";
+      var cacheKey = "us_" + String(query).trim().toLowerCase();
+      try {
+        const cache = CacheService.getScriptCache();
+        const cached = cache.get(cacheKey);
+        if (cached) {
+          return ContentService.createTextOutput(cached)
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      } catch (eC) {}
+
       var translatedName = getZaloNameById(query);
       var isZaloIdValid = false;
       if (translatedName) {
@@ -85,7 +95,13 @@ function doGet(e) {
         res.isZaloIdValid = true;
         res.zaloName = translatedName;
       }
-      return ContentService.createTextOutput(JSON.stringify(res))
+      var jsonStr = JSON.stringify(res);
+      if (res && res.success && jsonStr.length < 100000) {
+        try {
+          CacheService.getScriptCache().put(cacheKey, jsonStr, 15);
+        } catch (eC) {}
+      }
+      return ContentService.createTextOutput(jsonStr)
         .setMimeType(ContentService.MimeType.JSON);
     }
     if (action === 'getUserInfo') {
@@ -227,10 +243,26 @@ if (action === 'saveLazadaRate') {
     
     // ĐƯỜNG DẪN API LẤY BẢNG XẾP HẠNG HOA HỒNG THỰC TẾ
     if (action === 'getLeaderboard') {
-      const month = e.parameter.month;
-      const year = e.parameter.year;
+      const month = e.parameter.month || "all";
+      const year = e.parameter.year || "all";
+      const cacheKey = "lb_" + month + "_" + year;
+      try {
+        const cache = CacheService.getScriptCache();
+        const cached = cache.get(cacheKey);
+        if (cached) {
+          return ContentService.createTextOutput(cached)
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      } catch (eC) {}
+
       const res = getLeaderboardData(month, year);
-      return ContentService.createTextOutput(JSON.stringify(res))
+      const jsonStr = JSON.stringify(res);
+      if (res && res.success && jsonStr.length < 100000) {
+        try {
+          CacheService.getScriptCache().put(cacheKey, jsonStr, 30);
+        } catch (eC) {}
+      }
+      return ContentService.createTextOutput(jsonStr)
         .setMimeType(ContentService.MimeType.JSON);
     }
     if (action === 'getPaymentHistory') {
