@@ -120,10 +120,32 @@ function renderOrders(filteredOrders, formatVND) {
 function performSearch(query, forceRefresh = false) {
   const formatVND = val => Math.round(Number(val) || 0).toLocaleString("vi-VN") + " đ";
   
-  // 1. Sử dụng dữ liệu đệm nếu có và không yêu cầu tải lại cưỡng bức
-  if (!forceRefresh && cachedOrders && cachedZaloId === query) {
-    renderDashboard(cachedOrders, query, formatVND);
-    return;
+  const localCacheKey = "user_orders_cache_" + String(query).trim().toLowerCase();
+  const localTimeKey = "user_orders_time_" + String(query).trim().toLowerCase();
+  const nowTs = Date.now();
+  const CACHE_TTL_MS = 15 * 60 * 1000; // Bộ nhớ đệm 15 phút
+
+  // 1. Sử dụng dữ liệu đệm RAM hoặc localStorage nếu không bị bắt buộc làm mới
+  if (!forceRefresh) {
+    if (cachedOrders && cachedZaloId === query) {
+      renderDashboard(cachedOrders, query, formatVND);
+      return;
+    }
+
+    const cachedDataStr = localStorage.getItem(localCacheKey);
+    const cachedTimeStr = localStorage.getItem(localTimeKey);
+    if (cachedDataStr && cachedTimeStr && (nowTs - Number(cachedTimeStr) < CACHE_TTL_MS)) {
+      try {
+        const parsedResponse = JSON.parse(cachedDataStr);
+        if (parsedResponse && parsedResponse.success && Array.isArray(parsedResponse.data)) {
+          cachedOrders = parsedResponse;
+          window.cachedOrders = parsedResponse;
+          cachedZaloId = query;
+          renderDashboard(parsedResponse, query, formatVND);
+          return;
+        }
+      } catch(e) {}
+    }
   }
 
   const app = document.querySelector('#app');
@@ -147,10 +169,15 @@ function performSearch(query, forceRefresh = false) {
       if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') return;
 
       if (response.success) {
-        // Lưu trữ vào bộ nhớ đệm
+        // Lưu trữ vào bộ nhớ đệm RAM và localStorage
         cachedOrders = response;
         window.cachedOrders = response; // Xuất ra window cho biểu đồ
         cachedZaloId = query;
+        
+        try {
+          localStorage.setItem(localCacheKey, JSON.stringify(response));
+          localStorage.setItem(localTimeKey, String(Date.now()));
+        } catch(e) {}
         
         renderDashboard(response, query, formatVND);
       } else {
