@@ -250,7 +250,7 @@ function enhanceLeaderboard() {
   if (cachedDataStr && cachedTimeStr && (nowTs - Number(cachedTimeStr) < 6 * 3600 * 1000)) {
     try {
       const parsedObj = JSON.parse(cachedDataStr);
-      if (parsedObj && Array.isArray(parsedObj.data)) {
+      if (parsedObj && Array.isArray(parsedObj.data) && parsedObj.data.length > 0) {
         cachedLeaderboard = parsedObj.data;
         if (parsedObj.availablePeriods && Array.isArray(parsedObj.availablePeriods)) {
           setTimeout(() => {
@@ -312,14 +312,16 @@ function enhanceLeaderboard() {
 
         updateUI();
 
-        // Lưu cache lâu dài vào localStorage (hiệu lực 6 tiếng)
-        try {
-          localStorage.setItem(localCacheKey, JSON.stringify({
-            data: response.data,
-            availablePeriods: response.availablePeriods || []
-          }));
-          localStorage.setItem(localTimeKey, String(Date.now()));
-        } catch(e) {}
+        // Lưu cache lâu dài vào localStorage (hiệu lực 6 tiếng) nếu có dữ liệu
+        if (response.data && response.data.length > 0) {
+          try {
+            localStorage.setItem(localCacheKey, JSON.stringify({
+              data: response.data,
+              availablePeriods: response.availablePeriods || []
+            }));
+            localStorage.setItem(localTimeKey, String(Date.now()));
+          } catch(e) {}
+        }
       } else {
         updateUI();
       }

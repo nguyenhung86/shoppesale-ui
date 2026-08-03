@@ -2770,7 +2770,7 @@ function getLeaderboardData(targetMonth, targetYear) {
             availablePeriods[`${m}-${y}`] = true;
           }
           
-          if (targetMonth && targetYear) {
+          if (targetMonth && targetYear && String(targetMonth) !== 'all' && String(targetYear) !== 'all') {
             if (String(m) !== String(targetMonth) || String(y) !== String(targetYear)) {
               continue;
             }
@@ -2817,7 +2817,7 @@ function getLeaderboardData(targetMonth, targetYear) {
           availablePeriods[`${m}-${y}`] = true;
         }
         
-        if (targetMonth && targetYear) {
+        if (targetMonth && targetYear && String(targetMonth) !== 'all' && String(targetYear) !== 'all') {
           if (String(m) !== String(targetMonth) || String(y) !== String(targetYear)) {
             continue;
           }
