@@ -902,7 +902,8 @@ function unifiedSearch(query, startDateStr, endDateStr) {
     const allSheets = ss.getSheets();
     for (let s = 0; s < allSheets.length; s++) {
       const sName = allSheets[s].getName();
-      if (sName !== "Dữ liệu nạp tự động" && (sName.toLowerCase().includes("lưu trữ") || sName.toLowerCase().includes("archive"))) {
+      const sNameLower = sName.toLowerCase();
+      if (sName !== "Dữ liệu nạp tự động" && (sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid"))) {
         sheetsToScan.push(allSheets[s]);
       }
     }
@@ -1125,7 +1126,8 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
     const allSheets = ss.getSheets();
     for (let s = 0; s < allSheets.length; s++) {
       const sName = allSheets[s].getName();
-      if (sName !== "Dữ liệu nạp tự động" && (sName.toLowerCase().includes("lưu trữ") || sName.toLowerCase().includes("archive"))) {
+      const sNameLower = sName.toLowerCase();
+      if (sName !== "Dữ liệu nạp tự động" && (sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid"))) {
         sheetsToScan.push(allSheets[s]);
       }
     }
@@ -1587,7 +1589,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
     .addItem('📦 Dọn đơn Đã TT sang tab Lưu Trữ (1-Click)', 'autoArchivePaidOrdersPrompt')
-    .addItem('🧹 Dọn dẹp đơn hủy sang Invalid', 'fixCancelledOrdersWithZeroCommissionPrompt')
+    .addItem('🧹 Dọn đơn Hủy sang tab Đơn Hủy (1-Click)', 'moveCancelledOrdersPrompt')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
     .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
     .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
@@ -1652,6 +1654,71 @@ function autoArchivePaidOrders() {
 function autoArchivePaidOrdersPrompt() {
   const ui = SpreadsheetApp.getUi();
   const res = autoArchivePaidOrders();
+  ui.alert(res);
+}
+
+// === HÀM TỰ ĐỘNG CHUYỂN TOÀN BỘ ĐƠN HỦY (INVALID / CANCELLED) SANG TAB ĐƠN HỦY ===
+function moveCancelledOrdersToCancelledSheet() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const orderSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!orderSheet) return "Không tìm thấy sheet Dữ liệu nạp tự động.";
+    
+    let cancelledSheet = ss.getSheetByName("Đơn hủy");
+    if (!cancelledSheet) {
+      cancelledSheet = ss.insertSheet("Đơn hủy");
+      if (orderSheet.getLastRow() >= 2) {
+        orderSheet.getRange(1, 1, 2, 11).copyTo(cancelledSheet.getRange(1, 1));
+      }
+    }
+    
+    const lastRow = orderSheet.getLastRow();
+    if (lastRow < 3) return "Chưa có dữ liệu đơn hàng để dọn dẹp.";
+    
+    const range = orderSheet.getRange(3, 1, lastRow - 2, 11);
+    const data = range.getValues();
+    
+    let rowsToKeep = [];
+    let rowsToCancel = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      const statusStr = String(data[i][7]).trim().toLowerCase(); // Cột H (Trạng thái)
+      const isCancelled = (statusStr === 'invalid' || statusStr === 'cancelled' || statusStr === 'đơn hủy' || statusStr === 'không đủ điều kiện' || statusStr.includes('hủy'));
+      
+      if (isCancelled) {
+        rowsToCancel.push(data[i]);
+      } else {
+        rowsToKeep.push(data[i]);
+      }
+    }
+    
+    if (rowsToCancel.length === 0) {
+      return "Không có đơn nào ở trạng thái Hủy/Invalid cần chuyển sang tab 'Đơn hủy'.";
+    }
+    
+    // 1. Dán các đơn Hủy vào tab Đơn hủy
+    const cLastRow = cancelledSheet.getLastRow();
+    const startCRow = cLastRow < 2 ? 3 : cLastRow + 1;
+    const destRange = cancelledSheet.getRange(startCRow, 1, rowsToCancel.length, 11);
+    destRange.setValues(rowsToCancel);
+    destRange.setFontColor("#000000"); // Chữ đen sắc nét
+    
+    // 2. Làm sạch tab Dữ liệu nạp tự động và dán lại các đơn hợp lệ
+    orderSheet.getRange(3, 1, lastRow - 2, 11).clearContent();
+    if (rowsToKeep.length > 0) {
+      orderSheet.getRange(3, 1, rowsToKeep.length, 11).setValues(rowsToKeep);
+    }
+    
+    SpreadsheetApp.flush();
+    return `🎉 Đã tự động dọn ${rowsToCancel.length} đơn Hủy/Invalid sang tab 'Đơn hủy' thành công!`;
+  } catch (e) {
+    return "Lỗi dọn đơn hủy: " + e.toString();
+  }
+}
+
+function moveCancelledOrdersPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const res = moveCancelledOrdersToCancelledSheet();
   ui.alert(res);
 }
 
@@ -2621,7 +2688,7 @@ function getLeaderboardData(targetMonth, targetYear) {
       }
     }
     
-    // 2. Thống kê hoa hồng và số đơn từ sheet "Dữ liệu nạp tự động" và các sheet "Lưu trữ"
+    // 2. Thống kê hoa hồng và số đơn từ sheet "Dữ liệu nạp tự động" và các sheet "Lưu trữ", "Đơn hủy"
     const sheetsToScan = [];
     const mainSheet = ss.getSheetByName("Dữ liệu nạp tự động");
     if (mainSheet) sheetsToScan.push(mainSheet);
@@ -2629,7 +2696,8 @@ function getLeaderboardData(targetMonth, targetYear) {
     const allSheets = ss.getSheets();
     for (let s = 0; s < allSheets.length; s++) {
       const sName = allSheets[s].getName();
-      if (sName !== "Dữ liệu nạp tự động" && (sName.toLowerCase().includes("lưu trữ") || sName.toLowerCase().includes("archive"))) {
+      const sNameLower = sName.toLowerCase();
+      if (sName !== "Dữ liệu nạp tự động" && (sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid"))) {
         sheetsToScan.push(allSheets[s]);
       }
     }
