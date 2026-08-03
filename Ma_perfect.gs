@@ -1590,6 +1590,7 @@ function onOpen() {
   ui.createMenu('Menu Hoàn Tiền')
     .addItem('📦 Dọn đơn Đã TT sang tab Lưu Trữ (1-Click)', 'autoArchivePaidOrdersPrompt')
     .addItem('🧹 Dọn đơn Hủy sang tab Đơn Hủy (1-Click)', 'moveCancelledOrdersPrompt')
+    .addItem('🎨 Tô màu đồng bộ Cột H, I cho tất cả các Tab', 'applyStatusColorsToAllSheetsPrompt')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
     .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
     .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
@@ -1637,6 +1638,9 @@ function autoArchivePaidOrders() {
     const archLastRow = archiveSheet.getLastRow();
     const startArchRow = archLastRow < 2 ? 3 : archLastRow + 1;
     archiveSheet.getRange(startArchRow, 1, rowsToArchive.length, 11).setValues(rowsToArchive);
+    
+    // Tô màu đồng bộ Cột H, I cho tab Lưu Trữ
+    applyColorsToStatusColumns(archiveSheet);
     
     // 2. Làm sạch tab Dữ liệu nạp tự động và dán lại các đơn chưa thanh toán
     orderSheet.getRange(3, 1, lastRow - 2, 11).clearContent();
@@ -1701,7 +1705,9 @@ function moveCancelledOrdersToCancelledSheet() {
     const startCRow = cLastRow < 2 ? 3 : cLastRow + 1;
     const destRange = cancelledSheet.getRange(startCRow, 1, rowsToCancel.length, 11);
     destRange.setValues(rowsToCancel);
-    destRange.setFontColor("#000000"); // Chữ đen sắc nét
+    
+    // Tô màu đồng bộ Cột H, I cho tab Đơn Hủy
+    applyColorsToStatusColumns(cancelledSheet);
     
     // 2. Làm sạch tab Dữ liệu nạp tự động và dán lại các đơn hợp lệ
     orderSheet.getRange(3, 1, lastRow - 2, 11).clearContent();
@@ -1720,6 +1726,66 @@ function moveCancelledOrdersPrompt() {
   const ui = SpreadsheetApp.getUi();
   const res = moveCancelledOrdersToCancelledSheet();
   ui.alert(res);
+}
+
+// === HÀM TỰ ĐỘNG ĐỊNH DẠNG TÔ MÀU CHUẨN CHO CỘT H (TRẠNG THÁI) VÀ CỘT I (CHỐT) ===
+function applyColorsToStatusColumns(sheet) {
+  try {
+    if (!sheet) return;
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 3) return;
+    
+    const rangeH = sheet.getRange(3, 8, lastRow - 2, 1);
+    const rangeI = sheet.getRange(3, 9, lastRow - 2, 1);
+    
+    const valuesH = rangeH.getValues();
+    const valuesI = rangeI.getValues();
+    
+    const bgH = [];
+    const fgH = [];
+    const bgI = [];
+    const fgI = [];
+    
+    for (let i = 0; i < valuesH.length; i++) {
+      const status = String(valuesH[i][0]).trim().toLowerCase();
+      if (status === 'invalid' || status === 'cancelled' || status === 'đơn hủy') {
+        bgH.push(['#343a40']); // Nền xám đen
+        fgH.push(['#ffffff']); // Chữ trắng
+      } else if (status === 'waiting for payment' || status === 'completed' || status === 'hoàn thành') {
+        bgH.push(['#1e7e34']); // Nền xanh lá
+        fgH.push(['#ffffff']); // Chữ trắng
+      } else {
+        bgH.push(['#fff3cd']); // Nền vàng cam
+        fgH.push(['#856404']); // Chữ nâu
+      }
+      
+      const payStatus = String(valuesI[i][0]).trim();
+      if (payStatus === 'Đã TT') {
+        bgI.push(['#1e7e34']); // Nền xanh lá
+        fgI.push(['#ffffff']); // Chữ trắng
+      } else {
+        bgI.push(['#b21f2d']); // Nền đỏ
+        fgI.push(['#ffffff']); // Chữ trắng
+      }
+    }
+    
+    rangeH.setBackgrounds(bgH).setFontColors(fgH).setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle');
+    rangeI.setBackgrounds(bgI).setFontColors(fgI).setFontWeight('bold').setHorizontalAlignment('center').setVerticalAlignment('middle');
+  } catch (e) {}
+}
+
+function applyStatusColorsToAllSheetsPrompt() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const allSheets = ss.getSheets();
+  let count = 0;
+  for (let s = 0; s < allSheets.length; s++) {
+    const sName = allSheets[s].getName();
+    if (sName === "Dữ liệu nạp tự động" || sName.toLowerCase().includes("lưu trữ") || sName.toLowerCase().includes("hủy") || sName.toLowerCase().includes("invalid")) {
+      applyColorsToStatusColumns(allSheets[s]);
+      count++;
+    }
+  }
+  SpreadsheetApp.getUi().alert(`✨ Đã tô màu đồng bộ chuẩn cho Cột H (Trạng Thái) và Cột I (Chốt) trên ${count} tab thành công!`);
 }
 
 // === HIỂN THỊ HỘP THOẠI NHẬP THÁNG/NĂM ===
