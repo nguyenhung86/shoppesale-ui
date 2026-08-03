@@ -637,7 +637,29 @@ function syncRealDataToUI() {
 
 // Tải ngầm đơn hàng trong nền để lấy số liệu sẵn sàng cho các tab khác
 function fetchOrdersInBackground(zaloId) {
+  if (!zaloId) return;
   console.log("fetchOrdersInBackground: Bắt đầu tải ngầm đơn hàng cho Zalo ID:", zaloId);
+  
+  const localCacheKey = "user_orders_cache_" + String(zaloId).trim().toLowerCase();
+  const localTimeKey = "user_orders_time_" + String(zaloId).trim().toLowerCase();
+  
+  const cachedDataStr = localStorage.getItem(localCacheKey);
+  const cachedTimeStr = localStorage.getItem(localTimeKey);
+  
+  if (cachedDataStr && cachedTimeStr && isOrderCacheValid(cachedTimeStr)) {
+    try {
+      const parsedResponse = JSON.parse(cachedDataStr);
+      if (parsedResponse && parsedResponse.success && Array.isArray(parsedResponse.data)) {
+        console.log("fetchOrdersInBackground: Nạp từ bộ nhớ đệm (8h30/17h00 valid) cho ID:", zaloId);
+        cachedOrders = parsedResponse;
+        window.cachedOrders = parsedResponse;
+        cachedZaloId = zaloId;
+        syncRealDataToUI();
+        return;
+      }
+    } catch(e) {}
+  }
+
   const url = CONFIG.API_URL + "?action=unifiedSearch&query=" + encodeURIComponent(zaloId);
   fetch(url)
     .then(res => res.json())
@@ -647,6 +669,12 @@ function fetchOrdersInBackground(zaloId) {
         cachedOrders = response;
         window.cachedOrders = response; // Xuất ra window cho biểu đồ dùng
         cachedZaloId = zaloId;
+        
+        try {
+          localStorage.setItem(localCacheKey, JSON.stringify(response));
+          localStorage.setItem(localTimeKey, String(Date.now()));
+        } catch(e) {}
+
         syncRealDataToUI(); // Cập nhật giao diện ngay lập tức
       }
     })
