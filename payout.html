@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Thanh Toán Hoàn Tiền</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+  <style>
+    :root {
+      --primary: #F4511E;
+      --primary-dark: #D84315;
+      --primary-light: #FF7043;
+      --bg: #F4F5F9;
+      --surface: #FFFFFF;
+      --ink: #1A1A2E;
+      --ink-soft: #4A4A5E;
+      --line: #ECECF1;
+      --shadow: 0 12px 32px rgba(26,26,46,0.08);
+      --radius: 20px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 500px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+    header h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 24px;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    header p {
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
+    .btn-logout {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: #ECECF1;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      cursor: pointer;
+    }
+    .btn-logout:hover {
+      background: #E2E2E9;
+    }
+    .user-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--line);
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      transition: all 0.2s;
+    }
+    .user-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #FFECE6;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .user-details h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .user-details span {
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+    .balance-group {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      background: #F8F9FA;
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+    .balance-item { display: flex; flex-direction: column; gap: 4px; }
+    .balance-item span { font-size: 11px; color: var(--ink-soft); }
+    .balance-item strong { font-size: 15px; font-weight: 700; }
+    .balance-item.unpaid strong { color: var(--primary); }
+    .balance-item.paid strong { color: #16A34A; }
+    
+    button.btn-pay {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+    button.btn-pay:hover { background: var(--primary-light); }
+    
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .modal {
+      background: white;
+      border-radius: 24px;
+      width: 100%;
+      max-width: 400px;
+      max-height: 92vh; /* Giới hạn chiều cao tối đa bằng 92% màn hình */
+      overflow-y: auto; /* Hiện thanh cuộn nếu nội dung tràn màn hình */
+      padding: 24px;
+      position: relative;
+      box-shadow: 0 20px 48px rgba(0,0,0,0.15);
+    }
+    /* Tùy chỉnh thanh cuộn siêu mỏng & gọn gàng cho modal */
+    .modal::-webkit-scrollbar {
+      width: 5px;
+    }
+    .modal::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .modal::-webkit-scrollbar-thumb {
+      background: rgba(244,81,30,0.2);
+      border-radius: 10px;
+    }
+    .modal::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: #F1F1F4;
+      border: none; width: 30px; height: 30px;
+      border-radius: 50%; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold;
+    }
+    .qr-container {
+      width: 100%;
+      aspect-ratio: 1;
+      border: 2px dashed var(--line);
+      border-radius: 16px;
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      background: #FAFAFA;
+      padding: 10px;
+    }
+    .qr-container img { width: 100%; height: 100%; object-fit: contain; }
+    
+    .bill-upload-area {
+      border: 2px dashed var(--primary-light);
+      background: #FFF9F7;
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      transition: all 0.2s;
+    }
+    .bill-upload-area:hover {
+      background: #FFEFEA;
+    }
+    .bill-upload-area img {
+      max-height: 120px;
+      margin-top: 8px;
+      border-radius: 8px;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.88);
+      z-index: 999999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--primary);
+    }
+     .spinner {
+      border: 4px solid rgba(244,81,30,0.1);
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border-left-color: var(--primary);
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    #search-input:focus {
+      border-color: var(--primary) !important;
+      box-shadow: 0 0 0 3px rgba(244,81,30,0.1);
+    }
+    
+    /* QR code tabs & bank details form */
+    .qr-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .qr-tab {
+      flex: 1;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: #F8F9FA;
+      color: var(--ink-soft);
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .qr-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .bank-form-group {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .bank-input-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .bank-input-item label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ink-soft);
+    }
+    .bank-input-item select, .bank-input-item input {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      outline: none;
+      width: 100%;
+    }
+    .bank-input-item select:focus, .bank-input-item input:focus {
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <!-- MÀN HÌNH ĐĂNG NHẬP BẢO MẬT -->
+  <div id="login-screen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #F4F5F9; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; padding: 32px 24px; border-radius: 24px; width: 100%; max-width: 360px; box-shadow: 0 20px 48px rgba(0,0,0,0.08); border: 1px solid #ECECF1; text-align: center;">
+      <span style="font-size: 40px; display: block; margin-bottom: 12px;">🔒</span>
+      <h2 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 800; color: #1A1A2E; margin-bottom: 8px; letter-spacing: -0.02em;">HỆ THỐNG QUẢN TRỊ</h2>
+      <p style="font-size: 13px; color: #4A4A5E; margin-bottom: 24px;">Vui lòng nhập mật khẩu để truy cập dữ liệu</p>
+      
+      <input type="password" id="admin-password" placeholder="Nhập mật khẩu..." style="width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ECECF1; font-size: 15px; margin-bottom: 16px; outline: none; transition: border 0.2s;" onkeydown="if(event.key==='Enter') verifyPassword()">
+      <button onclick="verifyPassword()" style="width: 100%; background: #F4511E; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 15px; cursor: pointer; transition: background 0.2s;">Đăng nhập</button>
+      <p id="login-error" style="color: #DC2626; font-size: 12px; font-weight: 600; margin-top: 12px; display: none;">Mật khẩu không chính xác!</p>
+    </div>
+  </div>
+
+  <!-- NỘI DUNG CHÍNH TRANG QUẢN TRỊ -->
+  <div class="container" id="main-content" style="display:none;">
+    <header>
+      <h1>💸 QUẢN LÝ THANH TOÁN <span style="font-size: 11px; color: var(--muted); font-weight: 500; font-family: sans-serif; vertical-align: middle;">(Bản cập nhật v1.2)</span></h1>
+      <p>Nhấp vào khách hàng để cập nhật ảnh QR và chuyển khoản</p>
+      <button class="btn-logout" onclick="logout()">Đăng xuất</button>
+    </header>
+    
+    <!-- Ô tìm kiếm khách hàng -->
+    <div style="margin-bottom: 20px;">
+      <!-- Bẫy ẩn để hứng tự động điền (autofill) của trình duyệt Chrome/mật khẩu -->
+      <input type="text" style="position: absolute; top: -9999px; left: -9999px;" autocomplete="username">
+      <input type="password" style="position: absolute; top: -9999px; left: -9999px;" autocomplete="current-password">
+      
+      <input type="search" id="search-input" autocomplete="off" placeholder="🔍 Tìm theo tên hoặc ID Zalo của khách..." style="width: 100%; padding: 14px 18px; border-radius: 14px; border: 1px solid var(--line); font-size: 14px; outline: none; transition: all 0.2s;" oninput="filterUsers()">
+    </div>
+
+    <div id="user-list">
+      <!-- Danh sách render tự động -->
+    </div>
+  </div>
+
+  <!-- POPUP CHI TIẾT THANH TOÁN -->
+  <div class="modal-overlay" id="pay-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h3 id="modal-title" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 18px; font-weight: 700; display:flex; align-items:center; gap:8px; margin-bottom: 12px;">
+        Rút tiền khách hàng
+      </h3>
+      
+      <!-- Tabs chuyển đổi loại QR -->
+      <div class="qr-tabs">
+        <button class="qr-tab active" id="tab-dynamic-qr" onclick="switchQrTab('dynamic')">QR Chuyển Khoản</button>
+        <button class="qr-tab" id="tab-static-qr" onclick="switchQrTab('static')">Ảnh gốc khách gửi</button>
+      </div>
+      
+      <!-- Hiện ảnh QR code -->
+      <div class="qr-container" id="qr-box">
+        <span style="color: var(--ink-soft); font-size: 12px; text-align: center; padding: 20px;">
+          Chưa có ảnh QR tài khoản của khách
+        </span>
+      </div>
+      
+      <!-- Nút Up ảnh QR -->
+      <input type="file" id="qr-uploader" accept="image/*" style="display:none;" onchange="uploadQrCode(event)">
+      <button onclick="document.getElementById('qr-uploader').click()" style="margin-bottom: 12px; width: 100%; padding: 8px; border-radius: 10px; border: 1px solid var(--primary); color: var(--primary); background: transparent; cursor: pointer; font-weight: 600; font-size: 13px;">
+        📤 Tải lên/Đổi ảnh QR khách hàng
+      </button>
+
+      <!-- Form điền thông tin tài khoản ngân hàng -->
+      <div class="bank-form-group">
+        <div class="bank-input-item">
+          <label>🏦 Ngân hàng:</label>
+          <select id="bank-select" onchange="onBankInfoChange()">
+            <option value="">-- Chọn ngân hàng --</option>
+            <option value="970436">Vietcombank (VCB)</option>
+            <option value="970415">VietinBank (CTG)</option>
+            <option value="970407">Techcombank (TCB)</option>
+            <option value="970422">MBBank (MB)</option>
+            <option value="970418">BIDV (BID)</option>
+            <option value="970416">ACB (ACB)</option>
+            <option value="970423">TPBank (TPB)</option>
+            <option value="970405">Agribank (ARG)</option>
+            <option value="970432">VPBank (VPB)</option>
+            <option value="970403">Sacombank (STB)</option>
+            <option value="970441">VIB (VIB)</option>
+            <option value="970437">HDBank (HDB)</option>
+            <option value="970448">OCB (OCB)</option>
+            <option value="970443">SHB (SHB)</option>
+            <option value="970449">LPBank (LPB)</option>
+            <option value="970424">ShinhanBank (SHBVN)</option>
+            <option value="970426">MSB (Maritime Bank)</option>
+            <option value="970431">Eximbank (EIB)</option>
+            <option value="970440">SeABank (SEAB)</option>
+            <option value="970428">NamABank (NAB)</option>
+            <option value="970452">KienLongBank (KLB)</option>
+            <option value="970412">PVcomBank (PVC)</option>
+            <option value="970409">BacABank (BAB)</option>
+            <option value="970419">NCB (NCB)</option>
+            <option value="970429">SCB (Sài Gòn)</option>
+            <option value="970425">An Binh Bank (ABB)</option>
+            <option value="970427">VietABank (VAB)</option>
+            <option value="970433">VietBank (VVB)</option>
+            <option value="970438">BaoVietBank (BVB)</option>
+            <option value="970400">SaigonBank (SGB)</option>
+            <option value="970414">OceanBank (OJB)</option>
+            <option value="970408">GPBank (GPB)</option>
+            <option value="970444">CBBank (CBB)</option>
+            <option value="970457">Woori Bank (WRB)</option>
+            <option value="970421">VRB (Viet-Nga)</option>
+            <option value="963388">Timo (Timo Bank)</option>
+            <option value="546034">Cake by VPBank (CAKE)</option>
+            <option value="971025">Ví MoMo (MoMo)</option>
+            <option value="971005">Viettel Money (VTL)</option>
+            <option value="970469">Ví ZaloPay (ZALOPAY)</option>
+            <option value="970462">Ví ShopeePay (SHOPEEPAY)</option>
+            <option value="971011">VNPT Money (VNP)</option>
+          </select>
+        </div>
+        <div class="bank-input-item">
+          <label>💳 Số tài khoản:</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="bank-acc-num" placeholder="Nhập STK..." oninput="onBankInfoChange()" style="flex: 1;">
+            <button onclick="saveBankInfoOnly()" style="padding: 0 14px; background: #16A34A; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 4px; white-space: nowrap; height: 38px;">
+              💾 Lưu
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Khu vực cộng tiền thưởng / khuyến mãi -->
+      <div style="background: #F8F9FA; border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--ink-soft);">🎁 Thưởng thêm (VNĐ):</span>
+          <input type="number" id="bonus-amount" placeholder="Ví dụ: 10000" style="width: 120px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 13px; text-align: right; outline: none;" oninput="updateTotalAmount()">
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--ink-soft);">📝 Lý do thưởng:</span>
+          <input type="text" id="bonus-reason" placeholder="thưởng đơn đầu tiên" style="width: 180px; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); font-size: 13px; outline: none;">
+        </div>
+      </div>
+
+      <div style="background: #FFF5F2; padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 16px;">
+        <span style="font-size: 11px; color: var(--primary); font-weight: 700; letter-spacing: 0.05em;">SỐ TIỀN CẦN CHUYỂN (CÓ THỂ RÚT NGAY)</span>
+        <h2 id="modal-amount" style="color: var(--primary); font-size: 26px; font-weight: 800; margin-top: 4px;">0đ</h2>
+        <div id="modal-amount-breakdown" style="font-size: 12px; color: var(--ink-soft); margin-top: 6px; display: none; line-height: 1.5; font-weight: 500; border-top: 1px dashed rgba(244,81,30,0.15); padding-top: 6px; text-align: left;"></div>
+      </div>
+
+      <!-- Khu vực tải bill chuyển khoản -->
+      <div class="bill-upload-area" onclick="document.getElementById('bill-uploader').click()">
+        <input type="file" id="bill-uploader" accept="image/*" style="display:none;" onchange="previewBill(event)">
+        <div id="bill-prompt">
+          <span style="font-size: 24px;">📸</span>
+          <p style="font-size: 12px; font-weight: 600; color: var(--ink-soft); margin-top: 4px;">Chọn hoặc kéo thả ảnh Bill chuyển khoản tại đây</p>
+        </div>
+        <div id="bill-preview-box" style="display:none;">
+          <p style="font-size: 11px; color: var(--primary); font-weight: 600;">Hóa đơn đã chọn:</p>
+          <img id="bill-img" src="" alt="Bill Preview">
+        </div>
+      </div>
+
+      <button class="btn-pay" onclick="confirmPayment()">Xác nhận đã thanh toán</button>
+    </div>
+  </div>
+
+  <script>
+    // Mật khẩu bảo mật
+    const CORRECT_PASSWORD = "Baophan54@";
+    
+    // URL Web App Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbyL4WR2KTi-K41khmS7DBtoaDoNtRDsvF6GV1YTFDme8ynMAXdu2JgpPpYQalDi5a3VqQ/exec";
+    // URL Local Zalo Bot
+    const LOCAL_BOT_URL = "https://api.shoppesale.io.vn";
+    
+    let activeUserId = "";
+    let activeUserName = "";
+    let activeUnpaid = 0;
+    let activeUnpaidReferral = 0;
+    let activeTotalTransferAmount = 0;
+    let selectedBillBase64 = "";
+    let activeTotalPaid = 0;
+
+    function checkLogin() {
+      if (localStorage.getItem("payout_logged_in") === "true") {
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("main-content").style.display = "block";
+        document.getElementById("search-input").value = ""; // Xóa trắng ô tìm kiếm nếu bị tự động điền
+        loadData();
+      } else {
+        document.getElementById("login-screen").style.display = "flex";
+        document.getElementById("main-content").style.display = "none";
+      }
+    }
+
+    function verifyPassword() {
+      const input = document.getElementById("admin-password").value;
+      if (input === CORRECT_PASSWORD) {
+        localStorage.setItem("payout_logged_in", "true");
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("main-content").style.display = "block";
+        document.getElementById("login-error").style.display = "none";
+        document.getElementById("search-input").value = ""; // Xóa trắng ô tìm kiếm nếu bị tự động điền
+        loadData();
+      } else {
+        const error = document.getElementById("login-error");
+        error.style.display = "block";
+        document.getElementById("admin-password").value = "";
+        document.getElementById("admin-password").focus();
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("payout_logged_in");
+      checkLogin();
+    }
+
+    let allUsers = [];
+
+    async function loadData(retries = 3, delay = 1000) {
+      const userListEl = document.getElementById("user-list");
+      if (userListEl && allUsers.length === 0) {
+        userListEl.innerHTML = `
+          <div style="text-align:center; padding:60px 20px; color:var(--ink-soft); font-weight:600;">
+            <div class="spinner" style="margin:0 auto 12px; border-width:3px; width:28px; height:28px;"></div>
+            Đang tải danh sách thanh toán...
+          </div>`;
+      }
+      showLoading("Đang tải dữ liệu từ Google Sheets...");
+      try {
+        const res = await fetch(`${API_URL}?action=getPayoutList`);
+        const json = await res.json();
+        if (json.success) {
+          // Sắp xếp người có tiền chưa thanh toán (unpaid) nhiều nhất lên trên đầu
+          json.data.sort((a, b) => b.unpaid - a.unpaid);
+          allUsers = json.data;
+          renderList(allUsers);
+          hideLoading();
+        } else {
+          throw new Error(json.error || "Lỗi không xác định");
+        }
+      } catch (e) {
+        console.warn(`Lỗi kết nối Google Sheets, còn lại ${retries} lần thử...`, e);
+        if (retries > 1) {
+          setTimeout(() => loadData(retries - 1, delay * 1.5), delay);
+        } else {
+          hideLoading();
+          // Hiển thị một nút "Thử lại" ngay trên giao diện thay vì alert chặn màn hình
+          document.getElementById("user-list").innerHTML = `
+            <div style="text-align:center; padding:40px; color:var(--ink-soft); width: 100%;">
+              <span style="font-size: 36px; display: block; margin-bottom: 12px;">⚠️</span>
+              <p style="margin: 10px 0; font-size: 13px; font-weight: 500;">Kết nối Google Sheets bị gián đoạn (Google quá tải hoặc mạng chậm).</p>
+              <button onclick="loadData()" style="padding: 8px 20px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600; font-size: 13px; margin-top: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                🔄 Thử kết nối lại
+              </button>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function renderList(users) {
+      const list = document.getElementById("user-list");
+      list.innerHTML = "";
+      
+      if (users.length === 0) {
+        list.innerHTML = `<div style="text-align:center; padding:30px; color:var(--ink-soft); font-size:14px;">Không tìm thấy kết quả phù hợp</div>`;
+        return;
+      }
+
+      users.forEach(user => {
+        list.innerHTML += `
+          <div class="user-card">
+            <div class="user-info">
+              <div class="avatar">${user.userName ? user.userName[0].toUpperCase() : "K"}</div>
+              <div class="user-details">
+                <h3>${user.userName}</h3>
+                <span>ID Zalo: ${user.userId}</span>
+              </div>
+            </div>
+            <div class="balance-group">
+              <div class="balance-item unpaid">
+                <span>Có thể rút ngay</span>
+                <strong>${Math.round(user.unpaid).toLocaleString('vi-VN')}đ</strong>
+              </div>
+              <div class="balance-item paid">
+                <span>Đã thanh toán</span>
+                <strong>${Math.round(user.paid).toLocaleString('vi-VN')}đ</strong>
+              </div>
+            </div>
+            <button class="btn-pay" onclick="openModal('${user.userId}', '${user.userName}', ${user.unpaid}, ${user.unpaidReferral || 0}, '${user.qrCodeUrl}', '${user.bankBin || ''}', '${user.bankAcc || ''}', ${user.paid || 0})">
+              Thanh toán ngay
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function filterUsers() {
+      const query = document.getElementById("search-input").value.trim().toLowerCase();
+      const filtered = allUsers.filter(user => {
+        const name = (user.userName || "").toLowerCase();
+        const id = (user.userId || "").toLowerCase();
+        return name.includes(query) || id.includes(query);
+      });
+      renderList(filtered);
+    }
+
+    let activeQrUrl = "";
+    let activeBankBin = "";
+    let activeAccNum = "";
+    let currentQrTab = "dynamic";
+
+    function switchQrTab(tabType) {
+      currentQrTab = tabType;
+      document.getElementById("tab-dynamic-qr").classList.toggle("active", tabType === "dynamic");
+      document.getElementById("tab-static-qr").classList.toggle("active", tabType === "static");
+      displayQrCode();
+    }
+
+    function getTransferMemo() {
+      return "";
+    }
+
+    function displayQrCode() {
+      const qrBox = document.getElementById("qr-box");
+      if (currentQrTab === "static") {
+        if (activeQrUrl) {
+          qrBox.innerHTML = `<img src="${activeQrUrl}" alt="QR gốc" />`;
+        } else {
+          qrBox.innerHTML = `<span style="color: var(--ink-soft); font-size: 12px; text-align: center; padding: 20px;">Chưa có ảnh QR tài khoản của khách</span>`;
+        }
+      } else {
+        // Tab dynamic QR
+        if (activeBankBin && activeAccNum) {
+          let vietQrBin = activeBankBin;
+          if (vietQrBin === "970468") vietQrBin = "971025";
+          if (vietQrBin === "970454") vietQrBin = "971005";
+          const dynamicUrl = `https://img.vietqr.io/image/${vietQrBin}-${activeAccNum}-compact2.png?amount=${activeTotalTransferAmount}&accountName=${encodeURIComponent(activeUserName)}`;
+          qrBox.innerHTML = `
+            <div style="text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;">
+              <img src="${dynamicUrl}" alt="QR chuyển khoản động" style="max-height: 85%; object-fit: contain;" />
+              <div style="font-size: 11px; color: var(--primary); font-weight: 600;">
+                Mã QR động NAPAS 247 (đã tự điền số tiền)
+              </div>
+            </div>
+          `;
+        } else {
+          qrBox.innerHTML = `
+            <div style="color: var(--ink-soft); font-size: 12px; text-align: center; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 8px;">
+              <span>⚠️ Thiếu thông tin ngân hàng để tạo QR động.</span>
+              <span style="font-size: 11px; color: #DC2626;">Sếp vui lòng tải lên QR hoặc chọn ngân hàng & nhập STK thủ công bên dưới.</span>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function onBankInfoChange() {
+      let selectedBin = document.getElementById("bank-select").value;
+      if (selectedBin === "970468") selectedBin = "971025";
+      if (selectedBin === "970454") selectedBin = "971005";
+      activeBankBin = selectedBin;
+      activeAccNum = document.getElementById("bank-acc-num").value.trim();
+      displayQrCode();
+    }
+
+    function parseVietQrText(text) {
+      if (!text) return null;
+      let index = 0;
+      let tag38Value = "";
+      while (index < text.length - 4) {
+        const tag = text.substring(index, index + 2);
+        const length = parseInt(text.substring(index + 2, index + 4), 10);
+        if (isNaN(length)) break;
+        const value = text.substring(index + 4, index + 4 + length);
+        if (tag === "38") {
+          tag38Value = value;
+          break;
+        }
+        index += 4 + length;
+      }
+      
+      if (!tag38Value) return null;
+      
+      let subIndex = 0;
+      let bankBin = "";
+      let accountNumber = "";
+      
+      while (subIndex < tag38Value.length - 4) {
+        const subTag = tag38Value.substring(subIndex, subIndex + 2);
+        const subLength = parseInt(tag38Value.substring(subIndex + 2, subIndex + 4), 10);
+        if (isNaN(subLength)) break;
+        const subValue = tag38Value.substring(subIndex + 4, subIndex + 4 + subLength);
+        
+        if (subTag === "01") {
+          let sIndex = 0;
+          while (sIndex < subValue.length - 4) {
+            const sTag = subValue.substring(sIndex, sIndex + 2);
+            const sLength = parseInt(subValue.substring(sIndex + 2, sIndex + 4), 10);
+            if (isNaN(sLength)) break;
+            const sValue = subValue.substring(sIndex + 4, sIndex + 4 + sLength);
+            if (sTag === "00") {
+              bankBin = sValue;
+            } else if (sTag === "01") {
+              accountNumber = sValue;
+            }
+            sIndex += 4 + sLength;
+          }
+        }
+        subIndex += 4 + subLength;
+      }
+      
+      if (bankBin && accountNumber) {
+        return { bankBin, accountNumber };
+      }
+      return null;
+    }
+
+    function decodeAndParseQrCode(qrUrl) {
+      showLoading("Đang giải mã ảnh QR gốc của khách...");
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(qrUrl)}`;
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        
+        try {
+          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(imageData.data, imageData.width, imageData.height);
+          if (code && code.data) {
+            console.log("Decoded QR:", code.data);
+            const parsed = parseVietQrText(code.data);
+            if (parsed) {
+              activeBankBin = parsed.bankBin;
+              activeAccNum = parsed.accountNumber;
+              document.getElementById("bank-select").value = parsed.bankBin;
+              document.getElementById("bank-acc-num").value = parsed.accountNumber;
+              
+              // 1. Lưu vào cache của trình duyệt để lần sau mở tích tắc không cần quét lại
+              try {
+                localStorage.setItem(`payout_qr_cache_${activeUserId}`, JSON.stringify({
+                  qrUrl: qrUrl,
+                  bankBin: parsed.bankBin,
+                  accountNumber: parsed.accountNumber
+                }));
+              } catch(e) {}
+
+              // 2. Gửi lưu trực tiếp lên Google Sheets (lưu vĩnh viễn cho tất cả thiết bị khác)
+              try {
+                fetch(API_URL, {
+                  method: "POST",
+                  body: JSON.stringify({
+                    action: "save_bank_info",
+                    userId: activeUserId,
+                    bankBin: parsed.bankBin,
+                    bankAcc: parsed.accountNumber
+                  })
+                });
+              } catch(e) {}
+
+              switchQrTab("dynamic");
+              hideLoading();
+              return;
+            }
+          }
+          console.warn("Không thể nhận diện nội dung VietQR");
+          switchQrTab("static");
+          hideLoading();
+        } catch (e) {
+          console.error("Lỗi đọc dữ liệu ảnh QR:", e);
+          switchQrTab("static");
+          hideLoading();
+        }
+      };
+      img.onerror = function() {
+        console.error("Lỗi tải ảnh qua proxy");
+        switchQrTab("static");
+        hideLoading();
+      };
+      img.src = proxyUrl;
+    }
+
+    function openModal(userId, name, unpaid, unpaidReferral, qrUrl, bankBin, bankAcc, paid) {
+      activeUserId = userId;
+      activeUserName = name;
+      activeUnpaid = unpaid;
+      activeUnpaidReferral = unpaidReferral || 0;
+      activeQrUrl = qrUrl || "";
+      selectedBillBase64 = "";
+      activeTotalPaid = paid || 0;
+      
+      // Reset inputs thưởng thêm & bank
+      document.getElementById("bonus-amount").value = "";
+      document.getElementById("bonus-reason").value = "";
+      document.getElementById("bank-select").value = "";
+      document.getElementById("bank-acc-num").value = "";
+      activeBankBin = "";
+      activeAccNum = "";
+      
+      document.getElementById("modal-title").innerText = `💸 ${name}`;
+      
+      updateTotalAmount();
+      
+      // Reset bill uploader
+      document.getElementById("bill-prompt").style.display = "block";
+      document.getElementById("bill-preview-box").style.display = "none";
+      document.getElementById("bill-uploader").value = "";
+      
+      // Mặc định chọn tab QR Chuyển khoản động
+      document.getElementById("tab-dynamic-qr").classList.add("active");
+      document.getElementById("tab-static-qr").classList.remove("active");
+      currentQrTab = "dynamic";
+
+      // 1. Ưu tiên lấy thông tin ngân hàng đã lưu sẵn trên Google Sheets
+      if (bankBin && bankAcc) {
+        let normBin = bankBin;
+        if (normBin === "970468") normBin = "971025";
+        if (normBin === "970454") normBin = "971005";
+        activeBankBin = normBin;
+        activeAccNum = bankAcc;
+        document.getElementById("bank-select").value = normBin;
+        document.getElementById("bank-acc-num").value = bankAcc;
+        switchQrTab("dynamic");
+      } 
+      // 2. Nếu Sheets chưa có, kiểm tra cache trình duyệt LocalStorage
+      else if (activeQrUrl) {
+        let hasCache = false;
+        try {
+          const cached = localStorage.getItem(`payout_qr_cache_${userId}`);
+          if (cached) {
+            const parsedCache = JSON.parse(cached);
+            if (parsedCache.qrUrl === activeQrUrl) {
+              activeBankBin = parsedCache.bankBin;
+              activeAccNum = parsedCache.accountNumber;
+              document.getElementById("bank-select").value = parsedCache.bankBin;
+              document.getElementById("bank-acc-num").value = parsedCache.accountNumber;
+              hasCache = true;
+              switchQrTab("dynamic");
+              
+              // Đồng bộ ngược lên Google Sheets nếu thấy local có mà Sheets chưa có
+              fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                  action: "save_bank_info",
+                  userId: userId,
+                  bankBin: parsedCache.bankBin,
+                  bankAcc: parsedCache.accountNumber
+                })
+              });
+            }
+          }
+        } catch(e) {}
+
+        // 3. Nếu cả hai đều chưa có, gọi giải mã ảnh QR gốc
+        if (!hasCache) {
+          decodeAndParseQrCode(activeQrUrl);
+        }
+      } else {
+        displayQrCode();
+      }
+      
+      document.getElementById("pay-modal").style.display = "flex";
+    }
+
+    function updateTotalAmount() {
+      const bonus = Number(document.getElementById("bonus-amount").value) || 0;
+      // Làm tròn số tiền chuyển khoản về số nguyên để tránh lỗi chênh lệch số lẻ 1đ khi quét VietQR
+      activeTotalTransferAmount = Math.round(activeUnpaid + bonus);
+      document.getElementById("modal-amount").innerText = `${activeTotalTransferAmount.toLocaleString('vi-VN')}đ`;
+      
+      // Hiển thị chi tiết các khoản tiền
+      const breakdownDiv = document.getElementById("modal-amount-breakdown");
+      if (activeUnpaidReferral > 0) {
+        const orderCashback = activeUnpaid - activeUnpaidReferral;
+        let html = `<div>• Hoa hồng đơn hàng: <strong>${Math.round(orderCashback).toLocaleString('vi-VN')}đ</strong></div>`;
+        html += `<div>• Thưởng giới thiệu: <strong>${Math.round(activeUnpaidReferral).toLocaleString('vi-VN')}đ</strong></div>`;
+        if (bonus > 0) {
+          html += `<div>• Thưởng thêm: <strong>${Math.round(bonus).toLocaleString('vi-VN')}đ</strong></div>`;
+        }
+        breakdownDiv.innerHTML = html;
+        breakdownDiv.style.display = "block";
+      } else if (bonus > 0) {
+        let html = `<div>• Hoa hồng đơn hàng: <strong>${Math.round(activeUnpaid).toLocaleString('vi-VN')}đ</strong></div>`;
+        html += `<div>• Thưởng thêm: <strong>${Math.round(bonus).toLocaleString('vi-VN')}đ</strong></div>`;
+        breakdownDiv.innerHTML = html;
+        breakdownDiv.style.display = "block";
+      } else {
+        breakdownDiv.style.display = "none";
+      }
+
+      // Cập nhật lại QR code động khi số tiền thay đổi
+      if (currentQrTab === "dynamic") {
+        displayQrCode();
+      }
+    }
+
+    function closeModal() {
+      document.getElementById("pay-modal").style.display = "none";
+    }
+
+    async function saveBankInfoOnly() {
+      if (!activeBankBin || !activeAccNum) {
+        alert("Vui lòng chọn ngân hàng và nhập số tài khoản trước khi lưu!");
+        return;
+      }
+      showLoading("Đang lưu thông tin ngân hàng lên Google Sheets...");
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "save_bank_info",
+            userId: activeUserId,
+            bankBin: activeBankBin,
+            bankAcc: activeAccNum
+          })
+        });
+        const result = await response.json();
+        if (result.success) {
+          alert("Đã lưu thông tin ngân hàng lên Google Sheets thành công!");
+          // Cập nhật lại danh sách người dùng trong bộ nhớ để không bị mất khi load lại
+          const user = allUsers.find(u => u.userId === activeUserId);
+          if (user) {
+            user.bankBin = activeBankBin;
+            user.bankAcc = activeAccNum;
+          }
+        } else {
+          alert("Lỗi: " + result.error);
+        }
+      } catch (e) {
+        alert("Lỗi kết nối: " + e.message);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // Xử lý upload ảnh QR code tĩnh lên Drive
+    async function uploadQrCode(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function() {
+        const base64 = reader.result;
+        showLoading("Đang tải ảnh QR lên Drive...");
+        
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "save_qr",
+              userId: activeUserId,
+              image: base64
+            })
+          });
+          const result = await response.json();
+          if (result.success) {
+            alert("Đã lưu mã QR lên Drive thành công!");
+            activeQrUrl = result.qrUrl;
+            decodeAndParseQrCode(result.qrUrl);
+          } else {
+            alert("Lỗi: " + result.error);
+          }
+        } catch (e) {
+          alert("Lỗi tải ảnh lên Drive: " + e.message);
+        } finally {
+          hideLoading();
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Xem trước ảnh hóa đơn chuyển khoản
+    function previewBill(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function() {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          
+          // Giữ nguyên tỷ lệ ảnh gốc, loại bỏ hoàn toàn 2 khoảng trắng thừa 2 bên
+          const maxWidth = 800;
+          let drawWidth = img.width;
+          let drawHeight = img.height;
+          
+          if (drawWidth > maxWidth) {
+            drawHeight = Math.round(img.height * (maxWidth / img.width));
+            drawWidth = maxWidth;
+          }
+          
+          canvas.width = drawWidth;
+          canvas.height = drawHeight;
+          
+          ctx.drawImage(img, 0, 0, drawWidth, drawHeight);
+          
+          selectedBillBase64 = canvas.toDataURL("image/jpeg", 0.85); // Nén ảnh chất lượng 85% để gửi nhanh hơn
+          document.getElementById("bill-img").src = selectedBillBase64;
+          document.getElementById("bill-prompt").style.display = "none";
+          document.getElementById("bill-preview-box").style.display = "block";
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Xác nhận đã thanh toán
+    async function confirmPayment() {
+      if (activeTotalTransferAmount <= 0) {
+        alert("Khách hàng không có số dư cần rút!");
+        return;
+      }
+      if (!selectedBillBase64) {
+        alert("Vui lòng tải lên ảnh Bill chuyển khoản trước khi xác nhận!");
+        return;
+      }
+
+      showLoading("Đang cập nhật trạng thái đơn hàng...");
+      
+      try {
+        // 1. Cập nhật Google Sheets thành "Đã TT" và lưu Lịch sử thanh toán kèm Bill
+        const sheetRes = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "confirm_payout",
+            userId: activeUserId,
+            amount: activeTotalTransferAmount,
+            billBase64: selectedBillBase64
+          })
+        });
+        const sheetJson = await sheetRes.json();
+        
+        if (sheetJson.success) {
+          // Gửi lưu thông tin ngân hàng lên Google Sheets nếu có thay đổi thủ công hoặc chưa lưu
+          if (activeBankBin && activeAccNum) {
+            try {
+              fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                  action: "save_bank_info",
+                  userId: activeUserId,
+                  bankBin: activeBankBin,
+                  bankAcc: activeAccNum
+                })
+              });
+            } catch(e) {}
+          }
+          
+          // Xây dựng nội dung ghi chú thưởng thêm nếu có
+          let note = "";
+          const bonus = Number(document.getElementById("bonus-amount").value) || 0;
+          const reason = document.getElementById("bonus-reason").value.trim();
+          if (bonus > 0) {
+            note = ` (bao gồm ${bonus.toLocaleString('vi-VN')}đ ${reason || 'thưởng thêm'})`;
+          }
+
+          // 2. Gửi thông báo Zalo kèm ảnh hóa đơn
+          showLoading("Đang gửi thông báo Zalo kèm Bill...");
+          try {
+            const notifyRes = await fetch(`${LOCAL_BOT_URL}/api/payout/notify`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: activeUserId,
+                userName: activeUserName,
+                amount: activeTotalTransferAmount,
+                bonus: bonus,
+                reason: reason,
+                referralBonus: activeUnpaidReferral,
+                note: note,
+                billBase64: selectedBillBase64,
+                totalPaid: activeTotalPaid + activeTotalTransferAmount,
+                billUrl: sheetJson.billUrl || ""
+              })
+            });
+            const notifyJson = await notifyRes.json();
+            if (notifyJson.success) {
+              alert(`Đã hoàn tất thanh toán ${Math.round(activeTotalTransferAmount).toLocaleString('vi-VN')}đ và gửi thông báo Zalo thành công!`);
+            } else {
+              alert("Đã cập nhật Sheets nhưng gửi Zalo thất bại: " + notifyJson.error);
+            }
+          } catch (e) {
+            alert("Lỗi khi kết nối đến Zalo Bot để gửi thông báo. Vui lòng đảm bảo Zalo Bot của sếp đang hoạt động ở máy tính.");
+          }
+          closeModal();
+          loadData();
+        } else {
+          alert("Cập nhật Sheets thất bại: " + sheetJson.error);
+        }
+      } catch (err) {
+        alert("Lỗi hệ thống: " + err.message);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    function showLoading(text) {
+      document.getElementById("loading-text").innerText = text;
+      document.getElementById("loading-box").style.display = "flex";
+    }
+
+    function hideLoading() {
+      document.getElementById("loading-box").style.display = "none";
+    }
+
+    // Khởi chạy kiểm tra đăng nhập
+    window.onload = checkLogin;
+  </script>
+
+  <!-- Lớp phủ loading toàn màn hình -->
+  <div class="loading-overlay" id="loading-box">
+    <div class="spinner"></div>
+    <span id="loading-text">Đang cập nhật...</span>
+  </div>
+</body>
+</html>
