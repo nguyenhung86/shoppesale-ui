@@ -117,24 +117,36 @@ function renderOrders(filteredOrders, formatVND) {
   }).join('');
 }
 
+function isOrderCacheValid(cachedTimeMs) {
+  if (!cachedTimeMs || isNaN(cachedTimeMs)) return false;
+  const now = new Date();
+  
+  const t8h30 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 30, 0).getTime();
+  const t17h00 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0).getTime();
+  
+  let latestCheckpoint = 0;
+  if (now.getTime() >= t17h00) {
+    latestCheckpoint = t17h00;
+  } else if (now.getTime() >= t8h30) {
+    latestCheckpoint = t8h30;
+  } else {
+    latestCheckpoint = t17h00 - 24 * 3600 * 1000;
+  }
+  
+  return Number(cachedTimeMs) >= latestCheckpoint;
+}
+
 function performSearch(query, forceRefresh = false) {
   const formatVND = val => Math.round(Number(val) || 0).toLocaleString("vi-VN") + " đ";
   
   const localCacheKey = "user_orders_cache_" + String(query).trim().toLowerCase();
   const localTimeKey = "user_orders_time_" + String(query).trim().toLowerCase();
-  const nowTs = Date.now();
-  const CACHE_TTL_MS = 15 * 60 * 1000; // Bộ nhớ đệm 15 phút
 
-  // 1. Sử dụng dữ liệu đệm RAM hoặc localStorage nếu không bị bắt buộc làm mới
+  // 1. Sử dụng dữ liệu đệm RAM hoặc localStorage nếu mốc 8h30 & 17h00 chưa hết hạn
   if (!forceRefresh) {
-    if (cachedOrders && cachedZaloId === query) {
-      renderDashboard(cachedOrders, query, formatVND);
-      return;
-    }
-
     const cachedDataStr = localStorage.getItem(localCacheKey);
     const cachedTimeStr = localStorage.getItem(localTimeKey);
-    if (cachedDataStr && cachedTimeStr && (nowTs - Number(cachedTimeStr) < CACHE_TTL_MS)) {
+    if (cachedDataStr && cachedTimeStr && isOrderCacheValid(cachedTimeStr)) {
       try {
         const parsedResponse = JSON.parse(cachedDataStr);
         if (parsedResponse && parsedResponse.success && Array.isArray(parsedResponse.data)) {
