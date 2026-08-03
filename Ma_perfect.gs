@@ -22,15 +22,46 @@ function doGet(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
     if (action === 'searchBySubId') {
-      const subId = e.parameter.subId;
-      const dateStr = e.parameter.date; // yyyy-MM-dd
+      const subId = e.parameter.subId || "";
+      const dateStr = e.parameter.date || ""; // yyyy-MM-dd
+      const cacheKey = "sub_" + subId + "_" + dateStr;
+      try {
+        const cache = CacheService.getScriptCache();
+        const cached = cache.get(cacheKey);
+        if (cached) {
+          return ContentService.createTextOutput(cached)
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      } catch (eC) {}
+      
       const res = getOrdersBySubIdAndDate(subId, dateStr);
-      return ContentService.createTextOutput(JSON.stringify(res))
+      const jsonStr = JSON.stringify(res);
+      if (res && res.success && jsonStr.length < 100000) {
+        try {
+          CacheService.getScriptCache().put(cacheKey, jsonStr, 15); // Cache 15s cho /vitien và /donhang
+        } catch (eC) {}
+      }
+      return ContentService.createTextOutput(jsonStr)
         .setMimeType(ContentService.MimeType.JSON);
     }
     if (action === 'getPayoutList') {
+      try {
+        const cache = CacheService.getScriptCache();
+        const cached = cache.get("payout_dashboard_json");
+        if (cached) {
+          return ContentService.createTextOutput(cached)
+            .setMimeType(ContentService.MimeType.JSON);
+        }
+      } catch (eCache) {}
+      
       const res = getPayoutDashboardData();
-      return ContentService.createTextOutput(JSON.stringify(res))
+      const jsonStr = JSON.stringify(res);
+      if (res && res.success && jsonStr.length < 100000) {
+        try {
+          CacheService.getScriptCache().put("payout_dashboard_json", jsonStr, 20); // Cache 20 giây
+        } catch (eC) {}
+      }
+      return ContentService.createTextOutput(jsonStr)
         .setMimeType(ContentService.MimeType.JSON);
     }
     if (action === 'unifiedSearch') {
@@ -683,7 +714,7 @@ function doPost(e) {
                               
           if (isCancelled) {
             normStatus = "Invalid";
-          } else if (isOrderCompleted) {
+          } else if (isCompleted) {
             normStatus = "Waiting for payment";
           } else {
             normStatus = "Pending";
@@ -863,18 +894,22 @@ function unifiedSearch(query, startDateStr, endDateStr) {
     
     const cleanQuery = String(query).trim();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
-    if (!sheet) {
+    
+    const sheetsToScan = [];
+    const mainSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (mainSheet) sheetsToScan.push(mainSheet);
+    
+    const allSheets = ss.getSheets();
+    for (let s = 0; s < allSheets.length; s++) {
+      const sName = allSheets[s].getName();
+      if (sName !== "Dữ liệu nạp tự động" && (sName.toLowerCase().includes("lưu trữ") || sName.toLowerCase().includes("archive"))) {
+        sheetsToScan.push(allSheets[s]);
+      }
+    }
+
+    if (sheetsToScan.length === 0) {
       return { success: false, error: 'Hệ thống chưa có dữ liệu.' };
     }
-    
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 3) {
-      return { success: false, error: 'Không tìm thấy dữ liệu' };
-    }
-    
-    const dataRange = sheet.getRange(3, 1, lastRow - 2, 11);
-    const data = dataRange.getValues();
     
     const possibleOrderIds = cleanQuery.split(',').map(id => id.trim()).filter(id => id !== '');
     const translatedName = getZaloNameById(cleanQuery);
@@ -885,8 +920,14 @@ function unifiedSearch(query, startDateStr, endDateStr) {
     let totalCompleted = 0;
     let customerResults = [];
     
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
+    for (let sIdx = 0; sIdx < sheetsToScan.length; sIdx++) {
+      const sheet = sheetsToScan[sIdx];
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 3) continue;
+      
+      const data = sheet.getRange(3, 1, lastRow - 2, 11).getValues();
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
       const rowOrderSn = String(row[2]).trim(); // Cột C
       const rowZaloName = String(row[1]).trim(); // Cột B
       const rowSubId = String(row[10] || '').trim().replace(/'/g, ''); // Cột K (Sub ID / ID Zalo)
@@ -928,7 +969,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
           if (paymentStatus === "Đã TT") {
             totalReceived += commission;
           } else {
-            if (orderStatus === 'Đang chờ xác nhận') {
+            if (orderStatus === 'Đang giao' || orderStatus === 'Đang chờ xác nhận') {
               totalPending += commission;
             } else if (orderStatus === 'Hoàn thành') {
               totalCompleted += commission;
@@ -948,6 +989,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
         });
       }
     }
+  }
     
     if (customerResults.length > 0) {
       return {
@@ -1027,7 +1069,7 @@ function searchOrder(orderIdsStr) {
           if (paymentStatus === "Đã TT") {
             totalReceived += commission;
           } else {
-            if (orderStatus === 'Đang chờ xác nhận') {
+            if (orderStatus === 'Đang giao' || orderStatus === 'Đang chờ xác nhận') {
               totalPending += commission;
             } else if (orderStatus === 'Hoàn thành') {
               totalCompleted += commission;
@@ -1068,7 +1110,7 @@ function searchOrder(orderIdsStr) {
   }
 }
 
-// === Hàm phục vụ tra cứu đơn hàng theo Sub ID và Ngày (Bot Zalo) ===
+// === Hàm phục vụ tra cứu đơn hàng theo Sub ID và Ngày (Bot Zalo /vitien) ===
 function getOrdersBySubIdAndDate(subId, dateStr) {
   try {
     if (!subId) {
@@ -1076,23 +1118,25 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
     }
     
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
-    if (!sheet) {
+    const sheetsToScan = [];
+    const mainSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (mainSheet) sheetsToScan.push(mainSheet);
+    
+    const allSheets = ss.getSheets();
+    for (let s = 0; s < allSheets.length; s++) {
+      const sName = allSheets[s].getName();
+      if (sName !== "Dữ liệu nạp tự động" && (sName.toLowerCase().includes("lưu trữ") || sName.toLowerCase().includes("archive"))) {
+        sheetsToScan.push(allSheets[s]);
+      }
+    }
+
+    if (sheetsToScan.length === 0) {
       return { success: false, error: 'Hệ thống chưa có dữ liệu.' };
     }
     
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 3) {
-      return { success: false, error: 'Không tìm thấy dữ liệu.' };
-    }
-    
-    // Đọc đến cột K (Sub ID - index 10)
-    const dataRange = sheet.getRange(3, 1, lastRow - 2, 11);
-    const data = dataRange.getValues();
     const tz = ss.getSpreadsheetTimeZone();
-    
     const searchSubId = String(subId).trim();
-    const searchDate = dateStr ? dateStr.trim() : null; // định dạng yyyy-MM-dd
+    const searchDate = dateStr ? dateStr.trim() : null;
     
     let results = [];
     let totalComm = 0;
@@ -1100,77 +1144,82 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
     let totalPending = 0;
     let totalCompleted = 0;
     
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
-      // Sub ID ở cột K (index 10)
-      const rowSubId = String(row[10]).trim().replace(/'/g, ''); // Bỏ dấu nháy đơn bảo mật nếu có
+    for (let sIdx = 0; sIdx < sheetsToScan.length; sIdx++) {
+      const sheet = sheetsToScan[sIdx];
+      const lastRow = sheet.getLastRow();
+      if (lastRow < 3) continue;
       
-      if (rowSubId === searchSubId) {
-        let dateValid = true;
-        let orderDate = row[0]; // Cột A
+      const data = sheet.getRange(3, 1, lastRow - 2, 11).getValues();
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const rowSubId = String(row[10]).trim().replace(/'/g, '');
         
-        let rowDateStr = "";
-        if (orderDate instanceof Date) {
-          rowDateStr = Utilities.formatDate(orderDate, tz, "yyyy-MM-dd");
-        } else {
-          let str = String(orderDate).trim();
-          let matchYYYY = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
-          let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+        if (rowSubId === searchSubId) {
+          let dateValid = true;
+          let orderDate = row[0];
+          let rowDateStr = "";
           
-          if (matchYYYY) {
-            rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
-          } else if (matchDD) {
-            rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
+          if (orderDate instanceof Date) {
+            rowDateStr = Utilities.formatDate(orderDate, tz, "yyyy-MM-dd");
           } else {
-            rowDateStr = str;
-          }
-        }
-        
-        if (searchDate && rowDateStr !== searchDate) {
-          dateValid = false;
-        }
-        
-        if (dateValid) {
-          let orderStatus = String(row[7]).trim();
-          let orderStatusLower = orderStatus.toLowerCase();
-          if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện' || orderStatusLower.includes('hủy')) {
-            orderStatus = 'Đơn hủy';
-          } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
-            orderStatus = 'Đang chờ xác nhận';
-          } else {
-            orderStatus = 'Hoàn thành';
-          }
-          const paymentStatus = String(row[8]).trim(); // Cột I
-          const commission = Number(row[6]) || 0; // Cột G (Hoa hồng khách nhận)
-
-          if (orderStatus !== 'Đơn hủy') {
-            totalComm += commission;
-            if (paymentStatus === "Đã TT") {
-              totalReceived += commission;
+            let str = String(orderDate).trim();
+            let matchYYYY = str.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+            let matchDD = str.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})/);
+            if (matchYYYY) {
+              rowDateStr = `${matchYYYY[1]}-${matchYYYY[2].padStart(2, '0')}-${matchYYYY[3].padStart(2, '0')}`;
+            } else if (matchDD) {
+              rowDateStr = `${matchDD[3]}-${matchDD[2].padStart(2, '0')}-${matchDD[1].padStart(2, '0')}`;
             } else {
-              if (orderStatus === 'Đang chờ xác nhận') {
-                totalPending += commission;
-              } else if (orderStatus === 'Hoàn thành') {
-                totalCompleted += commission;
-              }
+              rowDateStr = str;
             }
           }
           
-          let displayDate = "";
-          if (orderDate instanceof Date) {
-            displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
-          } else {
-            displayDate = rowDateStr;
+          if (searchDate && rowDateStr !== searchDate) {
+            dateValid = false;
           }
           
-          results.push({
-            orderId: row[2], // Cột C
-            orderDate: displayDate, // Cột A
-            itemName: row[3], // Cột D
-            commission: commission,
-            orderStatus: row[7], // Cột H
-            paymentStatus: row[8] // Cột I (Trạng thái thanh toán: Chưa TT / Đã TT)
-          });
+          if (dateValid) {
+            let orderStatus = String(row[7]).trim();
+            let orderStatusLower = orderStatus.toLowerCase();
+            if (orderStatusLower === 'invalid' || orderStatusLower === 'cancelled' || orderStatusLower === 'đơn hủy' || orderStatusLower === 'không đủ điều kiện' || orderStatusLower.includes('hủy')) {
+              orderStatus = 'Đơn hủy';
+            } else if (orderStatusLower === 'pending' || orderStatusLower.includes('chờ giao') || orderStatusLower.includes('đang giao') || orderStatusLower.includes('đang xử lý') || orderStatusLower.includes('shipping')) {
+              orderStatus = 'Đang giao';
+            } else {
+              orderStatus = 'Hoàn thành';
+            }
+            const paymentStatus = String(row[8]).trim();
+            const commission = Number(row[6]) || 0;
+
+            if (orderStatus !== 'Đơn hủy') {
+              totalComm += commission;
+              if (paymentStatus === "Đã TT") {
+                totalReceived += commission;
+              } else {
+                if (orderStatus === 'Đang giao' || orderStatus === 'Đang chờ xác nhận') {
+                  totalPending += commission;
+                } else if (orderStatus === 'Hoàn thành') {
+                  totalCompleted += commission;
+                }
+              }
+            }
+            
+            let displayDate = "";
+            if (orderDate instanceof Date) {
+              displayDate = Utilities.formatDate(orderDate, tz, "dd/MM/yyyy");
+            } else {
+              displayDate = rowDateStr;
+            }
+            
+            results.push({
+              orderId: row[2],
+              orderDate: displayDate,
+              itemName: row[3],
+              commission: commission,
+              orderStatus: row[7],
+              paymentStatus: row[8]
+            });
+          }
         }
       }
     }
@@ -1181,7 +1230,13 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
       totalCommission: totalComm,
       totalReceived: totalReceived,
       totalPending: totalPending,
-      totalCompleted: totalCompleted
+      totalCompleted: totalCompleted,
+      summary: {
+        totalCommission: totalComm,
+        totalReceived: totalReceived,
+        totalPending: totalPending,
+        totalCompleted: totalCompleted
+      }
     };
   } catch (err) {
     return { success: false, error: err.toString() };
@@ -1201,8 +1256,10 @@ function getPayoutDashboardData() {
   }
   
   const lastRowCustomer = customerSheet.getLastRow();
-  // Đọc đến 12 cột (cột L) để lấy toàn bộ thông tin Tên, ID, QR, Ngân hàng và STK sau khi chèn cột mới
-  const customers = lastRowCustomer >= 2 ? customerSheet.getRange(2, 1, lastRowCustomer - 1, 12).getValues() : [];
+  if (lastRowCustomer < 2) {
+    return { success: true, data: [] };
+  }
+  const customers = customerSheet.getRange(2, 1, lastRowCustomer - 1, 12).getValues();
   
   const lastRowOrder = orderSheet.getLastRow();
   const orders = lastRowOrder >= 3 ? orderSheet.getRange(3, 1, lastRowOrder - 2, 11).getValues() : [];
@@ -1210,12 +1267,13 @@ function getPayoutDashboardData() {
   let userStats = {};
   for (let i = 0; i < orders.length; i++) {
     const subId = String(orders[i][10]).trim().replace(/'/g, ''); // Cột K
-    const orderId = String(orders[i][2]).trim(); // Cột C (index 2)
+    if (!subId) continue;
+    
+    const orderId = String(orders[i][2]).trim(); // Cột C
     const status = String(orders[i][7]).trim().toLowerCase(); // Cột H
     const payStatus = String(orders[i][8]).trim(); // Cột I
     const commission = Number(orders[i][6]) || 0; // Cột G
     
-    if (!subId) continue;
     if (!userStats[subId]) {
       userStats[subId] = { unpaid: 0, paid: 0, unpaidReferral: 0 };
     }
@@ -1237,22 +1295,18 @@ function getPayoutDashboardData() {
   for (let i = 0; i < customers.length; i++) {
     const name = customers[i][0];
     const userId = String(customers[i][1]).trim();
-    const qrUrl = customers[i][9] || ""; // Cột J (cột thứ 10, index 9)
-    const bankBin = customers[i][10] || ""; // Cột K (cột thứ 11, index 10)
-    const bankAcc = customers[i][11] || ""; // Cột L (cột thứ 12, index 11)
+    const qrUrl = customers[i][9] || ""; // Cột J
+    const bankBin = customers[i][10] || ""; // Cột K
+    const bankAcc = customers[i][11] || ""; // Cột L
     
     if (!userId) continue;
     const stats = userStats[userId] || { unpaid: 0, paid: 0, unpaidReferral: 0 };
-    const sheetUnpaid = Number(customers[i][6]) || 0; // Lấy trực tiếp Cột G (Cần Thanh Toán) từ Sheet
-    const sheetReferral = (Number(customers[i][3]) || 0) + (Number(customers[i][5]) || 0); // Cột D + Cột F (Thưởng Giới Thiệu + Thưởng Mốc)
-    const finalUnpaid = sheetUnpaid > 0 ? sheetUnpaid : stats.unpaid;
-    const finalUnpaidReferral = sheetReferral > 0 ? sheetReferral : stats.unpaidReferral;
     
     resultList.push({
       userId: userId,
       userName: name,
-      unpaid: finalUnpaid,
-      unpaidReferral: finalUnpaidReferral,
+      unpaid: stats.unpaid,
+      unpaidReferral: stats.unpaidReferral,
       paid: stats.paid,
       qrCodeUrl: qrUrl,
       bankBin: bankBin,
@@ -1338,12 +1392,7 @@ function confirmPayout(userId) {
     
     return { success: true, updatedCount: updatedCount };
   } catch (e) {
-    let platformName = "Shopee";
-    if (productUrl && (productUrl.indexOf("tiktok.com") !== -1 || productUrl.indexOf("vt.tiktok.com") !== -1)) platformName = "TikTok";
-    else if (productUrl && (productUrl.indexOf("lazada.vn") !== -1 || productUrl.indexOf("lzd.co") !== -1 || productUrl.indexOf("s.lazada") !== -1)) platformName = "Lazada";
-    else if (productUrl && productUrl.indexOf("shopeefood.vn") !== -1) platformName = "ShopeeFood";
-    
-    return { success: false, error: "⚠️ Sản phẩm " + platformName + " này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" };
+    return { success: false, error: "Lỗi xác nhận thanh toán: " + e.toString() };
   }
 }
 
@@ -1537,11 +1586,73 @@ function onOpen() {
   ensureAllSheetsFilters();
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Menu Hoàn Tiền')
+    .addItem('📦 Dọn đơn Đã TT sang tab Lưu Trữ (1-Click)', 'autoArchivePaidOrdersPrompt')
     .addItem('🧹 Dọn dẹp đơn hủy sang Invalid', 'fixCancelledOrdersWithZeroCommissionPrompt')
     .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
     .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
     .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
     .addToUi();
+}
+
+// === HÀM TỰ ĐỘNG CHUYỂN TOÀN BỘ ĐƠN ĐÃ THANH TOÁN (ĐÃ TT) SANG TAB LƯU TRỮ ===
+function autoArchivePaidOrders() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const orderSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!orderSheet) return "Không tìm thấy sheet Dữ liệu nạp tự động.";
+    
+    let archiveSheet = ss.getSheetByName("Lưu trữ 2026");
+    if (!archiveSheet) {
+      archiveSheet = ss.insertSheet("Lưu trữ 2026");
+      if (orderSheet.getLastRow() >= 2) {
+        orderSheet.getRange(1, 1, 2, 11).copyTo(archiveSheet.getRange(1, 1));
+      }
+    }
+    
+    const lastRow = orderSheet.getLastRow();
+    if (lastRow < 3) return "Chưa có dữ liệu đơn hàng để lưu trữ.";
+    
+    const range = orderSheet.getRange(3, 1, lastRow - 2, 11);
+    const data = range.getValues();
+    
+    let rowsToKeep = [];
+    let rowsToArchive = [];
+    
+    for (let i = 0; i < data.length; i++) {
+      const payStatus = String(data[i][8]).trim(); // Cột I (Trạng thái thanh toán)
+      if (payStatus === "Đã TT") {
+        rowsToArchive.push(data[i]);
+      } else {
+        rowsToKeep.push(data[i]);
+      }
+    }
+    
+    if (rowsToArchive.length === 0) {
+      return "Không có đơn nào ở trạng thái 'Đã TT' cần chuyển sang Lưu Trữ.";
+    }
+    
+    // 1. Dán các đơn Đã TT vào tab Lưu trữ 2026
+    const archLastRow = archiveSheet.getLastRow();
+    const startArchRow = archLastRow < 2 ? 3 : archLastRow + 1;
+    archiveSheet.getRange(startArchRow, 1, rowsToArchive.length, 11).setValues(rowsToArchive);
+    
+    // 2. Làm sạch tab Dữ liệu nạp tự động và dán lại các đơn chưa thanh toán
+    orderSheet.getRange(3, 1, lastRow - 2, 11).clearContent();
+    if (rowsToKeep.length > 0) {
+      orderSheet.getRange(3, 1, rowsToKeep.length, 11).setValues(rowsToKeep);
+    }
+    
+    SpreadsheetApp.flush();
+    return `🎉 Đã tự động dọn ${rowsToArchive.length} đơn 'Đã TT' sang tab 'Lưu trữ 2026' thành công!`;
+  } catch (e) {
+    return "Lỗi dọn đơn lưu trữ: " + e.toString();
+  }
+}
+
+function autoArchivePaidOrdersPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const res = autoArchivePaidOrders();
+  ui.alert(res);
 }
 
 // === HIỂN THỊ HỘP THOẠI NHẬP THÁNG/NĂM ===
@@ -2510,51 +2621,63 @@ function getLeaderboardData(targetMonth, targetYear) {
       }
     }
     
-    // 2. Thống kê hoa hồng và số đơn từ sheet "Dữ liệu nạp tự động"
-    const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    // 2. Thống kê hoa hồng và số đơn từ sheet "Dữ liệu nạp tự động" và các sheet "Lưu trữ"
+    const sheetsToScan = [];
+    const mainSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (mainSheet) sheetsToScan.push(mainSheet);
+    
+    const allSheets = ss.getSheets();
+    for (let s = 0; s < allSheets.length; s++) {
+      const sName = allSheets[s].getName();
+      if (sName !== "Dữ liệu nạp tự động" && (sName.toLowerCase().includes("lưu trữ") || sName.toLowerCase().includes("archive"))) {
+        sheetsToScan.push(allSheets[s]);
+      }
+    }
+    
     const map = {};
     
-    if (sheet) {
+    for (let sIdx = 0; sIdx < sheetsToScan.length; sIdx++) {
+      const sheet = sheetsToScan[sIdx];
       const lastRow = sheet.getLastRow();
-      if (lastRow >= 3) {
-        const data = sheet.getRange(3, 1, lastRow - 2, 10).getValues();
-        for (let i = 0; i < data.length; i++) {
-          const row = data[i];
-          const dateVal = row[0];
-          const { m, y } = parseMonthYear(dateVal);
-          
-          if (m && y) {
-            availablePeriods[`${m}-${y}`] = true;
-          }
-          
-          if (targetMonth && targetYear) {
-            if (String(m) !== String(targetMonth) || String(y) !== String(targetYear)) {
-              continue;
-            }
-          }
-          
-          const customerName = String(row[1]).trim();
-          if (!customerName || customerName === "") continue;
-          
-          const orderStatus = String(row[7]).trim().toLowerCase();
-          if (orderStatus === 'invalid' || orderStatus === 'cancelled' || orderStatus === 'đơn hủy') {
+      if (lastRow < 3) continue;
+      
+      const data = sheet.getRange(3, 1, lastRow - 2, 10).getValues();
+      for (let i = 0; i < data.length; i++) {
+        const row = data[i];
+        const dateVal = row[0];
+        const { m, y } = parseMonthYear(dateVal);
+        
+        if (m && y) {
+          availablePeriods[`${m}-${y}`] = true;
+        }
+        
+        if (targetMonth && targetYear) {
+          if (String(m) !== String(targetMonth) || String(y) !== String(targetYear)) {
             continue;
           }
-          
-          const commission = Number(row[6]) || 0;
-          
-          const key = customerName.toLowerCase().replace(/\s+/g, ' ');
-          if (!map[key]) {
-            map[key] = {
-              name: customerName,
-              commission: 0,
-              orderCount: 0,
-              inviteCount: 0
-            };
-          }
-          map[key].commission += commission;
-          map[key].orderCount += 1;
         }
+        
+        const customerName = String(row[1]).trim();
+        if (!customerName || customerName === "") continue;
+        
+        const orderStatus = String(row[7]).trim().toLowerCase();
+        if (orderStatus === 'invalid' || orderStatus === 'cancelled' || orderStatus === 'đơn hủy') {
+          continue;
+        }
+        
+        const commission = Number(row[6]) || 0;
+        
+        const key = customerName.toLowerCase().replace(/\s+/g, ' ');
+        if (!map[key]) {
+          map[key] = {
+            name: customerName,
+            commission: 0,
+            orderCount: 0,
+            inviteCount: 0
+          };
+        }
+        map[key].commission += commission;
+        map[key].orderCount += 1;
       }
     }
     

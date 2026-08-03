@@ -1,32 +1,32 @@
 let cachedLeaderboard = null;
 let currentMetric = "commission"; // Mặc định là lọc theo commission (Hoa hồng)
 const todayDate = new Date();
-let currentPeriod = `${todayDate.getMonth() + 1}-${todayDate.getFullYear()}`; // Tự động lấy Tháng/Năm hiện tại
+let currentPeriod = "all"; // Mặc định là hiển thị Tất cả thời gian
 
 function leaderboardPage() {
   const now = new Date();
   const curM = now.getMonth() + 1;
   const curY = now.getFullYear();
   if (!currentPeriod) {
-    currentPeriod = `${curM}-${curY}`;
+    currentPeriod = "all";
   }
   const parts = currentPeriod.split("-");
   const periodText = currentPeriod === "all" ? "Tất cả" : `Tháng ${parts[0]}/${parts[1]}`;
-  const monthPad = parts[0].toString().padStart(2, '0');
+  const monthPad = parts[0] ? parts[0].toString().padStart(2, '0') : "";
+  const heroPeriodSmallText = currentPeriod === "all" ? "Tất cả" : `Tháng ${monthPad}`;
 
-  let optionsHtml = '';
+  let optionsHtml = `<option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>Tất cả thời gian</option>`;
   for (let m = 1; m <= 12; m++) {
     const val = `${m}-${curY}`;
     const selected = (val === currentPeriod) ? "selected" : "";
     optionsHtml += `<option value="${val}" ${selected}>Tháng ${m}/${curY}</option>`;
   }
-  optionsHtml += `<option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>Tất cả thời gian</option>`;
 
   return `
     <div class="leaderboard-view">
       <section class="leaderboard-hero">
-        <div><span>THÀNH TÍCH CỘNG ĐỒNG</span><h1>Bảng xếp hạng <em id="hero-metric-name">hoa hồng</em></h1><p>Ghi nhận những thành viên có thành tích nổi bật trong tháng. Bảng xếp hạng được cập nhật mỗi ngày.</p></div>
-        <div class="leaderboard-hero-mark" aria-hidden="true"><i>♕</i><b>Top 3</b><small id="hero-period-small">Tháng ${monthPad}</small></div>
+        <div><span>THÀNH TÍCH CỘNG ĐỒNG</span><h1>Bảng xếp hạng <em id="hero-metric-name">hoa hồng</em></h1><p>Ghi nhận những thành viên có thành tích nổi bật. Bảng xếp hạng được cập nhật mỗi ngày.</p></div>
+        <div class="leaderboard-hero-mark" aria-hidden="true"><i>♕</i><b>Top 3</b><small id="hero-period-small">${heroPeriodSmallText}</small></div>
       </section>
 
       <section class="leaderboard-card">
@@ -219,15 +219,7 @@ function enhanceLeaderboard() {
     });
   }
 
-  const fallbackList = [
-    { name: "Hồng Vinh", commission: 2872772, orderCount: 42, inviteCount: 15 },
-    { name: "Minh Anh", commission: 849703, orderCount: 25, inviteCount: 8 },
-    { name: "Ella Quach", commission: 823725, orderCount: 20, inviteCount: 14 },
-    { name: "Bích Hạnh", commission: 703226, orderCount: 28, inviteCount: 6 },
-    { name: "Thùy Trang", commission: 463888, orderCount: 27, inviteCount: 5 },
-    { name: "Đỗ Hồng", commission: 438504, orderCount: 28, inviteCount: 3 },
-    { name: "Yến Nhi", commission: 387979, orderCount: 15, inviteCount: 4 }
-  ];
+  const fallbackList = [];
 
   function updateUI() {
     let sourceData = cachedLeaderboard || fallbackList;
@@ -263,18 +255,26 @@ function enhanceLeaderboard() {
         
         if (response.availablePeriods && Array.isArray(response.availablePeriods)) {
           const selectEl = document.getElementById('leaderboard-period-select');
+          const btnEl = document.getElementById('leaderboard-period-btn');
+          const heroSmall = document.getElementById('hero-period-small');
           if (selectEl) {
-            let optionsHtml = '';
+            let optionsHtml = `<option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>Tất cả thời gian</option>`;
             response.availablePeriods.forEach(p => {
               const parts = p.split('-');
               const text = `Tháng ${parts[0]}/${parts[1]}`;
               const selected = (p === currentPeriod) ? 'selected' : '';
               optionsHtml += `<option value="${p}" ${selected}>${text}</option>`;
             });
-            optionsHtml += `<option value="all" ${currentPeriod === 'all' ? 'selected' : ''}>Tất cả thời gian</option>`;
-            if (selectEl.innerHTML !== optionsHtml) {
-              selectEl.innerHTML = optionsHtml;
-            }
+            selectEl.innerHTML = optionsHtml;
+            selectEl.value = currentPeriod;
+          }
+          if (btnEl) {
+            const parts = currentPeriod.split("-");
+            btnEl.innerHTML = (currentPeriod === "all" ? "Tất cả" : `Tháng ${parts[0]}/${parts[1]}`) + ' <span>⌄</span>';
+          }
+          if (heroSmall) {
+            const parts = currentPeriod.split("-");
+            heroSmall.textContent = currentPeriod === "all" ? "Tất cả" : `Tháng ${parts[0] ? parts[0].padStart(2, '0') : ''}`;
           }
         }
 
