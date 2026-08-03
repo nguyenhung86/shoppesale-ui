@@ -290,9 +290,6 @@ function renderDashboard(response, query, formatVND) {
       <article class="commission-summary" style="margin-bottom: 20px; padding: 20px; border-radius: 20px; background: #fff; box-shadow: 0 10px 24px rgba(25,35,52,0.06); border: 1px solid #f6d3c0; background: linear-gradient(135deg, #fff 0%, #fffaf6 100%);">
         <h2 style="display: flex; align-items: center; gap: 9px; min-height: 31px; padding-left: 11px; border-left: 3px solid #ff762d; font-size: 16px; font-weight: 700; margin: 0 0 16px;">
           <span class="order-summary-title-text" style="color: #17233b; font-size: 17px; font-weight: 800;">Tổng quan hoa hồng</span>
-          <button id="refresh-orders-btn" title="Cập nhật dữ liệu mới" style="margin-left: auto; background: transparent; border: 0; cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 4px; color: #ff5722; padding: 6px 12px; border-radius: 8px; font-weight: bold; border: 1px solid #ffebe5; transition: all 0.2s;" onmouseover="this.style.background='#fff0eb'" onmouseout="this.style.background='transparent'">
-            🔄 Làm mới
-          </button>
         </h2>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px;">
           <span class="total" style="display: block; padding: 13px 15px; border: 1px solid #ffd9cd; border-radius: 14px; background: #fff7f4; box-shadow: inset 0 3px 0 #ff6a38, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">TỔNG HOA HỒNG</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #f24f25; letter-spacing: -0.4px;">${formatVND(totalCommission)}</b></span>
@@ -339,13 +336,7 @@ function renderDashboard(response, query, formatVND) {
     });
   });
   
-  // Gắn sự kiện cho nút Làm mới
-  const refreshBtn = app.querySelector('#refresh-orders-btn');
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', () => {
-      performSearch(query, true); // Bắt buộc tải lại (không dùng cache)
-    });
-  }
+
   
   // Xác định tab hiển thị mặc định
   let initialTab = 'completed';
