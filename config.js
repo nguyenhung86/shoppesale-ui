@@ -1,4 +1,4 @@
 const CONFIG = {
-  API_URL: "https://quanly.hoantienonline.io.vn/api/web",
+  API_URL: "https://api-vps.hoantienonline.io.vn/api/web",
   GOOGLE_CLIENT_ID: "452441495189-c2mkavu3bj33oqfemthcls5m28mrei09.apps.googleusercontent.com"
 };
