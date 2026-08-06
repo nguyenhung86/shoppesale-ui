@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <script>
     (function() {
+      if (window.location.hostname.startsWith('quanly.')) {
+        window.location.replace('/payout');
+        return;
+      }
       try {
         var params = new URLSearchParams(window.location.search);
         var to = params.get('to');
