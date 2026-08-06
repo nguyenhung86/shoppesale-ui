@@ -706,6 +706,14 @@
       const tbody = document.getElementById("orders-tbody");
       tbody.innerHTML = "";
 
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--ink-soft); padding: 30px;">
+          <i class="fa-solid fa-box-open" style="font-size: 24px; margin-bottom: 8px; display: block; color: var(--primary);"></i>
+          Không tìm thấy đơn hàng nào. Nhập Mã đơn, Tên Zalo hoặc bấm <b>Làm mới</b> để tải đơn mới nhất từ VPS.
+        </td></tr>`;
+        return;
+      }
+
       orders.forEach((o, i) => {
         let platformClass = "badge-shopee";
         if (o.platform === "TikTok") platformClass = "badge-tiktok";
@@ -731,17 +739,28 @@
       });
     }
 
-    function filterOrdersTable() {
+    async function filterOrdersTable() {
       const q = document.getElementById("search-orders-input").value.trim().toLowerCase();
       const platform = document.getElementById("filter-platform").value;
 
-      const filtered = adminOrders.filter(o => {
+      let filtered = adminOrders.filter(o => {
         const matchQ = (o.orderId || '').toLowerCase().includes(q) || 
                        (o.itemName || '').toLowerCase().includes(q) || 
                        (o.customerName || '').toLowerCase().includes(q);
         const matchPlat = platform === "all" || (o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
         return matchQ && matchPlat;
       });
+
+      if (filtered.length === 0 && q.length >= 2) {
+        try {
+          const res = await fetch(`${API_URL}?action=getAdminOrders&query=${encodeURIComponent(q)}`);
+          const json = await res.json();
+          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+            filtered = json.data;
+          }
+        } catch(e) {}
+      }
+
       renderOrdersTable(filtered);
     }
 
