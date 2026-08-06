@@ -716,8 +716,13 @@
 
       orders.forEach((o, i) => {
         let platformClass = "badge-shopee";
-        if (o.platform === "TikTok") platformClass = "badge-tiktok";
-        if (o.platform === "Lazada") platformClass = "badge-lazada";
+        if ((o.platform || '').toLowerCase() === "tiktok") platformClass = "badge-tiktok";
+        if ((o.platform || '').toLowerCase() === "lazada") platformClass = "badge-lazada";
+
+        let statusClass = "badge-success";
+        const st = (o.orderStatus || '').toLowerCase();
+        if (st.includes("giao") || st.includes("chờ") || st.includes("xử lý")) statusClass = "badge-pending";
+        if (st.includes("hủy")) statusClass = "badge-canceled";
 
         const commission = Math.round(Number(o.commission || 0));
         const amount = Math.round(Number(o.amount || 0));
@@ -732,7 +737,7 @@
             <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${o.itemName || 'Sản phẩm hoàn tiền'}</td>
             <td>${amount.toLocaleString('vi-VN')}đ</td>
             <td style="color: var(--success); font-weight: 700;">+${commission.toLocaleString('vi-VN')}đ</td>
-            <td><span class="badge-tag badge-success">${o.orderStatus || 'Đã hoàn thành'}</span></td>
+            <td><span class="badge-tag ${statusClass}">${o.orderStatus || 'Đã hoàn thành'}</span></td>
             <td><span class="badge-tag ${o.paymentStatus === 'Đã TT' ? 'badge-success' : 'badge-pending'}">${o.paymentStatus || 'Chưa TT'}</span></td>
           </tr>
         `;
@@ -742,13 +747,26 @@
     async function filterOrdersTable() {
       const q = document.getElementById("search-orders-input").value.trim().toLowerCase();
       const platform = document.getElementById("filter-platform").value;
+      const statusFilter = document.getElementById("filter-status").value;
 
       let filtered = adminOrders.filter(o => {
-        const matchQ = (o.orderId || '').toLowerCase().includes(q) || 
-                       (o.itemName || '').toLowerCase().includes(q) || 
-                       (o.customerName || '').toLowerCase().includes(q);
+        const matchQ = !q || (o.orderId || '').toLowerCase().includes(q) || 
+                              (o.itemName || '').toLowerCase().includes(q) || 
+                              (o.customerName || '').toLowerCase().includes(q);
+        
         const matchPlat = platform === "all" || (o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
-        return matchQ && matchPlat;
+
+        let matchStatus = true;
+        const st = (o.orderStatus || '').toLowerCase();
+        if (statusFilter === "completed") {
+          matchStatus = st.includes("hoàn thành") || st.includes("hoàn tất") || st.includes("thành công");
+        } else if (statusFilter === "pending") {
+          matchStatus = st.includes("giao") || st.includes("chờ") || st.includes("xử lý") || st.includes("tạm giữ");
+        } else if (statusFilter === "canceled" || statusFilter === "cancelled") {
+          matchStatus = st.includes("hủy");
+        }
+
+        return matchQ && matchPlat && matchStatus;
       });
 
       if (filtered.length === 0 && q.length >= 2) {
