@@ -580,11 +580,8 @@
       }
 
       try {
-        const res = await fetch(`${API_URL}?action=adminLogin`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: user, password: pass })
-        });
+        const loginUrl = `${API_URL}?action=adminLogin&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
+        const res = await fetch(loginUrl);
         const json = await res.json();
         if (json.success) {
           localStorage.setItem("admin_token", json.token);
@@ -594,7 +591,7 @@
           errorMsg.style.display = "block";
         }
       } catch (e) {
-        errorMsg.innerText = "Lỗi kết nối VPS: " + e.message;
+        errorMsg.innerText = "Vui lòng copy file affiliate-bot.js mới lên VPS và khởi động lại bot sếp nhé! (" + e.message + ")";
         errorMsg.style.display = "block";
       }
     }
