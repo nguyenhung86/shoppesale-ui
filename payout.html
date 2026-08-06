@@ -1017,8 +1017,9 @@
       
       try {
         // 1. Cập nhật Google Sheets thành "Đã TT" và lưu Lịch sử thanh toán kèm Bill
-        const sheetRes = await fetch(API_URL, {
+        const sheetRes = await fetch(`${API_URL}?action=confirm_payout`, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "confirm_payout",
             userId: activeUserId,
