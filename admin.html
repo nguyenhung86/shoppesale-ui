@@ -453,7 +453,7 @@
               <th>STT</th>
               <th>ID Zalo</th>
               <th>Tên Hiển Thị</th>
-              <th>Có Thể Rút (Unpaid)</th>
+              <th>Có Thể Rút (Unpaid) <i class="fa-solid fa-arrow-down-short-wide" style="color: var(--primary);"></i></th>
               <th>Đã Thanh Toán (Paid)</th>
               <th>Thưởng GT</th>
               <th>Ngân Hàng</th>
@@ -646,7 +646,14 @@
       const tbody = document.getElementById("users-tbody");
       tbody.innerHTML = "";
       
-      users.forEach((u, i) => {
+      // Sắp xếp người có số dư chưa rút (Unpaid) cao nhất lên đầu
+      const sortedUsers = [...users].sort((a, b) => {
+        const valA = Number(a.unpaid || 0) + Number(a.unpaidReferral || 0);
+        const valB = Number(b.unpaid || 0) + Number(b.unpaidReferral || 0);
+        return valB - valA;
+      });
+
+      sortedUsers.forEach((u, i) => {
         const unpaid = Math.round(Number(u.unpaid || 0));
         const paid = Math.round(Number(u.paid || 0));
         const refBonus = Math.round(Number(u.unpaidReferral || 0));
