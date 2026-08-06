@@ -521,7 +521,7 @@
             Đang tải danh sách thanh toán...
           </div>`;
       }
-      showLoading("Đang tải dữ liệu từ Google Sheets...");
+      showLoading("Đang tải dữ liệu từ Máy chủ...");
       try {
         const res = await fetch(`${API_URL}?action=getPayoutList`);
         const json = await res.json();
@@ -535,7 +535,7 @@
           throw new Error(json.error || "Lỗi không xác định");
         }
       } catch (e) {
-        console.warn(`Lỗi kết nối Google Sheets, còn lại ${retries} lần thử...`, e);
+        console.warn(`Lỗi kết nối Máy chủ, còn lại ${retries} lần thử...`, e);
         if (retries > 1) {
           setTimeout(() => loadData(retries - 1, delay * 1.5), delay);
         } else {
@@ -544,7 +544,7 @@
           document.getElementById("user-list").innerHTML = `
             <div style="text-align:center; padding:40px; color:var(--ink-soft); width: 100%;">
               <span style="font-size: 36px; display: block; margin-bottom: 12px;">⚠️</span>
-              <p style="margin: 10px 0; font-size: 13px; font-weight: 500;">Kết nối Google Sheets bị gián đoạn (Google quá tải hoặc mạng chậm).</p>
+              <p style="margin: 10px 0; font-size: 13px; font-weight: 500;">Kết nối Máy chủ bị gián đoạn (Máy chủ quá tải hoặc mạng chậm).</p>
               <button onclick="loadData()" style="padding: 8px 20px; border-radius: 8px; background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600; font-size: 13px; margin-top: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
                 🔄 Thử kết nối lại
               </button>
@@ -903,7 +903,7 @@
         alert("Vui lòng chọn ngân hàng và nhập số tài khoản trước khi lưu!");
         return;
       }
-      showLoading("Đang lưu thông tin ngân hàng lên Google Sheets...");
+      showLoading("Đang lưu thông tin ngân hàng lên Máy chủ...");
       try {
         const response = await fetch(API_URL, {
           method: "POST",
@@ -916,7 +916,7 @@
         });
         const result = await response.json();
         if (result.success) {
-          alert("Đã lưu thông tin ngân hàng lên Google Sheets thành công!");
+          alert("Đã lưu thông tin ngân hàng lên Máy chủ thành công!");
           // Cập nhật lại danh sách người dùng trong bộ nhớ để không bị mất khi load lại
           const user = allUsers.find(u => u.userId === activeUserId);
           if (user) {
