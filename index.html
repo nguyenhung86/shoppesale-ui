@@ -2,6 +2,20 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    (function() {
+      try {
+        var params = new URLSearchParams(window.location.search);
+        var to = params.get('to');
+        if (to) {
+          var targetUrl = atob(to);
+          if (targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'))) {
+            window.location.href = targetUrl;
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hoàn Tiền Mua Sắm</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -153,7 +167,7 @@
   <script src="convert-important.js"></script>
   <script src="convert-selection.js?v=10011"></script>
   <script src="orders-redesign.js"></script>
-  <script src="order-results.js?v=10012"></script>
+  <script src="order-results.js?v=10017"></script>
   <script src="orders-visual-polish.js?v=3"></script>
   <script src="referrals.js?v=11"></script>
   <script src="events-redesign.js?v=3"></script>

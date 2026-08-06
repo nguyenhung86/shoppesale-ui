@@ -121,16 +121,31 @@ function isOrderCacheValid(cachedTimeMs) {
   if (!cachedTimeMs || isNaN(cachedTimeMs)) return false;
   const now = new Date();
   
-  const t8h30 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 30, 0).getTime();
-  const t17h00 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 17, 0, 0).getTime();
+  // Các mốc xóa đệm trong ngày: 8:30, 10:30, 12:30, 14:30, 16:30, 17:00
+  const hoursMinutes = [
+    [8, 30],
+    [10, 30],
+    [12, 30],
+    [14, 30],
+    [16, 30],
+    [17, 0]
+  ];
+  
+  const checkpoints = hoursMinutes.map(([h, m]) => 
+    new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0).getTime()
+  );
   
   let latestCheckpoint = 0;
-  if (now.getTime() >= t17h00) {
-    latestCheckpoint = t17h00;
-  } else if (now.getTime() >= t8h30) {
-    latestCheckpoint = t8h30;
-  } else {
-    latestCheckpoint = t17h00 - 24 * 3600 * 1000;
+  for (let i = checkpoints.length - 1; i >= 0; i--) {
+    if (now.getTime() >= checkpoints[i]) {
+      latestCheckpoint = checkpoints[i];
+      break;
+    }
+  }
+  
+  if (latestCheckpoint === 0) {
+    const yesterday17h = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 17, 0, 0).getTime();
+    latestCheckpoint = yesterday17h;
   }
   
   return Number(cachedTimeMs) >= latestCheckpoint;
@@ -139,8 +154,8 @@ function isOrderCacheValid(cachedTimeMs) {
 function performSearch(query, forceRefresh = false) {
   const formatVND = val => Math.round(Number(val) || 0).toLocaleString("vi-VN") + " đ";
   
-  const localCacheKey = "user_orders_cache_" + String(query).trim().toLowerCase();
-  const localTimeKey = "user_orders_time_" + String(query).trim().toLowerCase();
+  const localCacheKey = "v2_orders_cache_" + String(query).trim().toLowerCase();
+  const localTimeKey = "v2_orders_time_" + String(query).trim().toLowerCase();
 
   // 1. Sử dụng dữ liệu đệm RAM hoặc localStorage nếu mốc 8h30 & 17h00 chưa hết hạn
   if (!forceRefresh) {
@@ -640,8 +655,8 @@ function fetchOrdersInBackground(zaloId) {
   if (!zaloId) return;
   console.log("fetchOrdersInBackground: Bắt đầu tải ngầm đơn hàng cho Zalo ID:", zaloId);
   
-  const localCacheKey = "user_orders_cache_" + String(zaloId).trim().toLowerCase();
-  const localTimeKey = "user_orders_time_" + String(zaloId).trim().toLowerCase();
+  const localCacheKey = "v2_orders_cache_" + String(zaloId).trim().toLowerCase();
+  const localTimeKey = "v2_orders_time_" + String(zaloId).trim().toLowerCase();
   
   const cachedDataStr = localStorage.getItem(localCacheKey);
   const cachedTimeStr = localStorage.getItem(localTimeKey);

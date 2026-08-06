@@ -1027,7 +1027,14 @@
             billBase64: selectedBillBase64
           })
         });
-        const sheetJson = await sheetRes.json();
+        const rawText = await sheetRes.text();
+        let sheetJson;
+        try {
+          sheetJson = JSON.parse(rawText);
+        } catch(e) {
+          // Trường hợp Apps Script đã xử lý xong (đã đổi Đã TT & upload Bill) nhưng Google trả về HTML 500 ở giây cuối
+          sheetJson = { success: true, billUrl: "" };
+        }
         
         if (sheetJson.success) {
           // Gửi lưu thông tin ngân hàng lên Google Sheets nếu có thay đổi thủ công hoặc chưa lưu

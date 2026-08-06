@@ -1,0 +1,24 @@
+=== ALL COMPLETED ORDERS FOR PHUONGDUYHOABINH (27 total) ===
+Row  1 | Mã:                    | Ngày: 2026-07-01 | HH80%:  3,055đ | Chốt: Đã TT   | Product: Trà Đen (Hồng Trà) Dalat Farm - Túi 250Gr
+Row  2 | Mã:                    | Ngày: 2026-07-01 | HH80%:  2,358đ | Chốt: Đã TT   | Product: Rong biển / lá kim cuốn cơm Hàn Quốc O'food 1
+Row  3 | Mã:                    | Ngày: 2026-07-02 | HH80%:  7,830đ | Chốt: Đã TT   | Product: Cu đơ ông bà Thư Viện chính gốc, loại đặc biệ
+Row  4 | Mã:                    | Ngày: 2026-07-04 | HH80%: 20,752đ | Chốt: Đã TT   | Product: [15 TỜ] Nhãn Dán Size S M L XL 13x13mm Dạng T
+Row  5 | Mã:                    | Ngày: 2026-07-04 | HH80%: 38,880đ | Chốt: Đã TT   | Product: Bông tai nữ Nova Facet DOI titanium hình học 
+Row  6 | Mã:                    | Ngày: 2026-07-05 | HH80%: 12,504đ | Chốt: Đã TT   | Product: Máy xay thực phẩm Tefal Choppeo MB603166 - 50
+Row  7 | Mã:                    | Ngày: 2026-07-07 | HH80%:  1,550đ | Chốt: Đã TT   | Product: Thùng 30 gói mì KOKOMI tôm chua cay 65G / 90G
+Row  8 | Mã:                    | Ngày: 2026-07-07 | HH80%:    684đ | Chốt: Đã TT   | Product: G0163 Benzema Neymar Haaland Mbappe Ronaldo M
+Row  9 | Mã:                    | Ngày: 2026-07-10 | HH80%:  3,742đ | Chốt: Đã TT   | Product: Máy đồng hồ treo tường kim trôi 12888 bánh xe
+Row 10 | Mã:                    | Ngày: 2026-07-10 | HH80%:  4,811đ | Chốt: Đã TT   | Product: Máy đồng hồ treo tường kim trôi 12888 bánh xe
+Row 11 | Mã:                    | Ngày: 2026-07-09 | HH80%: 10,000đ | Chốt: Đã TT   | Product: Thưởng giới thiệu thành viên mới @Mạnh Nguyễn
+Row 12 | Mã:                    | Ngày: 2026-07-13 | HH80%:  1,994đ | Chốt: Đã TT   | Product: [Mua từ 2 sản phẩm trở lên] Phụ Kiện Móc Khoá
+Row 13 | Mã:                    | Ngày: 2026-07-13 | HH80%:  9,360đ | Chốt: Đã TT   | Product: [ DAEL MỞ BÁN ] Set 5 món (Tặng Áo+ Quần + Vò
+Row 14 | Mã:                    | Ngày: 2026-07-13 | HH80%:  1,994đ | Chốt: Đã TT   | Product: [Mua từ 2 sản phẩm trở lên] Phụ Kiện Móc Khoá
+Row 15 | Mã:                    | Ngày: 2026-07-15 | HH80%: 15,085đ | Chốt: Đã TT   | Product: Khuyên tai ngọc trai Lumi Pearl Stud DOI – Bô
+Row 17 | Mã:                    | Ngày: 2026-07-16 | HH80%:    514đ | Chốt: Đã TT   | Product: Cầu Thủ Bóng Đá Nổi Tiếng Mô Hình Nhân Vật Đá
+Row 18 | Mã:                    | Ngày: 2026-07-15 | HH80%: 10,000đ | Chốt: Đã TT   | Product: Thưởng giới thiệu thành viên mới @Tú Oanh phá
+Row 19 | Mã:                    | Ngày: 2026-07-17 | HH80%:  8,330đ | Chốt: Đã TT   | Product: Combo 2-3-4 Bộ Ba Lỗ Thể thao Bé trai Size 10
+Row 20 | Mã:                    | Ngày: 2026-07-17 | HH80%:  6,261đ | Chốt: Đã TT   | Product: Dầu Nhớt Honda 10W-30 MB 0.8L Chính Hãng - Dù
+Row 21 | Mã:                    | Ngày: 2026-07-20 | HH80%: 28,800đ | Chốt: Đã TT   | Product: [ KH T5 ]A - Điện Thoại Samsung Galaxy A26 5G
+Row 24 | Mã:                    | Ngày: 2026-07-27 | HH80%:  2,132đ | Chốt: Đã TT   | Product: Giỏ Xe Đạp PS Quava ( Rổ, Làn, Rọ Vát Xe Đạp)
+
+--- CHECKING COMBINATIONS THAT SUM TO EXACTLY 12,383đ OR NEAR ---

@@ -240,14 +240,21 @@ function enhanceLeaderboard() {
     return;
   }
 
-  // Kiểm tra localStorage cache (hiệu lực trong 6 tiếng)
+function isLeaderboardCacheValid(cachedTimeMs) {
+  if (!cachedTimeMs || isNaN(cachedTimeMs)) return false;
+  const now = new Date();
+  const today9am = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0).getTime();
+  let latestCheckpoint = now.getTime() >= today9am ? today9am : new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 9, 0, 0).getTime();
+  return Number(cachedTimeMs) >= latestCheckpoint;
+}
+
+  // Kiểm tra localStorage cache (hiệu lực làm mới vào 9h00 hàng ngày)
   const localCacheKey = "lb_cache_data_" + currentPeriod;
   const localTimeKey = "lb_cache_time_" + currentPeriod;
-  const nowTs = Date.now();
   const cachedDataStr = localStorage.getItem(localCacheKey);
   const cachedTimeStr = localStorage.getItem(localTimeKey);
 
-  if (cachedDataStr && cachedTimeStr && (nowTs - Number(cachedTimeStr) < 6 * 3600 * 1000)) {
+  if (cachedDataStr && cachedTimeStr && isLeaderboardCacheValid(cachedTimeStr)) {
     try {
       const parsedObj = JSON.parse(cachedDataStr);
       if (parsedObj && Array.isArray(parsedObj.data) && parsedObj.data.length > 0) {
