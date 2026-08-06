@@ -402,7 +402,7 @@
       </div>
       <div class="header-actions">
         <button class="btn-action" onclick="exportToCSV()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
-        <button class="btn-action" onclick="loadAdminData()"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+        <button class="btn-action" id="btn-refresh-data" onclick="loadAdminData(this)"><i class="fa-solid fa-rotate"></i> Làm mới</button>
         <button class="btn-action btn-primary-action" onclick="handleAdminLogout()"><i class="fa-solid fa-power-off"></i> Đăng xuất</button>
       </div>
     </header>
@@ -609,17 +609,26 @@
       document.getElementById("tab-content-orders").style.display = tab === "orders" ? "block" : "none";
     }
 
-    async function loadAdminData() {
+    async function loadAdminData(btn) {
+      const refreshBtn = btn || document.getElementById("btn-refresh-data");
+      if (refreshBtn) {
+        refreshBtn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang nạp...';
+        refreshBtn.disabled = true;
+      }
+
       try {
-        const resUsers = await fetch(`${API_URL}?action=getAdminUsers`);
+        const timestamp = Date.now();
+        // 1. Tải danh sách Users từ VPS (Chống Cache bằng timestamp)
+        const resUsers = await fetch(`${API_URL}?action=getAdminUsers&t=${timestamp}`);
         const jsonUsers = await resUsers.json();
-        if (jsonUsers.success) {
+        if (jsonUsers.success && Array.isArray(jsonUsers.data)) {
           adminUsers = jsonUsers.data;
           renderUsersTable(adminUsers);
           updateOverviewStats();
         }
 
-        const resOrders = await fetch(`${API_URL}?action=getAdminOrders`);
+        // 2. Tải danh sách Đơn hàng từ VPS (Chống Cache bằng timestamp)
+        const resOrders = await fetch(`${API_URL}?action=getAdminOrders&t=${timestamp}`);
         const jsonOrders = await resOrders.json();
         if (jsonOrders.success && Array.isArray(jsonOrders.data)) {
           adminOrders = jsonOrders.data;
@@ -627,6 +636,14 @@
         }
       } catch (e) {
         console.error("Lỗi nạp dữ liệu Admin:", e);
+      } finally {
+        if (refreshBtn) {
+          refreshBtn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success);"></i> Đã nạp xong';
+          setTimeout(() => {
+            refreshBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Làm mới';
+            refreshBtn.disabled = false;
+          }, 1200);
+        }
       }
     }
 
