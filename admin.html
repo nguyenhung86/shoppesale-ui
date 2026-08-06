@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảng Quản Trị Admin - Hoàn Tiền Mua Sắm</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #F4511E;
+      --primary-dark: #D84315;
+      --primary-light: #FF7043;
+      --bg: #F4F5F9;
+      --surface: #FFFFFF;
+      --ink: #1A1A2E;
+      --ink-soft: #4A4A5E;
+      --line: #ECECF1;
+      --shadow: 0 12px 32px rgba(26,26,46,0.08);
+      --radius: 16px;
+      --success: #16A34A;
+      --warning: #D97706;
+      --danger: #DC2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 24px;
+      min-height: 100vh;
+    }
+    
+    /* LOGIN SCREEN */
+    .login-container {
+      max-width: 420px;
+      margin: 80px auto;
+      background: var(--surface);
+      border-radius: 24px;
+      padding: 36px 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--line);
+      text-align: center;
+    }
+    .login-logo {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 20px rgba(244,81,30,0.3);
+    }
+    .login-container h2 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      margin-bottom: 6px;
+      color: var(--ink);
+    }
+    .login-container p {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-bottom: 24px;
+    }
+    .form-group {
+      text-align: left;
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .form-control {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--line);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+    .btn-login {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .btn-login:hover { background: var(--primary-dark); }
+    
+    /* MAIN ADMIN DASHBOARD */
+    .admin-wrapper {
+      display: none;
+      max-width: 1360px;
+      margin: 0 auto;
+    }
+    header.admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--surface);
+      padding: 18px 24px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      margin-bottom: 20px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+    }
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-brand h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .admin-brand span {
+      font-size: 12px;
+      background: #FFF1E9;
+      color: var(--primary-dark);
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn-action {
+      background: #F4F5F9;
+      border: 1px solid var(--line);
+      padding: 9px 15px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-action:hover {
+      background: #EBECEF;
+    }
+    .btn-primary-action {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
+    .btn-primary-action:hover {
+      background: var(--primary-dark);
+    }
+    
+    /* OVERVIEW CARDS */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .stat-card span {
+      font-size: 12px;
+      color: var(--ink-soft);
+      font-weight: 600;
+    }
+    .stat-card strong {
+      display: block;
+      font-size: 22px;
+      font-weight: 800;
+      margin-top: 4px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* MAIN CONTENT TABS */
+    .tabs-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 4px;
+    }
+    .tab-btn {
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink-soft);
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    
+    /* DATA TABLE GRID (GOOGLE SHEETS STYLE) */
+    .grid-card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.02);
+    }
+    .grid-filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .search-input-group {
+      position: relative;
+      flex: 1;
+      max-width: 380px;
+    }
+    .search-input-group i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-soft);
+    }
+    .search-input-group input {
+      width: 100%;
+      padding: 9px 12px 9px 36px;
+      border-radius: 10px;
+      border: 1.5px solid var(--line);
+      font-size: 13px;
+      outline: none;
+    }
+    .filter-options {
+      display: flex;
+      gap: 8px;
+    }
+    .select-filter {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--line);
+      font-size: 13px;
+      outline: none;
+      background: white;
+      font-weight: 600;
+    }
+    
+    /* SPREADSHEET TABLE */
+    .table-responsive {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+    }
+    table.data-grid {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+    table.data-grid th {
+      background: #F8F9FC;
+      color: var(--ink-soft);
+      font-weight: 700;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+    }
+    table.data-grid td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: middle;
+    }
+    table.data-grid tbody tr:hover {
+      background: #FBFBFE;
+    }
+    .badge-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-shopee { background: #FFF0EA; color: #F4511E; }
+    .badge-lazada { background: #EEF0FC; color: #0F136D; }
+    .badge-tiktok { background: #F1F1F5; color: #000; }
+    .badge-success { background: #E8F8EF; color: #16A34A; }
+    .badge-pending { background: #FFF9E6; color: #D97706; }
+    .badge-canceled { background: #FDECEC; color: #DC2626; }
+    
+    .btn-sm {
+      padding: 5px 10px;
+      font-size: 11px;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-pay-sm { background: var(--primary); color: white; }
+    .btn-edit-sm { background: #ECECF1; color: var(--ink); }
+    
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: var(--shadow);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .modal-header h3 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 17px;
+      font-weight: 800;
+    }
+    .close-modal {
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--ink-soft);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. MAN HINH DANG NHAP ADMIN -->
+  <div class="login-container" id="admin-login-screen">
+    <div class="login-logo"><i class="fa-solid fa-user-shield"></i></div>
+    <h2>Bảng Quản Trị Admin</h2>
+    <p>Nhập tài khoản Admin riêng để quản lý đơn hàng & tiền thành viên</p>
+    
+    <div class="form-group">
+      <label>Tài khoản Admin</label>
+      <input type="text" id="admin-username" class="form-control" placeholder="Nhập username..." value="admin">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input type="password" id="admin-password" class="form-control" placeholder="Nhập mật khẩu...">
+    </div>
+    <p id="login-error-msg" style="color: var(--danger); font-size: 12px; display: none; margin-bottom: 10px;"></p>
+    <button class="btn-login" onclick="handleAdminLogin()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập hệ thống</button>
+  </div>
+
+  <!-- 2. GIAO DIEN QUAN TRI ADMIN CHINH -->
+  <div class="admin-wrapper" id="admin-dashboard-screen">
+    <header class="admin-header">
+      <div class="admin-brand">
+        <h1>Hoàn Tiền Mua Sắm</h1>
+        <span>ADMIN PANELS</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action" onclick="exportToCSV()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
+        <button class="btn-action" onclick="loadAdminData()"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+        <button class="btn-action btn-primary-action" onclick="handleAdminLogout()"><i class="fa-solid fa-power-off"></i> Đăng xuất</button>
+      </div>
+    </header>
+
+    <!-- OVERVIEW CARDS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span>TỔNG THÀNH VIÊN</span>
+        <strong id="stat-total-users">0</strong>
+      </div>
+      <div class="stat-card">
+        <span>TỔNG TIỀN CHỜ RÚT</span>
+        <strong id="stat-total-unpaid" style="color: var(--primary);">0đ</strong>
+      </div>
+      <div class="stat-card">
+        <span>ĐÃ THANH TOÁN</span>
+        <strong id="stat-total-paid" style="color: var(--success);">0đ</strong>
+      </div>
+      <div class="stat-card">
+        <span>TRẠNG THÁI VPS</span>
+        <strong style="color: var(--success); font-size: 16px; margin-top: 8px;"><i class="fa-solid fa-circle-check"></i> ĐANG KẾT NỐI</strong>
+      </div>
+    </div>
+
+    <!-- TABS BAR -->
+    <div class="tabs-bar">
+      <button class="tab-btn active" id="tab-btn-users" onclick="switchAdminTab('users')">
+        <i class="fa-solid fa-users"></i> Quản Lý Thành Viên & Số Dư
+      </button>
+      <button class="tab-btn" id="tab-btn-orders" onclick="switchAdminTab('orders')">
+        <i class="fa-solid fa-boxes-packing"></i> Quản Lý Đơn Hàng Chi Tiết
+      </button>
+    </div>
+
+    <!-- TAB 1: USERS & BALANCES GRID -->
+    <div class="grid-card" id="tab-content-users">
+      <div class="grid-filter-bar">
+        <div class="search-input-group">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-users-input" onkeyup="filterUsersTable()" placeholder="Tìm kiếm theo Tên Zalo hoặc ID Zalo...">
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-grid" id="users-table">
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>ID Zalo</th>
+              <th>Tên Hiển Thị</th>
+              <th>Có Thể Rút (Unpaid)</th>
+              <th>Đã Thanh Toán (Paid)</th>
+              <th>Thưởng GT</th>
+              <th>Ngân Hàng</th>
+              <th>Số TK</th>
+              <th>Hành Động</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <!-- Render User rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 2: ORDERS GRID -->
+    <div class="grid-card" id="tab-content-orders" style="display: none;">
+      <div class="grid-filter-bar">
+        <div class="search-input-group">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-orders-input" onkeyup="filterOrdersTable()" placeholder="Tìm theo Mã đơn, Sản phẩm, Tên Zalo...">
+        </div>
+        <div class="filter-options">
+          <select id="filter-platform" class="select-filter" onchange="filterOrdersTable()">
+            <option value="all">Tất cả sàn</option>
+            <option value="Shopee">Shopee</option>
+            <option value="TikTok">TikTok Shop</option>
+            <option value="Lazada">Lazada</option>
+          </select>
+          <select id="filter-status" class="select-filter" onchange="filterOrdersTable()">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="completed">Đã hoàn tất</option>
+            <option value="pending">Đang giao</option>
+            <option value="canceled">Đã hủy</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="data-grid" id="orders-table">
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Ngày Đặt</th>
+              <th>Mã Đơn Hàng</th>
+              <th>Thành Viên</th>
+              <th>Sàn</th>
+              <th>Tên Sản Phẩm</th>
+              <th>Giá Đơn</th>
+              <th>Tiền Hoa Hồng</th>
+              <th>Trạng Thái Đơn</th>
+              <th>Thanh Toán</th>
+            </tr>
+          </thead>
+          <tbody id="orders-tbody">
+            <!-- Render Order rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL EDIT BALANCE -->
+  <div class="modal-overlay" id="edit-user-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Điều Chỉnh Số Dư & Ngân Hàng</h3>
+        <span class="close-modal" onclick="closeEditModal()">&times;</span>
+      </div>
+      <form onsubmit="saveUserEdit(event)">
+        <input type="hidden" id="edit-user-id">
+        <div class="form-group">
+          <label>Tên thành viên</label>
+          <input type="text" id="edit-user-name" class="form-control" readonly style="background: #f4f5f9;">
+        </div>
+        <div class="form-group">
+          <label>Số tiền chưa rút (Unpaid)</label>
+          <input type="number" id="edit-user-unpaid" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Số tiền đã thanh toán (Paid)</label>
+          <input type="number" id="edit-user-paid" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Mã Ngân Hàng (Bank BIN)</label>
+          <input type="text" id="edit-user-bankbin" class="form-control" placeholder="Ví dụ: 970415">
+        </div>
+        <div class="form-group">
+          <label>Số Tài Khoản</label>
+          <input type="text" id="edit-user-bankacc" class="form-control" placeholder="Nhập STK...">
+        </div>
+        <button type="submit" class="btn-login"><i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "https://api-vps.hoantienonline.io.vn/api/web";
+    let adminUsers = [];
+    let adminOrders = [];
+    let activeTab = "users";
+
+    function checkAdminAuth() {
+      const token = localStorage.getItem("admin_token");
+      if (token) {
+        document.getElementById("admin-login-screen").style.display = "none";
+        document.getElementById("admin-dashboard-screen").style.display = "block";
+        loadAdminData();
+      } else {
+        document.getElementById("admin-login-screen").style.display = "block";
+        document.getElementById("admin-dashboard-screen").style.display = "none";
+      }
+    }
+
+    async function handleAdminLogin() {
+      const user = document.getElementById("admin-username").value.trim();
+      const pass = document.getElementById("admin-password").value.trim();
+      const errorMsg = document.getElementById("login-error-msg");
+
+      if (!user || !pass) {
+        errorMsg.innerText = "Vui lòng nhập tên đăng nhập và mật khẩu!";
+        errorMsg.style.display = "block";
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_URL}?action=adminLogin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: user, password: pass })
+        });
+        const json = await res.json();
+        if (json.success) {
+          localStorage.setItem("admin_token", json.token);
+          checkAdminAuth();
+        } else {
+          errorMsg.innerText = json.error || "Đăng nhập thất bại!";
+          errorMsg.style.display = "block";
+        }
+      } catch (e) {
+        errorMsg.innerText = "Lỗi kết nối VPS: " + e.message;
+        errorMsg.style.display = "block";
+      }
+    }
+
+    function handleAdminLogout() {
+      localStorage.removeItem("admin_token");
+      checkAdminAuth();
+    }
+
+    function switchAdminTab(tab) {
+      activeTab = tab;
+      document.getElementById("tab-btn-users").classList.toggle("active", tab === "users");
+      document.getElementById("tab-btn-orders").classList.toggle("active", tab === "orders");
+      document.getElementById("tab-content-users").style.display = tab === "users" ? "block" : "none";
+      document.getElementById("tab-content-orders").style.display = tab === "orders" ? "block" : "none";
+    }
+
+    async function loadAdminData() {
+      try {
+        const resUsers = await fetch(`${API_URL}?action=getAdminUsers`);
+        const jsonUsers = await resUsers.json();
+        if (jsonUsers.success) {
+          adminUsers = jsonUsers.data;
+          renderUsersTable(adminUsers);
+          updateOverviewStats();
+        }
+
+        const resOrders = await fetch(`${API_URL}?action=getAdminOrders`);
+        const jsonOrders = await resOrders.json();
+        if (jsonOrders.success && Array.isArray(jsonOrders.data)) {
+          adminOrders = jsonOrders.data;
+          renderOrdersTable(adminOrders);
+        }
+      } catch (e) {
+        console.error("Lỗi nạp dữ liệu Admin:", e);
+      }
+    }
+
+    function updateOverviewStats() {
+      document.getElementById("stat-total-users").innerText = adminUsers.length;
+      let totalUnpaid = 0;
+      let totalPaid = 0;
+      adminUsers.forEach(u => {
+        totalUnpaid += Number(u.unpaid || 0);
+        totalPaid += Number(u.paid || 0);
+      });
+      document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
+      document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
+    }
+
+    function renderUsersTable(users) {
+      const tbody = document.getElementById("users-tbody");
+      tbody.innerHTML = "";
+      
+      users.forEach((u, i) => {
+        const unpaid = Math.round(Number(u.unpaid || 0));
+        const paid = Math.round(Number(u.paid || 0));
+        const refBonus = Math.round(Number(u.unpaidReferral || 0));
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td><strong>${u.userId}</strong></td>
+            <td>${u.userName || 'Thành viên'}</td>
+            <td style="color: var(--primary); font-weight: 700;">${unpaid.toLocaleString('vi-VN')}đ</td>
+            <td style="color: var(--success); font-weight: 600;">${paid.toLocaleString('vi-VN')}đ</td>
+            <td>${refBonus.toLocaleString('vi-VN')}đ</td>
+            <td>${u.bankBin || '-'}</td>
+            <td>${u.bankAcc || '-'}</td>
+            <td>
+              <button class="btn-sm btn-edit-sm" onclick="openEditModal('${u.userId}', '${u.userName}', ${unpaid}, ${paid}, '${u.bankBin||''}', '${u.bankAcc||''}')"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterUsersTable() {
+      const q = document.getElementById("search-users-input").value.trim().toLowerCase();
+      const filtered = adminUsers.filter(u => 
+        (u.userName || '').toLowerCase().includes(q) || 
+        String(u.userId || '').toLowerCase().includes(q)
+      );
+      renderUsersTable(filtered);
+    }
+
+    function renderOrdersTable(orders) {
+      const tbody = document.getElementById("orders-tbody");
+      tbody.innerHTML = "";
+
+      orders.forEach((o, i) => {
+        let platformClass = "badge-shopee";
+        if (o.platform === "TikTok") platformClass = "badge-tiktok";
+        if (o.platform === "Lazada") platformClass = "badge-lazada";
+
+        const commission = Math.round(Number(o.commission || 0));
+        const amount = Math.round(Number(o.amount || 0));
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${o.orderDate || '-'}</td>
+            <td><strong>${o.orderId}</strong></td>
+            <td>${o.customerName || o.subId || '-'}</td>
+            <td><span class="badge-tag ${platformClass}">${o.platform || 'Shopee'}</span></td>
+            <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${o.itemName || 'Sản phẩm hoàn tiền'}</td>
+            <td>${amount.toLocaleString('vi-VN')}đ</td>
+            <td style="color: var(--success); font-weight: 700;">+${commission.toLocaleString('vi-VN')}đ</td>
+            <td><span class="badge-tag badge-success">${o.orderStatus || 'Đã hoàn thành'}</span></td>
+            <td><span class="badge-tag ${o.paymentStatus === 'Đã TT' ? 'badge-success' : 'badge-pending'}">${o.paymentStatus || 'Chưa TT'}</span></td>
+          </tr>
+        `;
+      });
+    }
+
+    function filterOrdersTable() {
+      const q = document.getElementById("search-orders-input").value.trim().toLowerCase();
+      const platform = document.getElementById("filter-platform").value;
+
+      const filtered = adminOrders.filter(o => {
+        const matchQ = (o.orderId || '').toLowerCase().includes(q) || 
+                       (o.itemName || '').toLowerCase().includes(q) || 
+                       (o.customerName || '').toLowerCase().includes(q);
+        const matchPlat = platform === "all" || (o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
+        return matchQ && matchPlat;
+      });
+      renderOrdersTable(filtered);
+    }
+
+    function openEditModal(id, name, unpaid, paid, bankBin, bankAcc) {
+      document.getElementById("edit-user-id").value = id;
+      document.getElementById("edit-user-name").value = name;
+      document.getElementById("edit-user-unpaid").value = unpaid;
+      document.getElementById("edit-user-paid").value = paid;
+      document.getElementById("edit-user-bankbin").value = bankBin;
+      document.getElementById("edit-user-bankacc").value = bankAcc;
+      document.getElementById("edit-user-modal").style.display = "flex";
+    }
+
+    function closeEditModal() {
+      document.getElementById("edit-user-modal").style.display = "none";
+    }
+
+    async function saveUserEdit(e) {
+      e.preventDefault();
+      const userId = document.getElementById("edit-user-id").value;
+      const unpaid = Number(document.getElementById("edit-user-unpaid").value);
+      const paid = Number(document.getElementById("edit-user-paid").value);
+      const bankBin = document.getElementById("edit-user-bankbin").value.trim();
+      const bankAcc = document.getElementById("edit-user-bankacc").value.trim();
+
+      try {
+        const res = await fetch(`${API_URL}?action=updateUserBalance`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, unpaid, paid, bankBin, bankAcc })
+        });
+        const json = await res.json();
+        if (json.success) {
+          alert("Đã cập nhật số dư & thông tin ngân hàng thành công!");
+          closeEditModal();
+          loadAdminData();
+        } else {
+          alert("Lỗi: " + json.error);
+        }
+      } catch (err) {
+        alert("Lỗi kết nối: " + err.message);
+      }
+    }
+
+    function exportToCSV() {
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      if (activeTab === "users") {
+        csvContent += "STT,ID Zalo,Ten Hien Thi,So Tien Chua Rut,Da Thanh Toan,Bank BIN,So TK\n";
+        adminUsers.forEach((u, i) => {
+          csvContent += `"${i+1}","${u.userId}","${u.userName}","${u.unpaid||0}","${u.paid||0}","${u.bankBin||''}","${u.bankAcc||''}"\n`;
+        });
+      } else {
+        csvContent += "STT,Ngay Dat,Ma Don,Thanh Vien,San,Ten San Pham,Gia Don,Hoa Hong,Trang Thai\n";
+        adminOrders.forEach((o, i) => {
+          csvContent += `"${i+1}","${o.orderDate||''}","${o.orderId}","${o.customerName||''}","${o.platform||'Shopee'}","${(o.itemName||'').replace(/"/g, '""')}","${o.amount||0}","${o.commission||0}","${o.orderStatus||''}"\n`;
+        });
+      }
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Bao_Cao_Admin_${activeTab}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    window.onload = checkAdminAuth;
+  </script>
+</body>
+</html>
