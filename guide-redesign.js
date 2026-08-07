@@ -62,7 +62,7 @@ function guideRedesignedPage() {
             <div class="guide-video-info">
               <span class="guide-video-badge">🌐 Website & Chuyển Đổi</span>
               <h3>Hướng dẫn đăng nhập web & chuyển đổi link</h3>
-              <p>Cách đăng nhập shoppesale.io.vn, tự chuyển đổi link và kiểm tra số dư ví hoàn tiền.</p>
+              <p>Cách đăng nhập hoantienonline.io.vn, tự chuyển đổi link và kiểm tra số dư ví hoàn tiền.</p>
             </div>
           </article>
         </div>
