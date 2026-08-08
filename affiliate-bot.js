@@ -2479,8 +2479,12 @@ function attachHandlers(api, config) {
 
         console.log(`[Nhận tin nhắn] [${conversationType}: ${groupId}] ${senderName}: "${text}" (isSelf: ${msg.isSelf})`);
 
-        // --- KÍCH HOẠT TỰ ĐỘNG BẢO VỆ NHÓM: THU HỒI TIN NHẮN VÀ KICK THÀNH VIÊN TRONG BLACKLIST ---
         const senderId = msg.data.uidFrom;
+
+        // Tự động lưu và đẩy Zalo ID thành viên lên Google Sheet ngay khi nhắn tin trong nhóm
+        if (senderId && senderId !== "unknown" && !msg.isSelf && msg.type === 1) {
+            saveUniqueUser(senderId, senderName, groupId);
+        }
         const blacklistNames = config.blacklistNames || [];
         const matchesBlacklist = blacklistNames.some(item => 
             senderName.toLowerCase().includes(item.toLowerCase()) || (senderId && String(senderId) === String(item))
