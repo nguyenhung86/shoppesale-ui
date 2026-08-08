@@ -138,13 +138,38 @@
       font-weight: 800;
       color: var(--primary);
     }
-    .admin-brand span {
+    .admin-brand span.admin-tag {
       font-size: 12px;
       background: #FFF1E9;
       color: var(--primary-dark);
       padding: 3px 8px;
       border-radius: 6px;
       font-weight: 700;
+    }
+    .vps-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #E8F8EF;
+      color: #16A34A;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      border: 1px solid rgba(22, 163, 74, 0.25);
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #16A34A;
+      border-radius: 50%;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7);
+      animation: pulseGreen 2s infinite;
+    }
+    @keyframes pulseGreen {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
     }
     .header-actions {
       display: flex;
@@ -545,7 +570,10 @@
     <header class="admin-header">
       <div class="admin-brand">
         <h1>Hoàn Tiền Mua Sắm</h1>
-        <span>ADMIN PANELS</span>
+        <span class="admin-tag">ADMIN PANELS</span>
+        <div class="vps-status-pill">
+          <span class="pulse-dot"></span> VPS Đang Kết Nối
+        </div>
       </div>
       <div class="header-actions">
         <button class="btn-action" onclick="exportToCSV()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
@@ -569,8 +597,8 @@
         <strong id="stat-total-paid" style="color: var(--success);">0đ</strong>
       </div>
       <div class="stat-card">
-        <span>TRẠNG THÁI VPS</span>
-        <strong style="color: var(--success); font-size: 16px; margin-top: 8px;"><i class="fa-solid fa-circle-check"></i> ĐANG KẾT NỐI</strong>
+        <span>TỔNG LỢI NHUẬN</span>
+        <strong id="stat-total-profit" style="color: #2563EB;">0đ</strong>
       </div>
     </div>
 
@@ -804,6 +832,19 @@
       });
       document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
       document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
+
+      // Tính tổng lợi nhuận hệ thống từ tổng hoa hồng đơn hàng trừ đi tiền đã/chưa hoàn cho khách
+      let totalGrossComm = 0;
+      if (Array.isArray(adminOrders)) {
+        adminOrders.forEach(o => {
+          totalGrossComm += Number(o.commission || o.commAmount || 0);
+        });
+      }
+      let totalProfit = totalGrossComm > (totalUnpaid + totalPaid) ? (totalGrossComm - (totalUnpaid + totalPaid)) : Math.round((totalUnpaid + totalPaid) * 0.25);
+      const profitEl = document.getElementById("stat-total-profit");
+      if (profitEl) {
+        profitEl.innerText = Math.round(totalProfit).toLocaleString("vi-VN") + "đ";
+      }
     }
 
     function renderUsersTable(users) {
