@@ -2997,6 +2997,7 @@ function attachHandlers(api, config) {
                     const totalOrderCommAll = Math.max(0, totalComm);
                     const totalOrderCommPending = Math.max(0, totalCompleted);
                     const totalOrderCommReceived = Math.max(0, totalReceived);
+                    const totalAllReceived = totalOrderCommReceived + Math.max(0, totalReferralRewardReceived);
 
                     const refText = totalReferralRewardAll > 0 
                         ? ` (Tổng: ${formatVND(totalReferralRewardAll)} từ ${referralCount} người)` 
@@ -3011,7 +3012,7 @@ function attachHandlers(api, config) {
                                 `✅  Đã hoàn thành:   ${formatVND(totalOrderCommPending)}\n` +
                                 `🎁  Thưởng giới thiệu: ${formatVND(totalReferralRewardPending)}${refText}\n` +
                                 `💵  Có thể rút ngay: ${formatVND(totalCompleted)}\n` +
-                                `📥  Đã nhận:        ${formatVND(totalReceived)}${recText}\n` +
+                                `📥  Đã nhận:        ${formatVND(totalAllReceived)}${recText}\n` +
                                 `>  Đã trừ thuế shopee và chia bạn 8 phần mình 2 phần. Hợp tác vui vẻ lâu dài!\n` +
                                 `>  Liên hệ Trưởng nhóm ${leaderMentionText} để rút tiền\n\n` +
                                 `👉 Tra cứu ví tiền chi tiết tại: https://hoantienonline.io.vn`;
