@@ -3,11 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>
-    if (window.location.hostname.includes('shoppesale.io.vn')) {
-      window.location.replace('https://hoantienonline.io.vn' + window.location.pathname + window.location.search);
-    }
-  </script>
   <title>Bảng Quản Trị Admin - Hoàn Tiền Mua Sắm</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -375,6 +370,153 @@
       cursor: pointer;
       font-size: 18px;
       color: var(--ink-soft);
+    }
+
+    /* GIAO DIỆN RESPONSIVE TRÊN ĐIỆN THOẠI DI ĐỘNG (MOBILE & TABLET) */
+    @media (max-width: 768px) {
+      body {
+        padding: 10px 8px;
+      }
+      
+      .login-container {
+        margin: 30px 12px;
+        padding: 24px 16px;
+      }
+      
+      header.admin-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 14px 12px;
+        margin-bottom: 14px;
+        border-radius: 14px;
+      }
+
+      .admin-brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+      
+      .admin-brand h1 {
+        font-size: 17px;
+      }
+
+      .header-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+        width: 100%;
+      }
+
+      .btn-action {
+        padding: 9px 4px;
+        font-size: 11px;
+        font-weight: 700;
+        justify-content: center;
+        text-align: center;
+        border-radius: 8px;
+        width: 100%;
+        white-space: nowrap;
+      }
+
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+
+      .stat-card {
+        padding: 12px 10px;
+        border-radius: 12px;
+      }
+
+      .stat-card span {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        line-height: 1.2;
+      }
+
+      .stat-card strong {
+        font-size: 16px;
+        margin-top: 3px;
+      }
+
+      .tabs-bar {
+        gap: 4px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+      }
+
+      .tab-btn {
+        flex: 1;
+        padding: 9px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        white-space: nowrap;
+        justify-content: center;
+      }
+
+      .grid-card {
+        padding: 12px 10px;
+        border-radius: 12px;
+      }
+
+      .grid-filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+
+      .search-input-group {
+        max-width: 100%;
+        width: 100%;
+      }
+
+      .search-input-group input {
+        font-size: 12px;
+        padding: 8px 10px 8px 34px;
+      }
+
+      .filter-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        width: 100%;
+      }
+
+      .select-filter {
+        width: 100%;
+        font-size: 11px;
+        padding: 8px 6px;
+        font-weight: 600;
+      }
+
+      .table-responsive {
+        border-radius: 8px;
+        max-height: 72vh;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table.data-grid th {
+        padding: 9px 8px;
+        font-size: 11px;
+      }
+
+      table.data-grid td {
+        padding: 9px 8px;
+        font-size: 11px;
+      }
+
+      .modal-box {
+        padding: 16px;
+        border-radius: 16px;
+      }
     }
   </style>
 </head>
