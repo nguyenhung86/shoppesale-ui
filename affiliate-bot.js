@@ -209,15 +209,24 @@ async function syncGroupMembersToCsv(api, config) {
         let newUsersCount = 0;
         for (let i = 0; i < memberUids.length; i += 30) {
             const batch = memberUids.slice(i, i + 30);
-            const unsavedBatch = batch.filter(uid => !savedUsers.has(uid));
-            if (unsavedBatch.length === 0) continue;
-            
             try {
-                const res = await api.getGroupMembersInfo(unsavedBatch, mainGroupId);
+                const res = await api.getGroupMembersInfo(batch, mainGroupId);
                 const profiles = res?.profiles || res || {};
                 for (const [uid, p] of Object.entries(profiles)) {
                     const dispName = p.displayName || p.zaloName || "Thành viên";
                     saveUniqueUser(uid, dispName, mainGroupId);
+                    if (config && config.orderAppsScriptUrl) {
+                        fetch(config.orderAppsScriptUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'register_user',
+                                token: 'DongChau@Secure2026',
+                                userId: String(uid),
+                                userName: String(dispName)
+                            })
+                        }).catch(() => {});
+                    }
                     newUsersCount++;
                 }
             } catch (err) {
