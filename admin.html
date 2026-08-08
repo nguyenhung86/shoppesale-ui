@@ -828,7 +828,7 @@
       let totalUnpaid = 0;
       let totalPaid = 0;
       adminUsers.forEach(u => {
-        totalUnpaid += Number(u.unpaid || 0);
+        totalUnpaid += Number(u.unpaid || 0) + Number(u.unpaidReferral || 0);
         totalPaid += Number(u.paid || 0);
       });
       document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
