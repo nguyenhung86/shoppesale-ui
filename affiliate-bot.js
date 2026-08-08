@@ -179,6 +179,56 @@ async function triggerInboxWelcome(inboxApi, inboxConfig, userId, userName, grou
     }
 }
 
+async function syncCsvMembersToSheet(config) {
+    if (!config || !config.orderAppsScriptUrl) return;
+    const mainGroupId = config.tiktokGroupId || config.scheduler?.targetGroupId || "2001332429948371738";
+    const csvFile = `zalo_users_${mainGroupId}.csv`;
+    if (!existsSync(csvFile)) return;
+
+    try {
+        const csvContent = readFileSync(csvFile, "utf8");
+        const lines = csvContent.split("\n").filter(l => l.trim());
+        const users = [];
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].replace(/\r/g, "");
+            const parts = line.split(",");
+            if (parts.length >= 2) {
+                const uid = parts[0].replace(/["\uFEFF]/g, "").trim();
+                const name = parts[1].replace(/["\uFEFF]/g, "").trim();
+                if (uid && name) users.push({ userId: uid, userName: name });
+            }
+        }
+
+        if (users.length === 0) return;
+        console.log(`🤖 [Đồng bộ CSV -> Sheet] Đang quét và tự động đẩy ${users.length} thành viên trong file ${csvFile} lên Google Sheet...`);
+
+        let pushedCount = 0;
+        for (let i = 0; i < users.length; i += 15) {
+            const batch = users.slice(i, i + 15);
+            const promises = batch.map(u => 
+                fetch(config.orderAppsScriptUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'register_user',
+                        token: 'DongChau@Secure2026',
+                        userId: String(u.userId),
+                        userName: String(u.userName)
+                    })
+                }).then(r => r.json()).catch(() => ({ success: false }))
+            );
+            const results = await Promise.all(promises);
+            results.forEach(r => { if (r && r.success) pushedCount++; });
+            await new Promise(res => setTimeout(res, 100));
+        }
+        if (pushedCount > 0) {
+            console.log(`✅ [Đồng bộ CSV -> Sheet] Đã đẩy thành công thêm ${pushedCount} thành viên từ file ${csvFile} lên Google Sheet!`);
+        }
+    } catch (err) {
+        console.error(`❌ [Đồng bộ CSV -> Sheet] Lỗi: ${err.message}`);
+    }
+}
+
 async function syncGroupMembersToCsv(api, config) {
     const mainGroupId = config.tiktokGroupId || config.scheduler?.targetGroupId || "2001332429948371738";
     console.log(`🤖 [Đồng bộ] Bắt đầu đồng bộ danh sách thành viên nhóm ${mainGroupId} lên Google Sheet & CSV...`);
@@ -194,6 +244,7 @@ async function syncGroupMembersToCsv(api, config) {
         
         if (memberUids.length === 0) {
             console.log(`🤖 [Đồng bộ] Không lấy được danh sách thành viên nhóm hoặc nhóm trống.`);
+            await syncCsvMembersToSheet(config);
             return;
         }
         
@@ -215,18 +266,6 @@ async function syncGroupMembersToCsv(api, config) {
                 for (const [uid, p] of Object.entries(profiles)) {
                     const dispName = p.displayName || p.zaloName || "Thành viên";
                     saveUniqueUser(uid, dispName, mainGroupId);
-                    if (config && config.orderAppsScriptUrl) {
-                        fetch(config.orderAppsScriptUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                action: 'register_user',
-                                token: 'DongChau@Secure2026',
-                                userId: String(uid),
-                                userName: String(dispName)
-                            })
-                        }).catch(() => {});
-                    }
                     newUsersCount++;
                 }
             } catch (err) {
@@ -234,9 +273,13 @@ async function syncGroupMembersToCsv(api, config) {
             }
             await new Promise(r => setTimeout(r, 100));
         }
-        console.log(`🤖 [Đồng bộ] Hoàn thành đồng bộ! Đã ghi nhận và đẩy ${newUsersCount} thành viên lên Google Sheet & CSV.`);
+        console.log(`🤖 [Đồng bộ] Hoàn thành đồng bộ Zalo Live! Đã ghi nhận và đẩy ${newUsersCount} thành viên lên Google Sheet & CSV.`);
+        
+        // Tự động quét và đẩy nốt 100% tất cả thành viên trong file CSV lên Google Sheet
+        await syncCsvMembersToSheet(config);
     } catch (e) {
         console.error(`🤖 [Đồng bộ] Lỗi trong quá trình quét đồng bộ: ${e.message}`);
+        await syncCsvMembersToSheet(config);
     }
 }
 
