@@ -294,8 +294,8 @@ function doPost(e) {
     }
     if (data.action === 'confirm_payout') {
       const res = confirmPayout(data.userId);
-      if (data.amount && data.billBase64) {
-        const historyRes = savePayoutHistory(data.userId, data.amount, data.billBase64);
+      if (data.amount && (data.billBase64 || data.billUrl)) {
+        const historyRes = savePayoutHistory(data.userId, data.amount, data.billBase64, data.billUrl);
         res.billUrl = historyRes.billUrl;
         res.historySuccess = historyRes.success;
         if (!historyRes.success) res.historyError = historyRes.error;
@@ -536,69 +536,86 @@ function doPost(e) {
       }
       
       const ss = SpreadsheetApp.getActiveSpreadsheet();
-      const sheet = ss.getSheetByName("Dữ liệu nạp tự động");
       let congrats = [];
+      const completedOrdersByUser = {};
       
-      if (sheet) {
-        const lastRow = sheet.getLastRow();
-        if (lastRow >= 3) {
-          const range = sheet.getRange(3, 1, lastRow - 2, 12);
-          const values = range.getValues();
-          const completedOrdersByUser = {};
-          
-          for (let i = 0; i < values.length; i++) {
-            const row = values[i];
-            const reportDate = String(row[0]).trim();
-            const zaloName = String(row[1]).trim();
-            const userComm = parseFloat(row[6]) || 0;
-            const status = String(row[7]).trim().toLowerCase();
-            const zaloId = String(row[10]).replace(/'/g, "").trim();
-            const congratulated = String(row[11]).trim();
+      const allSheets = ss.getSheets();
+      for (let s = 0; s < allSheets.length; s++) {
+        const scanSheet = allSheets[s];
+        const sName = scanSheet.getName();
+        const sNameLower = sName.toLowerCase();
+        
+        if (sName === "Dữ liệu nạp tự động" || sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid") || sNameLower.includes("luu tr")) {
+          const lastRow = scanSheet.getLastRow();
+          if (lastRow >= 3) {
+            const range = scanSheet.getRange(3, 1, lastRow - 2, 12);
+            const values = range.getValues();
             
-            const isCompleted = status === "đã hoàn thành" || status === "complete" || status === "thành công" || status === "completed" || status === "waiting for payment" || status === "hoàn thành";
-            
-            if (zaloId && isCompleted) {
-              if (!completedOrdersByUser[zaloId]) {
-                completedOrdersByUser[zaloId] = [];
-              }
-              completedOrdersByUser[zaloId].push({
-                rowIndex: i + 3,
-                reportDate: reportDate,
-                zaloName: zaloName,
-                userComm: userComm,
-                congratulated: congratulated
-              });
-            }
-          }
-          
-          for (const zaloId in completedOrdersByUser) {
-            const userOrders = completedOrdersByUser[zaloId];
-            userOrders.sort((a, b) => a.rowIndex - b.rowIndex);
-            
-            const firstOrder = userOrders[0];
-            
-            if (firstOrder.congratulated !== "y") {
-              const dateParts = firstOrder.reportDate.split('/');
-              let isRecent = true;
-              if (dateParts.length === 3) {
-                const day = parseInt(dateParts[0], 10);
-                const month = parseInt(dateParts[1], 10);
-                const year = parseInt(dateParts[2], 10);
-                if (year < 2026 || (year === 2026 && month < 7) || (year === 2026 && month === 7 && day < 19)) {
-                  isRecent = false;
-                  sheet.getRange(firstOrder.rowIndex, 12).setValue("y");
-                }
-              }
+            for (let i = 0; i < values.length; i++) {
+              const row = values[i];
+              const reportDate = String(row[0]).trim();
+              const zaloName = String(row[1]).trim();
+              const userComm = parseFloat(row[6]) || 0;
+              const status = String(row[7]).trim().toLowerCase();
+              const zaloId = String(row[10]).replace(/'/g, "").trim();
+              const congratulated = String(row[11]).trim();
               
-              if (isRecent) {
-                sheet.getRange(firstOrder.rowIndex, 12).setValue("y");
-                congrats.push({
-                  zaloId: zaloId,
-                  zaloName: firstOrder.zaloName || getZaloNameById(zaloId) || "Khách",
-                  amount: firstOrder.userComm
+              const isCompleted = status === "đã hoàn thành" || status === "complete" || status === "thành công" || status === "completed" || status === "waiting for payment" || status === "hoàn thành";
+              
+              if (zaloId && isCompleted) {
+                if (!completedOrdersByUser[zaloId]) {
+                  completedOrdersByUser[zaloId] = [];
+                }
+                completedOrdersByUser[zaloId].push({
+                  sheetName: sName,
+                  rowIndex: i + 3,
+                  reportDate: reportDate,
+                  zaloName: zaloName,
+                  userComm: userComm,
+                  congratulated: congratulated
                 });
               }
             }
+          }
+        }
+      }
+      
+      // Hàm chuyển đổi chuỗi ngày thành số để so sánh (hỗ trợ cả YYYY-MM-DD và DD/MM/YYYY)
+      const parseDateScore = (dateStr) => {
+        if (!dateStr) return 99999999;
+        const parts = dateStr.split(/[-/]/);
+        if (parts.length === 3) {
+          if (parts[0].length === 4) return parseInt(parts[0])*10000 + parseInt(parts[1])*100 + parseInt(parts[2]); // YYYY-MM-DD
+          return parseInt(parts[2])*10000 + parseInt(parts[1])*100 + parseInt(parts[0]); // DD/MM/YYYY
+        }
+        return 99999999;
+      };
+
+      for (const zaloId in completedOrdersByUser) {
+        const userOrders = completedOrdersByUser[zaloId];
+        userOrders.sort((a, b) => parseDateScore(a.reportDate) - parseDateScore(b.reportDate));
+        
+        const firstOrder = userOrders[0];
+        
+        if (firstOrder.congratulated !== "y") {
+          const dateScore = parseDateScore(firstOrder.reportDate);
+          let isRecent = true;
+          // Trước 19/07/2026 thì bỏ qua
+          if (dateScore < 20260719) {
+            isRecent = false;
+          }
+          
+          const targetSheet = ss.getSheetByName(firstOrder.sheetName);
+          if (targetSheet) {
+            targetSheet.getRange(firstOrder.rowIndex, 12).setValue("y");
+          }
+          
+          if (isRecent) {
+            congrats.push({
+              zaloId: zaloId,
+              zaloName: firstOrder.zaloName || getZaloNameById(zaloId) || "Khách",
+              amount: firstOrder.userComm
+            });
           }
         }
       }
@@ -648,40 +665,48 @@ function doPost(e) {
       const orders = data.orders;
       const lastRow = sheet.getLastRow();
       
-      // Đọc toàn bộ dữ liệu hiện có để đối soát thông minh (hỗ trợ nhiều dòng cùng Mã Đơn Hàng như TikTok)
+      // Đọc toàn bộ dữ liệu hiện có từ TẤT CẢ CÁC SHEET LIÊN QUAN để đối soát thông minh (tránh tạo trùng đơn đã lưu trữ/hủy)
       let existingRows = [];
-      if (lastRow > 2) {
-        const rangeValues = sheet.getRange(3, 1, lastRow - 2, 11).getValues();
-        for (let i = 0; i < rangeValues.length; i++) {
-          const row = rangeValues[i];
-          existingRows.push({
-            rowIndex: i + 3,
-            report_date: row[0],
-            order_sn: String(row[2]).replace(/'/g, "").trim(),
-            item_name: String(row[3]).trim(),
-            commission: parseInt(row[4], 10) || 0,
-            checkout_status: String(row[7]).trim(),
-            sub_id: String(row[10]).replace(/'/g, "").trim(),
-            matched: false
-          });
+      let subIdCounts = {};
+      let sheetsToScan = [];
+      const allSheets = ss.getSheets();
+      for (let s = 0; s < allSheets.length; s++) {
+        const sName = allSheets[s].getName();
+        const sNameLower = sName.toLowerCase();
+        if (sName === sheetName || sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid") || sNameLower.includes("luu tr")) {
+          sheetsToScan.push(allSheets[s]);
+        }
+      }
+
+      for (let s = 0; s < sheetsToScan.length; s++) {
+        const scanSheet = sheetsToScan[s];
+        const scanLastRow = scanSheet.getLastRow();
+        if (scanLastRow > 2) {
+          const rangeValues = scanSheet.getRange(3, 1, scanLastRow - 2, 11).getValues();
+          for (let i = 0; i < rangeValues.length; i++) {
+            const row = rangeValues[i];
+            existingRows.push({
+              sheetName: scanSheet.getName(),
+              rowIndex: i + 3,
+              report_date: row[0],
+              order_sn: String(row[2]).replace(/'/g, "").trim(),
+              item_name: String(row[3]).trim(),
+              commission: parseInt(row[4], 10) || 0,
+              checkout_status: String(row[7]).trim(),
+              sub_id: String(row[10]).replace(/'/g, "").trim(),
+              matched: false
+            });
+            const sId = String(row[10]).replace(/'/g, "").trim();
+            if (sId) {
+              subIdCounts[sId] = (subIdCounts[sId] || 0) + 1;
+            }
+          }
         }
       }
       
       let inserted = 0;
       let updated = 0;
       let triggeredRewards = [];
-      
-      // Đọc toàn bộ Sub ID (cột K) để đếm số đơn của người này
-      let subIdCounts = {};
-      if (lastRow > 2) {
-        const subIds = sheet.getRange(3, 11, lastRow - 2, 1).getValues();
-        for (let i = 0; i < subIds.length; i++) {
-          const sId = String(subIds[i][0]).replace(/'/g, "").trim();
-          if (sId) {
-            subIdCounts[sId] = (subIdCounts[sId] || 0) + 1;
-          }
-        }
-      }
       
       for (let order of orders) {
         const cleanOrderSn = String(order.order_sn).trim();
@@ -727,9 +752,10 @@ function doPost(e) {
         if (match) {
           match.matched = true;
           const existingRowIndex = match.rowIndex;
+          const targetSheet = match.sheetName ? ss.getSheetByName(match.sheetName) : sheet;
           
           // Đã tồn tại -> Cập nhật cột Hoa Hồng (cột 5) và Trạng Thái (cột 8)
-          sheet.getRange(existingRowIndex, 5).setValue(order.commission);
+          targetSheet.getRange(existingRowIndex, 5).setValue(order.commission);
           const commNum = Number(order.commission) || 0;
           const finalStatus = order.checkout_status;
           const rawInStatus = String(order.checkout_status || "").trim();
@@ -751,11 +777,11 @@ function doPost(e) {
           } else {
             normStatus = "Pending";
           }
-          sheet.getRange(existingRowIndex, 8).setValue(normStatus);
+          targetSheet.getRange(existingRowIndex, 8).setValue(normStatus);
           
           // Cập nhật Tên sản phẩm nếu trước đó chưa đúng hoặc trống
           if ((!match.item_name || match.item_name === "undefined") && order.item_name) {
-            sheet.getRange(existingRowIndex, 4).setValue(order.item_name);
+            targetSheet.getRange(existingRowIndex, 4).setValue(order.item_name);
           }
           
           // Chỉ cập nhật Sub ID nếu trên Sheet chưa có Sub ID cũ và dữ liệu mới gửi lên có Sub ID
@@ -804,8 +830,8 @@ function doPost(e) {
             order.order_sn,
             order.item_name,
             order.commission,
-            `=E${targetRowIndex}*0,9`,
-            `=E${targetRowIndex}*0,9*0,8`,
+            `=IF(OR(H${targetRowIndex}="Invalid"; H${targetRowIndex}="cancelled"; H${targetRowIndex}="Đơn hủy"); 0; E${targetRowIndex}*0,9)`,
+            `=IF(OR(H${targetRowIndex}="Invalid"; H${targetRowIndex}="cancelled"; H${targetRowIndex}="Đơn hủy"); 0; E${targetRowIndex}*0,9*0,8)`,
             (() => {
             const st = String(order.checkout_status || "").trim().toLowerCase();
             if (st.includes("hủy") || st.includes("invalid") || st.includes("cancelled") || st.includes("canceled") || st.includes("không đủ điều kiện")) return "Invalid";
@@ -813,7 +839,7 @@ function doPost(e) {
             return order.checkout_status || "Pending";
           })(),
             "Chưa TT",
-            `=E${targetRowIndex}*0,9*0,2`,
+            `=IF(OR(H${targetRowIndex}="Invalid"; H${targetRowIndex}="cancelled"; H${targetRowIndex}="Đơn hủy"); 0; E${targetRowIndex}*0,9*0,2)`,
             order.sub_id ? "'" + order.sub_id : ""
           ];
           const targetRange = sheet.getRange(targetRowIndex, 1, 1, rowData.length);
@@ -894,6 +920,17 @@ function doPost(e) {
         }
       }
       
+      // Tự động sắp xếp lại dữ liệu theo Ngày Báo Cáo (A-Z) để mới nhất nằm dưới cùng
+      try {
+        const sortLastRow = sheet.getLastRow();
+        if (sortLastRow > 2) {
+          // Lấy toàn bộ vùng dữ liệu từ dòng 3 (bỏ qua dòng 1 Tổng và dòng 2 Header)
+          sheet.getRange(3, 1, sortLastRow - 2, sheet.getLastColumn()).sort({column: 1, ascending: true});
+        }
+      } catch (eSort) {
+        console.log("Lỗi tự động sắp xếp A-Z: " + eSort.toString());
+      }
+
       // Tự động khôi phục lại bộ lọc (Filter) ở hàng 2 cho toàn bộ dữ liệu
       try {
         const fLastRow = sheet.getLastRow();
@@ -945,7 +982,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
     }
     
     const possibleOrderIds = cleanQuery.split(',').map(id => id.trim()).filter(id => id !== '');
-    const translatedName = getZaloNameById(cleanQuery);
+    
     
     let totalCommission = 0;
     let totalReceived = 0;
@@ -967,8 +1004,7 @@ function unifiedSearch(query, startDateStr, endDateStr) {
       
       const isMatch = possibleOrderIds.includes(rowOrderSn) || 
                       rowSubId === cleanQuery || 
-                      rowZaloName.toLowerCase() === cleanQuery.toLowerCase() ||
-                      (translatedName && rowZaloName.toLowerCase() === translatedName.toLowerCase());
+                      rowZaloName.toLowerCase() === cleanQuery.toLowerCase();
       
       if (isMatch) {
         let orderStatus = String(row[7]).trim();
@@ -1283,9 +1319,8 @@ function getOrdersBySubIdAndDate(subId, dateStr) {
 function getPayoutDashboardData() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const customerSheet = ss.getSheetByName("Thanh toán hoa hồng");
-  const orderSheet = ss.getSheetByName("Dữ liệu nạp tự động");
   
-  if (!customerSheet || !orderSheet) {
+  if (!customerSheet) {
     return { success: false, error: "Thiếu sheet dữ liệu" };
   }
   
@@ -1295,8 +1330,20 @@ function getPayoutDashboardData() {
   }
   const customers = customerSheet.getRange(2, 1, lastRowCustomer - 1, 12).getValues();
   
-  const lastRowOrder = orderSheet.getLastRow();
-  const orders = lastRowOrder >= 3 ? orderSheet.getRange(3, 1, lastRowOrder - 2, 11).getValues() : [];
+  let orders = [];
+  const allSheets = ss.getSheets();
+  for (let s = 0; s < allSheets.length; s++) {
+    const scanSheet = allSheets[s];
+    const sName = scanSheet.getName();
+    const sNameLower = sName.toLowerCase();
+    
+    if (sName === "Dữ liệu nạp tự động" || sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid") || sNameLower.includes("luu tr")) {
+      const scanLastRow = scanSheet.getLastRow();
+      if (scanLastRow >= 3) {
+        orders = orders.concat(scanSheet.getRange(3, 1, scanLastRow - 2, 11).getValues());
+      }
+    }
+  }
   
   let userStats = {};
   for (let i = 0; i < orders.length; i++) {
@@ -1557,9 +1604,9 @@ function fixAutoSheetFormatting() {
       var jFormulas = [];
       for (var r = 3; r <= lastRow; r++) {
         bFormulas.push([`=IFERROR(XLOOKUP(K${r};'Thanh toán hoa hồng'!B:B;'Thanh toán hoa hồng'!A:A;"");"")`]);
-        fFormulas.push([`=E${r}*0,9`]);
-        gFormulas.push([`=E${r}*0,9*0,8`]);
-        jFormulas.push([`=E${r}*0,9*0,2`]);
+        fFormulas.push([`=IF(OR(H${r}="Invalid"; H${r}="cancelled"; H${r}="Đơn hủy"); 0; E${r}*0,9)`]);
+        gFormulas.push([`=IF(OR(H${r}="Invalid"; H${r}="cancelled"; H${r}="Đơn hủy"); 0; E${r}*0,9*0,8)`]);
+        jFormulas.push([`=IF(OR(H${r}="Invalid"; H${r}="cancelled"; H${r}="Đơn hủy"); 0; E${r}*0,9*0,2)`]);
       }
       sheet.getRange(3, 2, lastRow - 2, 1).setFormulas(bFormulas);
       sheet.getRange(3, 6, lastRow - 2, 1).setFormulas(fFormulas);
@@ -1617,17 +1664,14 @@ function fixAutoSheetFormatting() {
 
 // === TỰ ĐỘNG THÊM MENU KHI MỞ BẢNG TÍNH ===
 function onOpen() {
-  ensureAllSheetsFilters();
-  const ui = SpreadsheetApp.getUi();
-  ui.createMenu('Menu Hoàn Tiền')
-    .addItem('📦 Dọn đơn Đã TT sang tab Lưu Trữ (1-Click)', 'autoArchivePaidOrdersPrompt')
-    .addItem('🧹 Dọn đơn Hủy sang tab Đơn Hủy (1-Click)', 'moveCancelledOrdersPrompt')
-    .addItem('🎨 Tô màu đồng bộ Cột H, I cho tất cả các Tab', 'applyStatusColorsToAllSheetsPrompt')
-    .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
-    .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
-    .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
-    .addToUi();
-}
+    ensureAllSheetsFilters();
+    const ui = SpreadsheetApp.getUi();
+    ui.createMenu('Menu Hoàn Tiền')
+      .addItem('Fix tự động công thức #ERROR! toàn bộ Sheet', 'fixAutoSheetFormatting')
+      .addItem('Tính thưởng giới thiệu mốc tháng', 'calculateMonthlyReferralBonusPrompt')
+      .addItem('Nâng cấp layout bảng thanh toán', 'upgradeSheetLayoutPrompt')
+      .addToUi();
+  }
 
 // === HÀM TỰ ĐỘNG CHUYỂN TOÀN BỘ ĐƠN ĐÃ THANH TOÁN (ĐÃ TT) SANG TAB LƯU TRỮ ===
 function autoArchivePaidOrders() {
@@ -1926,7 +1970,18 @@ function calculateMonthlyReferralBonus(month, year) {
   }
   
   // 2. Quét tất cả đơn hàng và tích lũy hoa hồng của từng người trong tháng/năm đó
-  const dataValues = dataSheet.getRange(3, 1, dataLastRow - 2, 11).getValues();
+    let dataValues = [];
+  const allSheets = ss.getSheets();
+  for (let s = 0; s < allSheets.length; s++) {
+    const sName = allSheets[s].getName();
+    const sNameLower = sName.toLowerCase();
+    if (sName === 'Dữ liệu nạp tự động' || sNameLower.includes('lưu trữ') || sNameLower.includes('archive') || sNameLower.includes('hủy') || sNameLower.includes('invalid') || sNameLower.includes('luu tr')) {
+      const scanLastRow = allSheets[s].getLastRow();
+      if (scanLastRow >= 3) {
+        dataValues = dataValues.concat(allSheets[s].getRange(3, 1, scanLastRow - 2, 11).getValues());
+      }
+    }
+  }
   const userOrderCountMap = {};
   const userCommissionMap = {};
   const targetPrefix = `${year}-${String(month).padStart(2, '0')}`;
@@ -1988,7 +2043,7 @@ function calculateMonthlyReferralBonus(month, year) {
       const ref = referralsList[rIdx];
       const rowIdx = ref.rowIdx;
       const rangeH = refSheet.getRange(rowIdx, 8);
-      rangeH.setFormula(`=IF(ISBLANK(B${rowIdx}); ""; COUNTIFS('Dữ liệu nạp tự động'!K:K; B${rowIdx}; 'Dữ liệu nạp tự động'!H:H; "<>cancelled"; 'Dữ liệu nạp tự động'!A:A; ">="&DATE(YEAR(A${rowIdx}); MONTH(A${rowIdx}); 1); 'Dữ liệu nạp tự động'!A:A; "<="&EOMONTH(A${rowIdx}; 0)))`);
+      rangeH.setValue(userOrderCountMap[ref.newUserId] || 0);
       rangeH.setBackground(null); // Để định dạng có điều kiện tự tô màu
       
       const rangeI = refSheet.getRange(rowIdx, 9);
@@ -3135,7 +3190,7 @@ function uploadBillToDrive(userId, base64Image) {
   }
 }
 
-function savePayoutHistory(userId, amount, billBase64) {
+function savePayoutHistory(userId, amount, billBase64, directBillUrl) {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     
@@ -3164,8 +3219,8 @@ function savePayoutHistory(userId, amount, billBase64) {
       sheet.appendRow(["Zalo ID", "Amount", "Date", "Bill URL"]);
     }
     
-    let billUrl = "";
-    if (billBase64) {
+    let billUrl = directBillUrl || "";
+    if (!billUrl && billBase64) {
       billUrl = uploadBillToDrive(userId, billBase64);
     }
     
@@ -3971,5 +4026,161 @@ function fixAllCancelledOrdersToInvalidNow() {
     return `Đã sửa thành công ${count} đơn hủy về Invalid (màu đen) chuẩn đét 100%!`;
   } catch(e) {
     return "Lỗi sửa: " + e.toString();
+  }
+}
+// === HÀM TỰ ĐỘNG DỌN RÁC ĐƠN TRÙNG LẶP ===
+function cleanupDuplicateOrdersPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const response = ui.alert('Xóa Đơn Trùng Lặp', 'Bạn có chắc chắn muốn quét và xóa các đơn hàng trong "Dữ liệu nạp tự động" đã bị trùng với các đơn bên tab "Lưu trữ" và "Đơn hủy" không?', ui.ButtonSet.YES_NO);
+  if (response == ui.Button.YES) {
+    const msg = cleanupDuplicateOrders();
+    ui.alert('Kết Quả', msg, ui.ButtonSet.OK);
+  }
+}
+
+function cleanupDuplicateOrders() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const mainSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!mainSheet) return "Không tìm thấy sheet Dữ liệu nạp tự động.";
+    
+    // 1. Lấy tất cả mã đơn từ các tab Lưu trữ, Đơn hủy
+    const archivedOrderSns = new Set();
+    const allSheets = ss.getSheets();
+    for (let s = 0; s < allSheets.length; s++) {
+      const scanSheet = allSheets[s];
+      const sName = scanSheet.getName();
+      const sNameLower = sName.toLowerCase();
+      if (sName !== "Dữ liệu nạp tự động" && (sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid") || sNameLower.includes("luu tr"))) {
+        const lastRow = scanSheet.getLastRow();
+        if (lastRow > 2) {
+          const values = scanSheet.getRange(3, 1, lastRow - 2, 11).getValues();
+          for (let i = 0; i < values.length; i++) {
+            const sn = String(values[i][2]).replace(/'/g, "").replace(/\s+/g, "").toUpperCase();
+            const itemName = String(values[i][3]).trim();
+            if (sn) {
+              archivedOrderSns.add(sn + "_" + itemName);
+            }
+          }
+        }
+      }
+    }
+    
+    if (archivedOrderSns.size === 0) return "Không có dữ liệu trong các tab Lưu trữ / Đơn hủy để đối chiếu.";
+    
+    // 2. Quét Dữ liệu nạp tự động từ dưới lên trên để xóa
+    const lastRow = mainSheet.getLastRow();
+    if (lastRow <= 2) return "Dữ liệu nạp tự động trống.";
+    
+    const values = mainSheet.getRange(3, 1, lastRow - 2, 11).getValues();
+    let deletedCount = 0;
+    
+    for (let i = values.length - 1; i >= 0; i--) {
+      const sn = String(values[i][2]).replace(/'/g, "").replace(/\s+/g, "").toUpperCase();
+      const itemName = String(values[i][3]).trim();
+      if (sn && archivedOrderSns.has(sn + "_" + itemName)) {
+        mainSheet.deleteRow(i + 3);
+        deletedCount++;
+      }
+    }
+    
+    return "Đã quét và dọn dẹp thành công " + deletedCount + " đơn hàng bị trùng lặp!";
+  } catch (e) {
+    return "Lỗi: " + e.toString();
+  }
+}
+// === HÀM KIỂM TRA LỖI DỮ LIỆU ===
+function checkDataIntegrityPrompt() {
+  const ui = SpreadsheetApp.getUi();
+  const msg = checkDataIntegrity();
+  ui.alert('Báo Cáo Kiểm Tra Dữ Liệu', msg, ui.ButtonSet.OK);
+}
+
+function checkDataIntegrity() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let report = [];
+    
+    // 1. Kiểm tra Dữ liệu nạp tự động
+    const mainSheet = ss.getSheetByName("Dữ liệu nạp tự động");
+    if (!mainSheet) return "Lỗi: Không tìm thấy tab Dữ liệu nạp tự động";
+    
+    const mainLastRow = mainSheet.getLastRow();
+    report.push("📊 BÁO CÁO TAB 'Dữ liệu nạp tự động':");
+    report.push("- Tổng số dòng: " + (mainLastRow > 2 ? mainLastRow - 2 : 0) + " đơn");
+    
+    const mainOrders = [];
+    const mainDuplicates = [];
+    const mainSeen = new Set();
+    
+    if (mainLastRow > 2) {
+      const mainValues = mainSheet.getRange(3, 1, mainLastRow - 2, 11).getValues();
+      for (let i = 0; i < mainValues.length; i++) {
+        const sn = String(mainValues[i][2]).replace(/'/g, "").replace(/\s+/g, "").toUpperCase();
+        const itemName = String(mainValues[i][3]).trim();
+        if (sn) {
+          const key = sn + "_" + itemName;
+          if (mainSeen.has(key)) {
+            mainDuplicates.push(sn);
+          } else {
+            mainSeen.add(key);
+            mainOrders.push(key);
+          }
+        }
+      }
+    }
+    
+    if (mainDuplicates.length > 0) {
+      report.push("⚠️ CẢNH BÁO: Phát hiện " + mainDuplicates.length + " đơn TRÙNG LẶP NỘI BỘ trong tab này!");
+    } else {
+      report.push("✅ Dữ liệu nội bộ sạch, KHÔNG có đơn trùng lặp.");
+    }
+    
+    // 2. Kiểm tra các tab Lưu trữ / Đơn hủy
+    const archivedOrderSns = new Set();
+    let archiveTotal = 0;
+    const allSheets = ss.getSheets();
+    for (let s = 0; s < allSheets.length; s++) {
+      const scanSheet = allSheets[s];
+      const sName = scanSheet.getName();
+      const sNameLower = sName.toLowerCase();
+      if (sName !== "Dữ liệu nạp tự động" && (sNameLower.includes("lưu trữ") || sNameLower.includes("archive") || sNameLower.includes("hủy") || sNameLower.includes("invalid") || sNameLower.includes("luu tr"))) {
+        const lastRow = scanSheet.getLastRow();
+        if (lastRow > 2) {
+          archiveTotal += (lastRow - 2);
+          const values = scanSheet.getRange(3, 1, lastRow - 2, 11).getValues();
+          for (let i = 0; i < values.length; i++) {
+            const sn = String(values[i][2]).replace(/'/g, "").replace(/\s+/g, "").toUpperCase();
+            const itemName = String(values[i][3]).trim();
+            if (sn) {
+              archivedOrderSns.add(sn + "_" + itemName);
+            }
+          }
+        }
+      }
+    }
+    
+    report.push("");
+    report.push("📦 BÁO CÁO CÁC TAB LƯU TRỮ/HỦY:");
+    report.push("- Tổng số dòng: " + archiveTotal + " đơn");
+    
+    // 3. Đối chiếu chéo
+    let crossDuplicates = 0;
+    for (const key of mainOrders) {
+      if (archivedOrderSns.has(key)) {
+        crossDuplicates++;
+      }
+    }
+    
+    if (crossDuplicates > 0) {
+      report.push("🚨 CẢNH BÁO ĐỎ: Phát hiện " + crossDuplicates + " đơn trong Nạp tự động BỊ TRÙNG với Lưu Trữ/Đơn Hủy.");
+      report.push("=> Sếp hãy chạy chức năng [Dọn dẹp đơn trùng lặp] ngay!");
+    } else {
+      report.push("✅ Đã đối chiếu chéo: Dữ liệu hoàn toàn sạch sẽ, KHÔNG CÓ ĐƠN TRÙNG LẶP CHÉO.");
+    }
+    
+    return report.join("\n");
+  } catch (e) {
+    return "Lỗi kiểm tra: " + e.toString();
   }
 }
