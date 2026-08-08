@@ -3557,93 +3557,114 @@ function attachHandlers(api, config) {
             return;
         }
 
-        // Kiểm tra nếu tin nhắn chứa link mời vào nhóm Zalo khác (zalo.me/g/...)
-        const ZALO_GROUP_LINK_REGEX = /zalo\.me\/g\/[a-zA-Z0-9]+/i;
-        if (msg.type === 1 && ZALO_GROUP_LINK_REGEX.test(text)) { // 1: Nhóm (Group)
+        // =========================================================================
+        // --- BỘ KIỂM DUYỆT TỰ ĐỘNG BẢO VỆ NHÓM CHAT (MODERATION ENGINE) ---
+        // 1. MỜI VÀO NHÓM KHÁCH / LINK NHÓM ➔ THU HỒI + KICK + BLOCK + BLACKLIST
+        // 2. GỬI ẢNH MÃ QR / QR NHÓM KHÁC ➔ THU HỒI + KICK + BLOCK + BLACKLIST
+        // 3. NÓI BẬY / TỪ NGỮ TỤC TĨU ➔ THU HỒI + CẢNH BÁO VĂN MINH
+        // =========================================================================
+        if (msg.type === 1) { // 1: Nhóm (Group)
             const senderId = msg.data.uidFrom;
-            console.log(`[Moderation] Phát hiện tin nhắn quảng cáo chứa link nhóm Zalo khác từ ${senderName} (UID: ${senderId})`);
-            
-            // Lấy thông tin nhóm để kiểm tra vai trò (tránh kick Admin hoặc Chủ nhóm)
-            let groupDetails = groupInfoCache[groupId];
-            if (!groupDetails) {
-                try {
-                    console.log(`-> Đang lấy thông tin nhóm ${groupId} để kiểm tra vai trò thành viên...`);
-                    const info = await api.getGroupInfo(groupId);
-                    if (info?.gridInfoMap?.[groupId]) {
-                        groupDetails = info.gridInfoMap[groupId];
-                        groupInfoCache[groupId] = groupDetails;
-                    }
-                } catch (e) {
-                    console.log(`[Cảnh báo] Không thể lấy thông tin nhóm: ${e.message}`);
+            const msgLower = (text || "").toLowerCase().trim();
+
+            // 1. REGEX VÀ TỪ KHÓA MỜI SANG NHÓM KHÁC
+            const GROUP_INVITE_REGEX = /(zalo\.me\/(g|j|b)\/[a-zA-Z0-9]+|zaloapp\.com\/g\/[a-zA-Z0-9]+|t\.me\/[a-zA-Z0-9_]+|chat\.whatsapp\.com\/[a-zA-Z0-9]+|facebook\.com\/groups\/|fb\.com\/groups\/)/i;
+            const GROUP_INVITE_PHRASES = ["vào nhóm", "mời vào nhóm", "qua nhóm này", "nhóm hoàn tiền khác", "link nhóm", "mã qr nhóm", "mới lập nhóm", "vào group", "join group"];
+            const isGroupInvite = GROUP_INVITE_REGEX.test(text) || GROUP_INVITE_PHRASES.some(phrase => msgLower.includes(phrase));
+
+            // 2. PHÁT HIỆN GỬI ẢNH MÃ QR / MÃ QR NHÓM KHÁC
+            const isPhotoAttachment = msg.data && (msg.data.msgType === "chat.photo" || (msg.data.attachments && msg.data.attachments.some(a => a.type === "photo" || a.type === "image")));
+            const isQrKeyword = /(mã qr|ảnh qr|gửi qr|chụp qr|qr thanh toán|qr nhóm|scan qr|quét qr|qr code)/i.test(msgLower);
+            const isQrImageSpam = isQrKeyword || (isPhotoAttachment && (msgLower.includes("qr") || msgLower.includes("nhóm") || msgLower.includes("quét") || msgLower.includes("vào")));
+
+            // 3. DANH SÁCH TỪ NGỮ TỤC TĨU / NÓI BẬY
+            const VIETNAMESE_BAD_WORDS = [
+                "đm", "dm", "dmm", "đmm", "đmá", "dkm", "đkm", "đcm", "dcm", "vcl", "vkl", "vl", "cl", 
+                "địt", "dit", "lồn", "lon", "buồi", "buoi", "cặc", "cac", "dái", "dai", "sủa", "đoái", 
+                "mẹ kiếp", "đéo", "deo", "óc chó", "oc cho", "chó đẻ", "cho de", "mày chó", "thằng chó",
+                "địt mẹ", "dit me", "đm mày", "dm may", "đái", "ỉa", "vc", "vkr", "đụ", "du ma", "địt bà"
+            ];
+            const isProfane = VIETNAMESE_BAD_WORDS.some(bw => {
+                const regex = new RegExp(`(?:^|\\s)${bw}(?:$|\\s|\\!|\\?|\\.|\\,)`, "i");
+                return regex.test(msgLower);
+            });
+
+            if (isGroupInvite || isQrImageSpam || isProfane) {
+                let groupDetails = groupInfoCache[groupId];
+                if (!groupDetails) {
+                    try {
+                        const info = await api.getGroupInfo(groupId);
+                        if (info?.gridInfoMap?.[groupId]) {
+                            groupDetails = info.gridInfoMap[groupId];
+                            groupInfoCache[groupId] = groupDetails;
+                        }
+                    } catch (e) {}
                 }
-            }
 
-            const creatorId = groupDetails?.creatorId;
-            const adminIds = groupDetails?.adminIds || [];
-            const isAdmin = (creatorId && String(senderId) === String(creatorId)) || (adminIds && adminIds.map(String).includes(String(senderId)));
+                const creatorId = groupDetails?.creatorId;
+                const adminIds = groupDetails?.adminIds || [];
+                const isAdmin = (creatorId && String(senderId) === String(creatorId)) || (adminIds && adminIds.map(String).includes(String(senderId)));
 
-            if (isAdmin) {
-                console.log(`-> Bỏ qua vì người gửi là Chủ nhóm hoặc Admin.`);
-            } else {
-                const botOwnId = api.getOwnId ? api.getOwnId() : null;
-                const isBotAdmin = botOwnId && (
-                    (creatorId && String(botOwnId) === String(creatorId)) ||
-                    (adminIds && adminIds.map(String).includes(String(botOwnId)))
-                );
+                if (!isAdmin) {
+                    const botOwnId = api.getOwnId ? api.getOwnId() : null;
+                    const isBotAdmin = botOwnId && (
+                        (creatorId && String(botOwnId) === String(creatorId)) ||
+                        (adminIds && adminIds.map(String).includes(String(botOwnId)))
+                    );
 
-                if (isBotAdmin) {
-                    try {
-                        // 1. Thu hồi tin nhắn quảng cáo
-                        const undoPayload = {
-                            msgId: Number(msg.data.msgId),
-                            cliMsgId: Number(msg.data.cliMsgId || msg.data.msgId)
-                        };
-                        await api.undo(undoPayload, groupId, msg.type);
-                        console.log(`[Moderation] Đã thu hồi tin nhắn quảng cáo của ${senderName}`);
-                    } catch (err) {
-                        console.error(`[Moderation] Thất bại khi thu hồi tin nhắn: ${err.message}`);
+                    // A. NẾU LÀ GỬI LINK/LỜI MỜI SANG NHÓM KHÁCH HOẶC GỬI ẢNH MÃ QR NHÓM ➔ KICK + BLOCK + BLACKLIST
+                    if (isGroupInvite || isQrImageSpam) {
+                        const violationType = isQrImageSpam ? "gửi ảnh/mã QR nhóm khác" : "gửi link/lời mời sang nhóm khác";
+                        console.log(`[Moderation] Phát hiện vi phạm ${violationType} từ ${senderName} (UID: ${senderId})`);
+                        
+                        saveSpammerId(senderId, config);
+
+                        if (isBotAdmin) {
+                            try {
+                                const undoPayload = { msgId: Number(msg.data.msgId), cliMsgId: Number(msg.data.cliMsgId || msg.data.msgId) };
+                                await api.undo(undoPayload, groupId, msg.type);
+                            } catch (e) {}
+                            try { await api.removeUserFromGroup([senderId], groupId); } catch (e) {}
+                            try { await api.addGroupBlockedMember(senderId, groupId); } catch (e) {}
+
+                            try {
+                                const warnText = `⛔ Đã tự động thu hồi tin nhắn và MỜI KHỎI NHÓM thành viên @${senderName} do vi phạm ${violationType}.`;
+                                await api.sendMessage({
+                                    msg: warnText,
+                                    mentions: [{ pos: warnText.indexOf(`@${senderName}`), uid: senderId, len: senderName.length + 1 }]
+                                }, groupId, msg.type);
+                            } catch (e) {}
+                        } else {
+                            try {
+                                const warnText = `⚠️ Cảnh báo: Thành viên @${senderName} vừa vi phạm ${violationType}. Nhờ Trưởng/Phó nhóm kiểm tra và KICK thành viên này giúp em nhé!`;
+                                await api.sendMessage({
+                                    msg: warnText,
+                                    mentions: [{ pos: warnText.indexOf(`@${senderName}`), uid: senderId, len: senderName.length + 1 }]
+                                }, groupId, msg.type);
+                            } catch (e) {}
+                        }
+                        return;
                     }
 
-                    try {
-                        // 2. Mời thành viên vi phạm khỏi nhóm
-                        await api.removeUserFromGroup([senderId], groupId);
-                        console.log(`[Moderation] Đã mời ${senderName} khỏi nhóm`);
-                    } catch (err) {
-                        console.error(`[Moderation] Thất bại khi mời thành viên khỏi nhóm: ${err.message}`);
-                    }
-
-                    try {
-                        // 3. Gửi tin nhắn thông báo vào nhóm
-                        const warnText = `Đã tự động thu hồi tin nhắn quảng cáo và mời thành viên ${senderName} ra khỏi nhóm do vi phạm gửi link nhóm Zalo khác.`;
-                        await api.sendMessage({
-                            msg: warnText,
-                            mentions: [{
-                                pos: warnText.indexOf(senderName),
-                                uid: senderId,
-                                len: senderName.length
-                            }]
-                        }, groupId, msg.type);
-                    } catch (err) {
-                        console.error(`[Moderation] Thất bại khi gửi tin nhắn cảnh báo: ${err.message}`);
-                    }
-                } else {
-                    console.log(`[Moderation] Phát hiện quảng cáo nhưng Bot không phải Admin/Phó nhóm. Gửi cảnh cáo thô...`);
-                    try {
-                        // Gửi tin nhắn cảnh báo nhờ Admin thật xử lý
-                        const warnText = `⚠️ Cảnh báo: Thành viên ${senderName} vừa gửi link nhóm Zalo khác vào nhóm. Nhờ Trưởng/Phó nhóm kiểm tra và xử lý thành viên này giúp em nhé!`;
-                        await api.sendMessage({
-                            msg: warnText,
-                            mentions: [{
-                                pos: warnText.indexOf(senderName),
-                                uid: senderId,
-                                len: senderName.length
-                            }]
-                        }, groupId, msg.type);
-                    } catch (err) {
-                        console.error(`[Moderation] Thất bại khi gửi tin nhắn cảnh báo: ${err.message}`);
+                    // B. NẾU LÀ NÓI BẬY / TỪ NGỮ TỤC TĨU ➔ THU HỒI + CẢNH BÁO VĂN MINH
+                    if (isProfane) {
+                        console.log(`[Moderation] Phát hiện từ ngữ tục tĩu từ ${senderName} (UID: ${senderId}): "${text}"`);
+                        if (isBotAdmin) {
+                            try {
+                                const undoPayload = { msgId: Number(msg.data.msgId), cliMsgId: Number(msg.data.cliMsgId || msg.data.msgId) };
+                                await api.undo(undoPayload, groupId, msg.type);
+                            } catch (e) {}
+                        }
+                        try {
+                            const warnText = `@${senderName} ⚠️ Vui lòng giữ văn hóa giao tiếp văn minh, không sử dụng từ ngữ tục tĩu trong nhóm chat nhé sếp!`;
+                            await api.sendMessage({
+                                msg: warnText,
+                                mentions: [{ pos: 0, uid: senderId, len: senderName.length + 1 }]
+                            }, groupId, msg.type);
+                        } catch (e) {}
+                        return;
                     }
                 }
-                return; // Kết thúc xử lý tin nhắn này
             }
         }
 
