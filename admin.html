@@ -833,20 +833,23 @@
       document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
       document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
 
-      // Tính tổng lợi nhuận chuẩn matching 100% với Cell J1 (2.523.587đ) trên Google Sheet
-      let totalOrderComm = 0;
+      // Tính tổng lợi nhuận thực tế (CHỈ TÍNH CÁC ĐƠN HỢP LỆ, BỎ SẠCH ĐƠN HỦY/INVALID)
+      let totalValidOrderComm = 0;
       if (Array.isArray(adminOrders) && adminOrders.length > 0) {
         adminOrders.forEach(o => {
-          totalOrderComm += Number(o.commission || o.commAmount || 0);
+          const st = String(o.status || o.checkoutStatus || o.checkout_status || '').toLowerCase();
+          if (st !== 'invalid' && st !== '3' && st !== 'cancelled' && st !== 'refunded') {
+            totalValidOrderComm += Number(o.commission || o.commAmount || 0);
+          }
         });
       }
       
       let totalProfit = 0;
-      if (totalOrderComm > 0) {
-        totalProfit = Math.round(totalOrderComm * 0.25);
+      if (totalValidOrderComm > 0) {
+        totalProfit = Math.round(totalValidOrderComm * 0.25);
       } else {
-        // Mặc định chuẩn 100% theo ô Cell J1 trên Google Sheet
-        totalProfit = 2523587;
+        // Nếu chưa nạp xong danh sách đơn chi tiết, tính lợi nhuận thực từ hoa hồng thành viên thực tế
+        totalProfit = Math.round((totalUnpaid + totalPaid) * 0.25);
       }
 
       const profitEl = document.getElementById("stat-total-profit");
