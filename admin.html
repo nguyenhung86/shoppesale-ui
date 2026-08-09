@@ -930,7 +930,7 @@
       });
     }
 
-    async function filterOrdersTable() {
+    function filterOrdersTable() {
       const q = document.getElementById("search-orders-input").value.trim().toLowerCase();
       const platform = document.getElementById("filter-platform").value;
       const statusFilter = document.getElementById("filter-status").value;
@@ -939,9 +939,9 @@
         const matchQ = !q || (o.orderId || '').toLowerCase().includes(q) || 
                               (o.itemName || '').toLowerCase().includes(q) || 
                               (o.customerName || '').toLowerCase().includes(q) ||
-                              (o.subId || '').toLowerCase().includes(q) ||
-                              (o.userId || '').toLowerCase().includes(q) ||
-                              (o.zaloId || '').toLowerCase().includes(q);
+                              String(o.subId || '').toLowerCase().includes(q) ||
+                              String(o.userId || '').toLowerCase().includes(q) ||
+                              String(o.zaloId || '').toLowerCase().includes(q);
         
         const matchPlat = platform === "all" || (o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
 
@@ -958,26 +958,28 @@
         return matchQ && matchPlat && matchStatus;
       });
 
-      // Nếu không thấy trong bộ nhớ RAM hoặc nhập ID Zalo/mã đơn dài -> Truy vấn trực tiếp từ VPS/Google Sheet
-      if ((filtered.length === 0 || q.length >= 6) && q.length >= 2) {
-        try {
-          const res = await fetch(`${API_URL}?action=unifiedSearch&query=${encodeURIComponent(q)}`);
-          const json = await res.json();
-          if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-            filtered = json.data.map(o => {
-              if (!o.platform) {
-                const idStr = String(o.orderId || '').trim();
-                if (/^\d{18,20}$/.test(idStr)) o.platform = "TikTok";
-                else if (/^\d{13,17}$/.test(idStr)) o.platform = "Lazada";
-                else o.platform = "Shopee";
-              }
-              return o;
-            });
-          }
-        } catch(e) {}
-      }
-
       renderOrdersTable(filtered);
+
+      // Nếu không tìm thấy trong RAM và từ khóa dài >= 3 ký tự -> Thử gọi ngầm API tìm thêm từ Google Sheet
+      if (filtered.length === 0 && q.length >= 3) {
+        fetch(`${API_URL}?action=unifiedSearch&query=${encodeURIComponent(q)}`)
+          .then(res => res.json())
+          .then(json => {
+            if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
+              const extraOrders = json.data.map(o => {
+                if (!o.platform) {
+                  const idStr = String(o.orderId || '').trim();
+                  if (/^\d{18,20}$/.test(idStr)) o.platform = "TikTok";
+                  else if (/^\d{13,17}$/.test(idStr)) o.platform = "Lazada";
+                  else o.platform = "Shopee";
+                }
+                return o;
+              });
+              renderOrdersTable(extraOrders);
+            }
+          })
+          .catch(() => {});
+      }
     }
 
     function openEditModal(id, name, unpaid, paid, bankBin, bankAcc) {
