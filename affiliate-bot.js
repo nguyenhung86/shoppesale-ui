@@ -1301,18 +1301,39 @@ function startExpressServer(config) {
                 return res.json({ success: true, qrUrl: qrUrl });
             }
 
-            if (action === "getAdminOrders") {
+            if (action === "getAdminOrders" || action === "unifiedSearch") {
                 const query = req.query.query || (req.body && req.body.query) || "";
                 
-                // Nếu tìm kiếm theo từ khóa / mã đơn cụ thể
+                let cachedOrders = [];
+                if (fs.existsSync("all_orders_cache.json")) {
+                    try {
+                        const cached = JSON.parse(fs.readFileSync("all_orders_cache.json", "utf8"));
+                        if (cached && Array.isArray(cached.data)) {
+                            cachedOrders = cached.data;
+                        }
+                    } catch(e) {}
+                }
+
+                // Nếu tìm kiếm theo từ khóa / mã đơn / ID Zalo cụ thể
                 if (query) {
-                    if (config.orderAppsScriptUrl) {
+                    const qLower = query.trim().toLowerCase();
+                    let matched = cachedOrders.filter(o => 
+                        (o.orderId || '').toLowerCase().includes(qLower) ||
+                        (o.itemName || '').toLowerCase().includes(qLower) ||
+                        (o.customerName || '').toLowerCase().includes(qLower) ||
+                        String(o.subId || '').toLowerCase().includes(qLower) ||
+                        String(o.zaloId || '').toLowerCase().includes(qLower) ||
+                        String(o.userId || '').toLowerCase().includes(qLower)
+                    );
+
+                    // Nếu bộ nhớ tạm chưa có dữ liệu -> Thử gọi ngầm Google Sheets
+                    if (matched.length === 0 && config.orderAppsScriptUrl) {
                         try {
                             const targetUrl = `${config.orderAppsScriptUrl}?action=unifiedSearch&query=${encodeURIComponent(query)}`;
                             const response = await fetch(targetUrl);
                             const json = await response.json();
                             if (json && json.success && Array.isArray(json.data)) {
-                                const enrichedData = json.data.map(o => {
+                                matched = json.data.map(o => {
                                     if (!o.platform) {
                                         const idStr = String(o.orderId || o.id || '').trim();
                                         if (/^\d{18,20}$/.test(idStr)) o.platform = "TikTok";
@@ -1321,16 +1342,9 @@ function startExpressServer(config) {
                                     }
                                     return o;
                                 });
-                                return res.json({ success: true, data: enrichedData, total: enrichedData.length });
                             }
                         } catch(e) {}
                     }
-                    return res.json({ success: true, data: [], total: 0 });
-                }
-
-                // Trả về TỨC THÌ từ file all_orders_cache.json trên VPS (Tốc độ <10ms, không bao giờ bị timeout HTTP!)
-                let cachedOrders = [];
-                if (fs.existsSync("all_orders_cache.json")) {
                     try {
                         const cached = JSON.parse(fs.readFileSync("all_orders_cache.json", "utf8"));
                         if (cached && Array.isArray(cached.data)) {
