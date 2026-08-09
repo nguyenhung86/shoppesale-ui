@@ -923,7 +923,14 @@ async function syncAllOrdersCache(config) {
                         const targetUrl = `${config.orderAppsScriptUrl}?action=unifiedSearch&query=${encodeURIComponent(uid)}`;
                         const response = await fetch(targetUrl);
                         const json = await response.json();
-                        if (json && json.success && Array.isArray(json.data)) return json.data;
+                        if (json && json.success && Array.isArray(json.data)) {
+                            return json.data.map(ord => ({
+                                ...ord,
+                                subId: uid,
+                                zaloId: uid,
+                                userId: uid
+                            }));
+                        }
                     } catch(e) {}
                     return [];
                 });
