@@ -118,37 +118,10 @@ function renderOrders(filteredOrders, formatVND) {
 }
 
 function isOrderCacheValid(cachedTimeMs) {
-  if (!cachedTimeMs || isNaN(cachedTimeMs)) return false;
-  const now = new Date();
-  
-  // Các mốc xóa đệm trong ngày: 8:30, 10:30, 12:30, 14:30, 16:30, 17:00
-  const hoursMinutes = [
-    [8, 30],
-    [10, 30],
-    [12, 30],
-    [14, 30],
-    [16, 30],
-    [17, 0]
-  ];
-  
-  const checkpoints = hoursMinutes.map(([h, m]) => 
-    new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0).getTime()
-  );
-  
-  let latestCheckpoint = 0;
-  for (let i = checkpoints.length - 1; i >= 0; i--) {
-    if (now.getTime() >= checkpoints[i]) {
-      latestCheckpoint = checkpoints[i];
-      break;
-    }
-  }
-  
-  if (latestCheckpoint === 0) {
-    const yesterday17h = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 17, 0, 0).getTime();
-    latestCheckpoint = yesterday17h;
-  }
-  
-  return Number(cachedTimeMs) >= latestCheckpoint;
+  if (!cachedTimeMs) return false;
+  // Cho phép lưu bộ nhớ tạm RAM/Local tối đa 30 giây để mượt mà khi chuyển tab,
+  // nhưng sau 30 giây sẽ luôn kết nối máy chủ tải đơn mới nhất tức thì cho khách hàng
+  return (Date.now() - Number(cachedTimeMs)) < 30 * 1000;
 }
 
 function performSearch(query, forceRefresh = false) {
@@ -157,7 +130,7 @@ function performSearch(query, forceRefresh = false) {
   const localCacheKey = "v2_orders_cache_" + String(query).trim().toLowerCase();
   const localTimeKey = "v2_orders_time_" + String(query).trim().toLowerCase();
 
-  // 1. Sử dụng dữ liệu đệm RAM hoặc localStorage nếu mốc 8h30 & 17h00 chưa hết hạn
+  // 1. Sử dụng dữ liệu đệm mượt mà nếu chưa quá 30 giây
   if (!forceRefresh) {
     const cachedDataStr = localStorage.getItem(localCacheKey);
     const cachedTimeStr = localStorage.getItem(localTimeKey);
@@ -180,7 +153,7 @@ function performSearch(query, forceRefresh = false) {
     app.innerHTML = `
       <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
         <div class="loader" style="display: block; width: 40px; height: 40px; border: 4px solid rgba(242, 83, 35, 0.1); border-radius: 50%; border-top-color: #f25323; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 15px; color: #7787a0; font-size: 14px; font-weight: 500;">Đang đồng bộ dữ liệu đơn hàng...</p>
+        <p style="margin-top: 15px; color: #7787a0; font-size: 14px; font-weight: 500;">Đang đồng bộ dữ liệu đơn hàng mới nhất...</p>
       </div>
       <style>
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -188,7 +161,7 @@ function performSearch(query, forceRefresh = false) {
     `;
   }
   
-  const url = CONFIG.API_URL + "?action=unifiedSearch&query=" + encodeURIComponent(query);
+  const url = CONFIG.API_URL + "?action=unifiedSearch&query=" + encodeURIComponent(query) + "&_t=" + Date.now();
   fetch(url)
     .then(res => res.json())
     .then(response => {
