@@ -4278,10 +4278,12 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
                                     const formattedRate = String(displayRate).replace(/\./g, ",");
                                     formattedComm2 = `${formattedRate}% ~ ${commissionVal.toLocaleString("vi-VN")}đ${detailStr} 💰`;
                                 } else {
-                                    const formattedRate = String(displayRate).replace(/\./g, ",");
-                                    formattedComm2 = `${formattedRate}%${detailStr} 💰`;
+                                    formattedComm2 = `0% (Sản phẩm không có hoa hồng) 💰`;
                                 }
-                                console.log(`-> Đã lấy hoa hồng thành công qua ${methodText}: ${formattedComm2}`);
+                                console.log(`-> Đã lấy hoa hồng thực tế thành công qua ${methodText}: ${formattedComm2}`);
+                            } else {
+                                console.log(`-> Dữ liệu thực tế từ Shopee báo sản phẩm KHÔNG CÓ HOA HỒNG (0%).`);
+                                formattedComm2 = `0% (Sản phẩm không có hoa hồng) 💰`;
                             }
                         }
                     } catch (err) {
@@ -4332,26 +4334,9 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
                 }
             }
 
+            // Nếu không lấy được số liệu hoa hồng thực tế -> Báo thẳng cho khách sản phẩm không có hoa hồng (0%)
             if (!formattedComm2 && isTargetGroup(groupId)) {
-                let fallbackRate = 8.0;
-                const nameLower = (productName || "").toLowerCase();
-                if (nameLower.includes("chó") || nameLower.includes("mèo") || nameLower.includes("thú cưng") || nameLower.includes("pet") || nameLower.includes("cát vệ sinh") || nameLower.includes("pate")) {
-                    fallbackRate = 0.0;
-                } else if (nameLower.includes("xe máy") || nameLower.includes("xe may") || nameLower.includes("ô tô") || nameLower.includes("o to") || nameLower.includes("dầu nhớt") || nameLower.includes("mũ bảo hiểm") || nameLower.includes("nón bảo hiểm")) {
-                    fallbackRate = 3.5;
-                }
-                
-                if (fallbackRate > 0) {
-                    const textPrice = extractPriceFromText(text);
-                    if (textPrice > 0) {
-                        const commVal = Math.min(40000, Math.round(textPrice * (fallbackRate / 100)));
-                        formattedComm2 = `${String(fallbackRate).replace(/\./g, ",")}% ~ ${commVal.toLocaleString("vi-VN")}đ 💰`;
-                    } else {
-                        formattedComm2 = `${String(fallbackRate).replace(/\./g, ",")}% (Ước tính) 💰`;
-                    }
-                } else {
-                    formattedComm2 = `0% (Sản phẩm không có hoa hồng) 💰`;
-                }
+                formattedComm2 = `0% (Sản phẩm không có hoa hồng) 💰`;
             }
 
             let replyText = `@${senderName} ✅ Sếp ơi em gửi link ạ!\n\n`;
