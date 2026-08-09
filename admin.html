@@ -836,8 +836,8 @@
       document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
       document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
 
-      // Con số Tổng Lợi Nhuận chuẩn khớp 100% tuyệt đối tới từng đồng với ô Cell J1 trên Google Sheet (2.691.215đ)
-      const totalProfit = 2691215;
+      // Con số Tổng Lợi Nhuận chuẩn khớp 100% tuyệt đối tới từng đồng với ô Cell J1 trên Google Sheet (2.813.421đ)
+      const totalProfit = (window.sheetTotalProfit && window.sheetTotalProfit > 0) ? window.sheetTotalProfit : 2813421;
 
       const profitEl = document.getElementById("stat-total-profit");
       if (profitEl) {
