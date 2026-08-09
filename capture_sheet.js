@@ -85,7 +85,26 @@ import path from 'path';
     
     await page.goto(sheetUrl, { waitUntil: 'commit', timeout: 120000 });
     await page.waitForSelector('.waffle', { timeout: 120000 });
-    await page.waitForTimeout(5000); // Đợi dữ liệu tải thêm 5 giây cho chắc chắn
+    await page.waitForTimeout(3000); // Đợi dữ liệu tải ban đầu
+
+    // Cuộn trang xuống tận cùng để ép Google Sheet HTML view nạp đầy đủ 100% tất cả các dòng
+    await page.evaluate(async () => {
+      await new Promise((resolve) => {
+        let totalHeight = 0;
+        const distance = 800;
+        const timer = setInterval(() => {
+          const scrollHeight = document.body.scrollHeight;
+          window.scrollBy(0, distance);
+          totalHeight += distance;
+          if (totalHeight >= scrollHeight || totalHeight > 30000) {
+            clearInterval(timer);
+            window.scrollTo(0, 0); // Cuộn lại lên đầu
+            resolve();
+          }
+        }, 50);
+      });
+    });
+    await page.waitForTimeout(1000);
     
     // Thực hiện ẩn các dòng không thuộc ngày targetDateStr bằng JavaScript trên trang
     const filterResult = await page.evaluate((targetDate) => {
@@ -214,12 +233,16 @@ import path from 'path';
       // Hàng tiêu đề (dòng 2 của sheet = index 2 trong waffle tr)
       const headerRow = rows[2] || rows[1];
       
-      // Tìm dòng cuối cùng đang hiển thị (style.display !== 'none')
+      // Tìm dòng cuối cùng đang hiển thị và tính tổng chiều cao các dòng
       let lastVisibleRow = null;
-      for (let i = rows.length - 1; i >= 3; i--) {
+      let visibleRowsCount = 0;
+      let totalVisibleRowsHeight = 0;
+      
+      for (let i = 3; i < rows.length; i++) {
         if (rows[i].style.display !== 'none') {
           lastVisibleRow = rows[i];
-          break;
+          visibleRowsCount++;
+          totalVisibleRowsHeight += (rows[i].offsetHeight || 28);
         }
       }
       
@@ -230,23 +253,29 @@ import path from 'path';
       const cells = Array.from(headerRow.querySelectorAll('td, th'));
       if (cells.length < 2) return null;
       
-      // Cột A (index 1 vì index 0 là số thứ tự dòng) đến cột I (Chốt - index 9)
+      // Cột A (index 1) đến toàn bộ tất cả các cột của bảng (bao gồm cả Chốt, Lợi nhuận, ID Zalo...)
       const colStart = cells[1].getBoundingClientRect();
-      const colEnd = cells[Math.min(cells.length - 1, 9)].getBoundingClientRect();
+      const colEnd = cells[cells.length - 1].getBoundingClientRect();
       
-      const calculatedHeight = endRect.bottom - headerRect.top;
-      if (calculatedHeight <= 0) return null;
+      // Tính chiều cao chuẩn tuyệt đối từ offsetTop để chụp đủ 100% dòng không bị đơ/cụt
+      const headerTop = headerRow.offsetTop || headerRect.top;
+      const endBottom = (endRow.offsetTop + endRow.offsetHeight) || (headerTop + totalVisibleRowsHeight + 80);
+      const calculatedHeight = Math.max(endBottom - headerTop, totalVisibleRowsHeight + 80);
       
       return {
-        x: colStart.left - 5,
-        y: headerRect.top - 5,
-        width: (colEnd.right - colStart.left) + 10,
-        height: calculatedHeight + 20
+        x: Math.max(0, colStart.left - 5),
+        y: Math.max(0, headerRect.top - 5),
+        width: (colEnd.right - colStart.left) + 15,
+        height: calculatedHeight + 80
       };
     });
     
     if (clip) {
       console.log('🤖 [Sheet Capturer] Clip box calculated:', clip);
+      // Mở rộng Viewport trình duyệt theo chiều cao thực tế để chụp sắc nét đủ 100% các dòng không bị cụt
+      const requiredHeight = Math.max(1400, Math.ceil(clip.y + clip.height + 250));
+      await page.setViewportSize({ width: 1920, height: requiredHeight });
+      await page.waitForTimeout(500);
       await page.screenshot({ path: outputPath, type: 'jpeg', quality: 95, clip: clip });
     } else {
       console.log('⚠️ [Sheet Capturer] Không tính được clip box, chụp toàn bộ waffle...');
