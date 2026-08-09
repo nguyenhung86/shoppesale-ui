@@ -1223,6 +1223,84 @@ function startExpressServer(config) {
                 return res.json({ success: updated, message: updated ? "Cập nhật thành công" : "Không tìm thấy user" });
             }
 
+            if (action === "save_bank_info") {
+                const { userId, bankBin, bankAcc } = reqBody;
+                if (!userId) return res.status(400).json({ success: false, error: "Thiếu userId" });
+
+                let updated = false;
+                if (fs.existsSync("sheet_users_backup.json")) {
+                    let sheetData = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
+                    let usersList = (sheetData && sheetData.data) ? sheetData.data : ((sheetData && sheetData.users) ? sheetData.users : []);
+
+                    for (let u of usersList) {
+                        if (String(u.userId) === String(userId)) {
+                            if (bankBin !== undefined) u.bankBin = bankBin;
+                            if (bankAcc !== undefined) u.bankAcc = bankAcc;
+                            updated = true;
+                            break;
+                        }
+                    }
+
+                    if (sheetData.data) sheetData.data = usersList;
+                    else if (sheetData.users) sheetData.users = usersList;
+
+                    fs.writeFileSync("sheet_users_backup.json", JSON.stringify(sheetData, null, 2), "utf8");
+                }
+
+                // Gửi ngầm lên Google Sheets để đồng bộ 2 chiều
+                if (config.orderAppsScriptUrl) {
+                    try {
+                        fetch(config.orderAppsScriptUrl, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ action: "save_bank_info", userId, bankBin, bankAcc })
+                        }).catch(() => {});
+                    } catch (e) {}
+                }
+
+                return res.json({ success: true, message: "Đã lưu thông tin ngân hàng thành công" });
+            }
+
+            if (action === "save_qr") {
+                const { userId, image } = reqBody;
+                if (!userId) return res.status(400).json({ success: false, error: "Thiếu userId" });
+
+                let qrUrl = "";
+                if (image && image.startsWith("data:image/")) {
+                    const matches = image.match(/^data:image\/([A-Za-z-+\/]+);base64,(.+)$/);
+                    if (matches && matches.length === 3) {
+                        const ext = matches[1] === "jpeg" ? "jpg" : matches[1];
+                        const buffer = Buffer.from(matches[2], "base64");
+                        const fileName = `qr_${userId}_${Date.now()}.${ext}`;
+                        if (!fs.existsSync("qrcodes")) {
+                            fs.mkdirSync("qrcodes", { recursive: true });
+                        }
+                        const filePath = path.join("qrcodes", fileName);
+                        fs.writeFileSync(filePath, buffer);
+                        qrUrl = `https://hoantienonline.io.vn/${fileName}`;
+                    }
+                }
+
+                if (fs.existsSync("sheet_users_backup.json")) {
+                    let sheetData = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
+                    let usersList = (sheetData && sheetData.data) ? sheetData.data : ((sheetData && sheetData.users) ? sheetData.users : []);
+
+                    for (let u of usersList) {
+                        if (String(u.userId) === String(userId)) {
+                            if (qrUrl) u.qrUrl = qrUrl;
+                            break;
+                        }
+                    }
+
+                    if (sheetData.data) sheetData.data = usersList;
+                    else if (sheetData.users) sheetData.users = usersList;
+
+                    fs.writeFileSync("sheet_users_backup.json", JSON.stringify(sheetData, null, 2), "utf8");
+                }
+
+                return res.json({ success: true, qrUrl: qrUrl });
+            }
+
             if (action === "getAdminOrders") {
                 const query = req.query.query || (req.body && req.body.query) || "";
                 
