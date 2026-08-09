@@ -2047,10 +2047,7 @@ async function syncTikTokOrdersViaRioHub() {
                 reportDate = ord.time_created.split(" ")[0];
             }
 
-            if (!zaloId) {
-                console.log(`[TikTok Sync] Đơn ${orderId} không có sub_id (Zalo ID). Bỏ qua.`);
-                continue;
-            }
+            const targetSubId = zaloId ? zaloId : "6817145022757067591"; // Nếu không có sub_id gán mặc định cho Phòng Đăng Ký (Đơn vãng lai)
 
             ordersToSync.push({
                 report_date: reportDate,
@@ -2058,7 +2055,7 @@ async function syncTikTokOrdersViaRioHub() {
                 item_name: productName,
                 commission: commAmount,
                 checkout_status: checkoutStatus,
-                sub_id: zaloId
+                sub_id: targetSubId
             });
         }
 
@@ -2088,54 +2085,31 @@ async function syncTikTokOrdersViaRioHub() {
 }
 
 function startTikTokDailyScheduler() {
-    console.log("⏰ [TikTok Daily Scheduler] Đã kích hoạt lịch tự động đồng bộ đơn TikTok: Khởi động lúc 7h30 sáng hằng ngày (tự động thử lại mỗi 15 phút đến 8h30 nếu chưa thành công).");
-    
-    let lastSuccessDate = "";
-    let lastTryKey = "";
+    console.log("⏰ [TikTok Scheduler 24/7] Đã kích hoạt lịch tự động đồng bộ đơn TikTok Shop 24/7: Tự động kết nối RioHub API quét và đẩy đơn lên Google Sheet định kỳ MỖI 15 PHÚT!");
 
-    setInterval(async () => {
+    const runSync = async () => {
         try {
             const now = new Date();
-            const formatterDate = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" });
             const formatterTime = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hour12: false });
-            
-            const dateStr = formatterDate.format(now);
             const timeStr = formatterTime.format(now);
-            const [hourStr, minuteStr] = timeStr.split(":");
-            const hour = parseInt(hourStr, 10);
-            const minute = parseInt(minuteStr, 10);
-
-            const totalMinutes = hour * 60 + minute;
-            const startMinutes = 7 * 60 + 30; // 7h30
-            const endMinutes = 8 * 60 + 30;   // 8h30
-
-            if (totalMinutes >= startMinutes && totalMinutes <= endMinutes) {
-                if (minute % 15 === 0) {
-                    if (lastSuccessDate === dateStr) {
-                        return;
-                    }
-
-                    const tryKey = `${dateStr}-${hour}-${minute}`;
-                    if (lastTryKey === tryKey) {
-                        return;
-                    }
-                    lastTryKey = tryKey;
-
-                    console.log(`⏰ [TikTok Daily Scheduler] Bắt đầu đồng bộ tự động đơn TikTok lúc ${timeStr}...`);
-                    const result = await syncTikTokOrdersViaRioHub();
-                    
-                    if (result.success) {
-                        lastSuccessDate = dateStr;
-                        console.log(`✅ [TikTok Daily Scheduler] Đồng bộ đơn TikTok ngày ${dateStr} thành công rực rỡ! Đã hoàn tất lịch hôm nay.`);
-                    } else {
-                        console.error(`⚠️ [TikTok Daily Scheduler] Lần thử lúc ${timeStr} thất bại: ${result.message}. Sẽ tự động thử lại sau 15 phút (đến 8h30).`);
-                    }
-                }
+            
+            console.log(`⏰ [TikTok Scheduler 24/7] Bắt đầu quét & đồng bộ tự động đơn TikTok lúc ${timeStr}...`);
+            const result = await syncTikTokOrdersViaRioHub();
+            if (result.success) {
+                console.log(`✅ [TikTok Scheduler 24/7] Đồng bộ đơn TikTok thành công! Ghi nhận ${result.count || 0} đơn (Mới: ${result.inserted || 0}, Cập nhật: ${result.updated || 0}).`);
+            } else {
+                console.error(`⚠️ [TikTok Scheduler 24/7] Lần thử lúc ${timeStr} thất bại: ${result.message}. Sẽ tự động thử lại sau 15 phút.`);
             }
         } catch (err) {
             console.error("Lỗi trong TikTok Daily Scheduler:", err.message);
         }
-    }, 30000);
+    };
+
+    // 1. Kích hoạt quét đồng bộ 1 lần ngay sau 10 giây khi vừa khởi động Bot
+    setTimeout(runSync, 10000);
+
+    // 2. Kích hoạt lịch quét đồng bộ tự động định kỳ MỖI 15 PHÚT (900.000 ms) liên tục 24/7
+    setInterval(runSync, 15 * 60 * 1000);
 }
 
 // Biểu thức chính quy tìm các link Shopee
