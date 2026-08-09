@@ -253,28 +253,28 @@ import path from 'path';
       const cells = Array.from(headerRow.querySelectorAll('td, th'));
       if (cells.length < 2) return null;
       
-      // Cột A (index 1) đến toàn bộ tất cả các cột của bảng (bao gồm cả Chốt, Lợi nhuận, ID Zalo...)
+      // Cột A (index 1) đến Cột I (Chốt - index 9) đúng theo yêu cầu của Sếp
       const colStart = cells[1].getBoundingClientRect();
-      const colEnd = cells[cells.length - 1].getBoundingClientRect();
+      const colEnd = cells[Math.min(cells.length - 1, 9)].getBoundingClientRect();
       
-      // Tính chiều cao chuẩn tuyệt đối từ offsetTop để chụp đủ 100% dòng không bị đơ/cụt
+      // Tính chiều cao chuẩn tuyệt đối từ offsetTop của dòng cuối cùng để chụp đủ 100% tất cả 77 dòng
       const headerTop = headerRow.offsetTop || headerRect.top;
-      const endBottom = (endRow.offsetTop + endRow.offsetHeight) || (headerTop + totalVisibleRowsHeight + 80);
-      const calculatedHeight = Math.max(endBottom - headerTop, totalVisibleRowsHeight + 80);
+      const endBottom = (endRow.offsetTop + endRow.offsetHeight) || (headerTop + totalVisibleRowsHeight + 60);
+      const calculatedHeight = Math.max(endBottom - headerTop, totalVisibleRowsHeight + 60);
       
       return {
         x: Math.max(0, colStart.left - 5),
         y: Math.max(0, headerRect.top - 5),
-        width: (colEnd.right - colStart.left) + 15,
-        height: calculatedHeight + 80
+        width: (colEnd.right - colStart.left) + 10,
+        height: calculatedHeight + 40
       };
     });
     
     if (clip) {
       console.log('🤖 [Sheet Capturer] Clip box calculated:', clip);
-      // Mở rộng Viewport trình duyệt theo chiều cao thực tế để chụp sắc nét đủ 100% các dòng không bị cụt
-      const requiredHeight = Math.max(1400, Math.ceil(clip.y + clip.height + 250));
-      await page.setViewportSize({ width: 1920, height: requiredHeight });
+      // Mở rộng Viewport chiều cao trình duyệt để chụp đủ 100% tất cả các dòng từ dòng 1 đến 77 không bị thiếu
+      const requiredHeight = Math.max(1400, Math.ceil(clip.y + clip.height + 200));
+      await page.setViewportSize({ width: 1600, height: requiredHeight });
       await page.waitForTimeout(500);
       await page.screenshot({ path: outputPath, type: 'jpeg', quality: 95, clip: clip });
     } else {
