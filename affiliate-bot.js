@@ -1073,6 +1073,7 @@ function startExpressServer(config) {
                         const buffer = Buffer.from(matches[2], "base64");
                         const now = new Date();
                         const pad = n => String(n).padStart(2, '0');
+                        const timeStampStr = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
                         const randomSuffix = Math.random().toString(36).substring(2, 8);
                         const fileName = `bill_${timeStampStr}_${randomSuffix}.${ext}`;
                         if (!fs.existsSync("bills")) {
