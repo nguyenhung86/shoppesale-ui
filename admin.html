@@ -648,7 +648,7 @@
       <div class="grid-filter-bar">
         <div class="search-input-group">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="search-orders-input" onkeyup="filterOrdersTable()" placeholder="Tìm theo Mã đơn, Sản phẩm, Tên Zalo...">
+          <input type="text" id="search-orders-input" oninput="filterOrdersTable()" onkeyup="filterOrdersTable()" placeholder="Tìm theo Mã đơn, Sản phẩm, Tên Zalo, ID Zalo...">
         </div>
         <div class="filter-options">
           <select id="filter-platform" class="select-filter" onchange="filterOrdersTable()">
@@ -938,7 +938,10 @@
       let filtered = adminOrders.filter(o => {
         const matchQ = !q || (o.orderId || '').toLowerCase().includes(q) || 
                               (o.itemName || '').toLowerCase().includes(q) || 
-                              (o.customerName || '').toLowerCase().includes(q);
+                              (o.customerName || '').toLowerCase().includes(q) ||
+                              (o.subId || '').toLowerCase().includes(q) ||
+                              (o.userId || '').toLowerCase().includes(q) ||
+                              (o.zaloId || '').toLowerCase().includes(q);
         
         const matchPlat = platform === "all" || (o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
 
@@ -949,18 +952,27 @@
         } else if (statusFilter === "pending") {
           matchStatus = st.includes("giao") || st.includes("chờ") || st.includes("xử lý") || st.includes("tạm giữ");
         } else if (statusFilter === "canceled" || statusFilter === "cancelled") {
-          matchStatus = st.includes("hủy");
+          matchStatus = st.includes("hủy") || st.includes("invalid");
         }
 
         return matchQ && matchPlat && matchStatus;
       });
 
-      if (filtered.length === 0 && q.length >= 2) {
+      // Nếu không thấy trong bộ nhớ RAM hoặc nhập ID Zalo/mã đơn dài -> Truy vấn trực tiếp từ VPS/Google Sheet
+      if ((filtered.length === 0 || q.length >= 6) && q.length >= 2) {
         try {
-          const res = await fetch(`${API_URL}?action=getAdminOrders&query=${encodeURIComponent(q)}`);
+          const res = await fetch(`${API_URL}?action=unifiedSearch&query=${encodeURIComponent(q)}`);
           const json = await res.json();
           if (json.success && Array.isArray(json.data) && json.data.length > 0) {
-            filtered = json.data;
+            filtered = json.data.map(o => {
+              if (!o.platform) {
+                const idStr = String(o.orderId || '').trim();
+                if (/^\d{18,20}$/.test(idStr)) o.platform = "TikTok";
+                else if (/^\d{13,17}$/.test(idStr)) o.platform = "Lazada";
+                else o.platform = "Shopee";
+              }
+              return o;
+            });
           }
         } catch(e) {}
       }
