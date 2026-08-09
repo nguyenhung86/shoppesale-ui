@@ -1103,10 +1103,10 @@
             note = ` (bao gồm ${bonus.toLocaleString('vi-VN')}đ ${reason || 'thưởng thêm'})`;
           }
 
-          // 2. Gửi thông báo Zalo kèm ảnh hóa đơn
-          showLoading("Đang gửi thông báo Zalo kèm Bill...");
+          // 2. Gửi thông báo Zalo kèm ảnh hóa đơn ngầm
+          showLoading("Đang cập nhật thông báo Zalo...");
           try {
-            const notifyRes = await fetch(`${LOCAL_BOT_URL}/api/payout/notify`, {
+            fetch(`${LOCAL_BOT_URL}/api/payout/notify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -1121,16 +1121,10 @@
                 totalPaid: activeTotalPaid + activeTotalTransferAmount,
                 billUrl: sheetJson.billUrl || ""
               })
-            });
-            const notifyJson = await notifyRes.json();
-            if (notifyJson.success) {
-              alert(`Đã hoàn tất thanh toán ${Math.round(activeTotalTransferAmount).toLocaleString('vi-VN')}đ và gửi thông báo Zalo thành công!`);
-            } else {
-              alert("Đã cập nhật Sheets nhưng gửi Zalo thất bại: " + notifyJson.error);
-            }
-          } catch (e) {
-            alert("Lỗi khi kết nối đến Zalo Bot để gửi thông báo. Vui lòng đảm bảo Zalo Bot của sếp đang hoạt động ở máy tính.");
-          }
+            }).catch(e => console.log("Gửi Zalo ngầm:", e));
+          } catch (e) {}
+
+          alert(`✅ Đã hoàn tất thanh toán ${Math.round(activeTotalTransferAmount).toLocaleString('vi-VN')}đ thành công!`);
           closeModal();
           loadData();
         } else {
