@@ -936,17 +936,17 @@
       const statusFilter = document.getElementById("filter-status").value;
 
       let filtered = adminOrders.filter(o => {
-        const matchQ = !q || (o.orderId || '').toLowerCase().includes(q) || 
-                              (o.itemName || '').toLowerCase().includes(q) || 
-                              (o.customerName || '').toLowerCase().includes(q) ||
+        const matchQ = !q || String(o.orderId || '').toLowerCase().includes(q) || 
+                              String(o.itemName || '').toLowerCase().includes(q) || 
+                              String(o.customerName || '').toLowerCase().includes(q) ||
                               String(o.subId || '').toLowerCase().includes(q) ||
                               String(o.userId || '').toLowerCase().includes(q) ||
                               String(o.zaloId || '').toLowerCase().includes(q);
         
-        const matchPlat = platform === "all" || (o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
+        const matchPlat = platform === "all" || String(o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
 
         let matchStatus = true;
-        const st = (o.orderStatus || '').toLowerCase();
+        const st = String(o.orderStatus || '').toLowerCase();
         if (statusFilter === "completed") {
           matchStatus = st.includes("hoàn thành") || st.includes("hoàn tất") || st.includes("thành công");
         } else if (statusFilter === "pending") {
