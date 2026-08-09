@@ -609,12 +609,27 @@
 
     function filterUsers() {
       const query = document.getElementById("search-input").value.trim().toLowerCase();
-      const filtered = allUsers.filter(user => {
+      let filtered = allUsers.filter(user => {
         const name = (user.userName || "").toLowerCase();
         const id = (user.userId || "").toLowerCase();
         return name.includes(query) || id.includes(query);
       });
-      renderList(filtered);
+
+      // Nếu từ khóa tìm kiếm dài >= 2 ký tự -> Truy vấn thêm toàn bộ 414 thành viên trên VPS
+      if (query.length >= 2) {
+        fetch(`${API_URL}?action=getPayoutList&query=${encodeURIComponent(query)}`)
+          .then(res => res.json())
+          .then(json => {
+            if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
+              renderList(json.data);
+            } else {
+              renderList(filtered);
+            }
+          })
+          .catch(() => renderList(filtered));
+      } else {
+        renderList(filtered);
+      }
     }
 
     let activeQrUrl = "";
