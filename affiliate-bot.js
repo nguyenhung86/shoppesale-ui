@@ -4349,6 +4349,8 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
                     } else {
                         formattedComm2 = `${String(fallbackRate).replace(/\./g, ",")}% (Ước tính) 💰`;
                     }
+                } else {
+                    formattedComm2 = `0% (Sản phẩm không có hoa hồng) 💰`;
                 }
             }
 
