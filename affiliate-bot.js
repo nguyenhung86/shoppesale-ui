@@ -2047,7 +2047,7 @@ async function syncTikTokOrdersViaRioHub() {
                 reportDate = ord.time_created.split(" ")[0];
             }
 
-            const targetSubId = zaloId ? zaloId : "6817145022757067591"; // Nếu không có sub_id gán mặc định cho Phòng Đăng Ký (Đơn vãng lai)
+            const targetSubId = zaloId ? zaloId : ""; // Giữ nguyên dữ liệu gốc: Nếu không có Sub ID thì để trống (""), tuyệt đối không tự ý gán ID khác
 
             ordersToSync.push({
                 report_date: reportDate,
