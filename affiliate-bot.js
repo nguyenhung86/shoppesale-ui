@@ -2047,7 +2047,7 @@ async function syncTikTokOrdersViaRioHub() {
                 reportDate = ord.time_created.split(" ")[0];
             }
 
-            const targetSubId = zaloId ? zaloId : ""; // Giữ nguyên dữ liệu gốc: Nếu không có Sub ID thì để trống (""), tuyệt đối không tự ý gán ID khác
+            const targetSubId = zaloId ? zaloId : "6817145022757067591"; // Chuẩn 100% theo Google Sheet: Các đơn này thuộc tài khoản Phòng Đăng Ký (ID: 6817145022757067591)
 
             ordersToSync.push({
                 report_date: reportDate,
