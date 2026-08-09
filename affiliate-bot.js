@@ -1043,6 +1043,17 @@ function startExpressServer(config) {
                     usersData = (sheetData && sheetData.data) ? sheetData.data : ((sheetData && sheetData.users) ? sheetData.users : []);
                 }
                 
+                const query = req.query.query || req.query.q || (reqBody && (reqBody.query || reqBody.q)) || "";
+                if (query) {
+                    const qLower = query.trim().toLowerCase();
+                    const matched = usersData.filter(u => 
+                        String(u.userName || "").toLowerCase().includes(qLower) ||
+                        String(u.userId || "").includes(qLower) ||
+                        String(u.bankAcc || "").includes(qLower)
+                    );
+                    return res.json({ success: true, data: matched });
+                }
+
                 // Lọc những người có unpaid > 0
                 const payoutUsers = usersData.filter(u => (u.unpaid && u.unpaid > 0) || (u.unpaidReferral && u.unpaidReferral > 0));
                 return res.json({ success: true, data: payoutUsers });
