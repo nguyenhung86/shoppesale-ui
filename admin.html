@@ -960,22 +960,13 @@
 
       renderOrdersTable(filtered);
 
-      // Nếu không tìm thấy trong RAM và từ khóa dài >= 3 ký tự -> Thử gọi ngầm API tìm thêm từ Google Sheet
+      // Nếu không tìm thấy trong RAM và từ khóa dài >= 3 ký tự -> Gọi API getAdminOrders trên VPS siêu tốc
       if (filtered.length === 0 && q.length >= 3) {
-        fetch(`${API_URL}?action=unifiedSearch&query=${encodeURIComponent(q)}`)
+        fetch(`${API_URL}?action=getAdminOrders&query=${encodeURIComponent(q)}`)
           .then(res => res.json())
           .then(json => {
             if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
-              const extraOrders = json.data.map(o => {
-                if (!o.platform) {
-                  const idStr = String(o.orderId || '').trim();
-                  if (/^\d{18,20}$/.test(idStr)) o.platform = "TikTok";
-                  else if (/^\d{13,17}$/.test(idStr)) o.platform = "Lazada";
-                  else o.platform = "Shopee";
-                }
-                return o;
-              });
-              renderOrdersTable(extraOrders);
+              renderOrdersTable(json.data);
             }
           })
           .catch(() => {});
