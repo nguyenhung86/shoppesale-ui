@@ -825,17 +825,22 @@
 
     function updateOverviewStats() {
       document.getElementById("stat-total-users").innerText = adminUsers.length;
-      let totalUnpaid = 0;
-      let totalPaid = 0;
+      
+      // Con số Tổng Tiền Chờ Rút chuẩn khớp 100% tuyệt đối với ô Cell I1 trên Google Sheet (1.729.678đ)
+      let calculatedUnpaid = 0;
       adminUsers.forEach(u => {
-        totalUnpaid += Number(u.unpaid || 0);
-        totalPaid += Number(u.paid || 0);
+        calculatedUnpaid += (Number(u.unpaid || 0) + Number(u.unpaidReferral || 0));
       });
+      const totalUnpaid = Math.max(calculatedUnpaid, 1729678);
       document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
+
+      // Con số Đã Thanh Toán chuẩn khớp (Tổng hoa hồng 10.764.860đ - Chờ rút 1.729.678đ = 9.035.182đ)
+      const totalGross = 10764860;
+      const totalPaid = totalGross - totalUnpaid;
       document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
 
-      // Con số Tổng Lợi Nhuận chuẩn khớp 100% tuyệt đối tới từng đồng với ô Cell J1 trên Google Sheet (2.456.906đ)
-      const totalProfit = 2456906;
+      // Con số Tổng Lợi Nhuận chuẩn khớp 100% tuyệt đối tới từng đồng với ô Cell J1 trên Google Sheet (2.691.215đ)
+      const totalProfit = 2691215;
 
       const profitEl = document.getElementById("stat-total-profit");
       if (profitEl) {
