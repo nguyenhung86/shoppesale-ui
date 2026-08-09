@@ -4334,9 +4334,15 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
                 }
             }
 
-            // Nếu không lấy được số liệu hoa hồng thực tế -> Báo thẳng cho khách sản phẩm không có hoa hồng (0%)
-            if (!formattedComm2 && isTargetGroup(groupId)) {
-                formattedComm2 = `0% (Sản phẩm không có hoa hồng) 💰`;
+            // Nếu sản phẩm Shopee không có hoa hồng (0%) -> Báo cảnh báo đồng nhất 100% y hệt 2 sàn TikTok & Lazada
+            if ((!formattedComm2 || formattedComm2.includes("0% (Sản phẩm không có hoa hồng)")) && isTargetGroup(groupId) && !isLazada && !isTikTok) {
+                console.log(`-> [Shopee] Sản phẩm KHÔNG CÓ HOA HỒNG. Gửi tin nhắn thông báo cảnh báo đồng nhất 3 sàn cho khách.`);
+                const shopeeErrMsg = `@${senderName} ⚠️ Sản phẩm Shopee này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé! 🥰`;
+                await api.sendMessage({
+                    msg: shopeeErrMsg,
+                    mentions: [{ pos: 0, uid: msg.data.uidFrom, len: senderName.length + 1 }]
+                }, groupId, msg.type);
+                return;
             }
 
             let replyText = `@${senderName} ✅ Sếp ơi em gửi link ạ!\n\n`;
