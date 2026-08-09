@@ -2085,31 +2085,70 @@ async function syncTikTokOrdersViaRioHub() {
 }
 
 function startTikTokDailyScheduler() {
-    console.log("⏰ [TikTok Scheduler 24/7] Đã kích hoạt lịch tự động đồng bộ đơn TikTok Shop 24/7: Tự động kết nối RioHub API quét và đẩy đơn lên Google Sheet định kỳ MỖI 15 PHÚT!");
+    console.log("⏰ [TikTok Daily Scheduler] Đã kích hoạt lịch tự động đồng bộ đơn TikTok: Quét và đẩy đơn lên Google Sheet trong khung giờ từ 7h30 sáng đến 8h30 sáng hằng ngày (thử định kỳ mỗi 15 phút tại 7:30, 7:45, 8:00, 8:15, 8:30).");
 
-    const runSync = async () => {
+    let executedSlots = new Set();
+    let currentDayStr = "";
+
+    const checkAndRunSync = async () => {
         try {
             const now = new Date();
+            const formatterDate = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Ho_Chi_Minh", year: "numeric", month: "2-digit", day: "2-digit" });
             const formatterTime = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hour12: false });
-            const timeStr = formatterTime.format(now);
             
-            console.log(`⏰ [TikTok Scheduler 24/7] Bắt đầu quét & đồng bộ tự động đơn TikTok lúc ${timeStr}...`);
-            const result = await syncTikTokOrdersViaRioHub();
-            if (result.success) {
-                console.log(`✅ [TikTok Scheduler 24/7] Đồng bộ đơn TikTok thành công! Ghi nhận ${result.count || 0} đơn (Mới: ${result.inserted || 0}, Cập nhật: ${result.updated || 0}).`);
-            } else {
-                console.error(`⚠️ [TikTok Scheduler 24/7] Lần thử lúc ${timeStr} thất bại: ${result.message}. Sẽ tự động thử lại sau 15 phút.`);
+            const dateStr = formatterDate.format(now);
+            const timeStr = formatterTime.format(now);
+            const [hourStr, minuteStr] = timeStr.split(":");
+            const hour = parseInt(hourStr, 10);
+            const minute = parseInt(minuteStr, 10);
+
+            // Reset slots khi bước sang ngày mới
+            if (currentDayStr !== dateStr) {
+                currentDayStr = dateStr;
+                executedSlots.clear();
+            }
+
+            const totalMinutes = hour * 60 + minute;
+            const startMinutes = 7 * 60 + 30; // 7h30 (450 phút)
+            const endMinutes = 8 * 60 + 30;   // 8h30 (510 phút)
+
+            // Kiểm tra xem hiện tại có nằm trong khung giờ 7h30 - 8h30 sáng không
+            if (totalMinutes >= startMinutes && totalMinutes <= endMinutes) {
+                // Kiểm tra xem có trúng mốc 15 phút không (7h30, 7h45, 8h00, 8h15, 8h30)
+                if (minute % 15 === 0 || totalMinutes === startMinutes || totalMinutes === endMinutes) {
+                    const slotKey = `${dateStr}-${hour}:${minute}`;
+                    if (executedSlots.has(slotKey)) {
+                        return;
+                    }
+                    executedSlots.add(slotKey);
+
+                    console.log(`⏰ [TikTok Daily Scheduler] Đã đến lịch ${timeStr} sáng! Bắt đầu đồng bộ tự động đơn TikTok từ RioHub...`);
+                    const result = await syncTikTokOrdersViaRioHub();
+                    
+                    if (result && result.success) {
+                        console.log(`✅ [TikTok Daily Scheduler] Lần thử lúc ${timeStr} hoàn tất thành công! Ghi nhận ${result.count || 0} đơn (Mới: ${result.inserted || 0}, Cập nhật: ${result.updated || 0}).`);
+                    } else {
+                        console.error(`⚠️ [TikTok Daily Scheduler] Lần thử lúc ${timeStr} thất bại: ${result ? result.message : 'Unknown error'}. Sẽ thử lại ở mốc 15 phút tiếp theo.`);
+                    }
+                }
             }
         } catch (err) {
             console.error("Lỗi trong TikTok Daily Scheduler:", err.message);
         }
     };
 
-    // 1. Kích hoạt quét đồng bộ 1 lần ngay sau 10 giây khi vừa khởi động Bot
-    setTimeout(runSync, 10000);
+    // 1. Quét định kỳ mỗi 30 giây để không bỏ lỡ từng phút 7h30, 7h45, 8h00, 8h15, 8h30
+    setInterval(checkAndRunSync, 30000);
 
-    // 2. Kích hoạt lịch quét đồng bộ tự động định kỳ MỖI 15 PHÚT (900.000 ms) liên tục 24/7
-    setInterval(runSync, 15 * 60 * 1000);
+    // 2. NẾU BOT KHỞI ĐỘNG TRONG KHUNG GIỜ 7H30 - 8H30 SÁNG ➔ KÍCH HOẠT QUÉT ĐỒNG BỘ NGAY LẬP TỨC!
+    const now = new Date();
+    const formatterTime = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", hour12: false });
+    const [hStr, mStr] = formatterTime.format(now).split(":");
+    const curTot = parseInt(hStr, 10) * 60 + parseInt(mStr, 10);
+    if (curTot >= (7 * 60 + 30) && curTot <= (8 * 60 + 30)) {
+        console.log(`⏰ [TikTok Daily Scheduler] Bot khởi động TRONG KHUNG GIỜ 7h30 - 8h30 SÁNG! Kích hoạt chạy đồng bộ đơn TikTok ngay lập tức...`);
+        setTimeout(checkAndRunSync, 3000);
+    }
 }
 
 // Biểu thức chính quy tìm các link Shopee
