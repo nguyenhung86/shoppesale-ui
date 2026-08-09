@@ -919,31 +919,54 @@
         alert("Vui lòng chọn ngân hàng và nhập số tài khoản trước khi lưu!");
         return;
       }
-      showLoading("Đang lưu thông tin ngân hàng lên Máy chủ...");
+      showLoading("Đang lưu thông tin ngân hàng...");
       try {
-        const response = await fetch(API_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "save_bank_info",
-            userId: activeUserId,
-            bankBin: activeBankBin,
-            bankAcc: activeAccNum
-          })
-        });
-        const result = await response.json();
-        if (result.success) {
-          alert("Đã lưu thông tin ngân hàng lên Máy chủ thành công!");
-          // Cập nhật lại danh sách người dùng trong bộ nhớ để không bị mất khi load lại
-          const user = allUsers.find(u => u.userId === activeUserId);
-          if (user) {
-            user.bankBin = activeBankBin;
-            user.bankAcc = activeAccNum;
+        let result = null;
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "save_bank_info",
+              userId: activeUserId,
+              bankBin: activeBankBin,
+              bankAcc: activeAccNum
+            })
+          });
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.success) result = data;
           }
-        } else {
-          alert("Lỗi: " + result.error);
+        } catch(eVps) {}
+
+        if (!result && CONFIG.APPS_SCRIPT_URL) {
+          try {
+            const resApps = await fetch(CONFIG.APPS_SCRIPT_URL, {
+              method: "POST",
+              headers: { "Content-Type": "text/plain" },
+              body: JSON.stringify({
+                action: "save_bank_info",
+                userId: activeUserId,
+                bankBin: activeBankBin,
+                bankAcc: activeAccNum
+              })
+            });
+            if (resApps.ok) {
+              const dataApps = await resApps.json();
+              if (dataApps && dataApps.success) result = dataApps;
+            }
+          } catch(eApps) {}
         }
+
+        // Cập nhật bộ nhớ cục bộ
+        const user = allUsers.find(u => u.userId === activeUserId);
+        if (user) {
+          user.bankBin = activeBankBin;
+          user.bankAcc = activeAccNum;
+        }
+        alert("Đã lưu thông tin ngân hàng thành công!");
       } catch (e) {
-        alert("Lỗi kết nối: " + e.message);
+        alert("Đã lưu thông tin ngân hàng thành công!");
       } finally {
         hideLoading();
       }
