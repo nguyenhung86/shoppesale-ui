@@ -4332,6 +4332,26 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
                 }
             }
 
+            if (!formattedComm2 && isTargetGroup(groupId)) {
+                let fallbackRate = 8.0;
+                const nameLower = (productName || "").toLowerCase();
+                if (nameLower.includes("chó") || nameLower.includes("mèo") || nameLower.includes("thú cưng") || nameLower.includes("pet") || nameLower.includes("cát vệ sinh") || nameLower.includes("pate")) {
+                    fallbackRate = 0.0;
+                } else if (nameLower.includes("xe máy") || nameLower.includes("xe may") || nameLower.includes("ô tô") || nameLower.includes("o to") || nameLower.includes("dầu nhớt") || nameLower.includes("mũ bảo hiểm") || nameLower.includes("nón bảo hiểm")) {
+                    fallbackRate = 3.5;
+                }
+                
+                if (fallbackRate > 0) {
+                    const textPrice = extractPriceFromText(text);
+                    if (textPrice > 0) {
+                        const commVal = Math.min(40000, Math.round(textPrice * (fallbackRate / 100)));
+                        formattedComm2 = `${String(fallbackRate).replace(/\./g, ",")}% ~ ${commVal.toLocaleString("vi-VN")}đ 💰`;
+                    } else {
+                        formattedComm2 = `${String(fallbackRate).replace(/\./g, ",")}% (Ước tính) 💰`;
+                    }
+                }
+            }
+
             let replyText = `@${senderName} ✅ Sếp ơi em gửi link ạ!\n\n`;
             if (productName) {
                 replyText += `📦 ${getShortProductName(productName)}\n`;
