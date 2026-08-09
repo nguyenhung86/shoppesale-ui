@@ -5106,11 +5106,53 @@ function startReferralAnnouncer(config) {
     setInterval(runCheck, intervalMinutes * 60 * 1000);
 }
 
+function startAutoSyncSheetToVps(config) {
+    const orderAppsScriptUrl = config.orderAppsScriptUrl;
+    if (!orderAppsScriptUrl) return;
+
+    console.log("🔄 [Auto-Sync Sheet->VPS 24/7] Đã kích hoạt lịch tự động đồng bộ dữ liệu từ Google Sheet về VPS định kỳ MỖI 5 PHÚT 24/7!");
+
+    const doSync = async () => {
+        try {
+            // 1. Đồng bộ Payout List (thành viên, số dư, STK)
+            const payoutRes = await fetch(`${orderAppsScriptUrl}?action=getPayoutList`);
+            const payoutText = await payoutRes.text();
+            let payoutData;
+            try { payoutData = JSON.parse(payoutText); } catch(e){}
+
+            if (payoutData && payoutData.success) {
+                writeFileSync("sheet_users_backup.json", JSON.stringify(payoutData, null, 2), "utf8");
+                console.log(`✅ [Auto-Sync 24/7] Đã tự động cập nhật dữ liệu ${payoutData.data?.length || payoutData.users?.length || 0} thành viên & số dư từ Google Sheet về VPS!`);
+            }
+
+            // 2. Đồng bộ Leaderboard (Bảng xếp hạng)
+            try {
+                const lbRes = await fetch(`${orderAppsScriptUrl}?action=getLeaderboard`);
+                const lbText = await lbRes.text();
+                let lbData;
+                try { lbData = JSON.parse(lbText); } catch(e){}
+                if (lbData && lbData.success) {
+                    writeFileSync("sheet_leaderboard_backup.json", JSON.stringify(lbData, null, 2), "utf8");
+                }
+            } catch(e){}
+        } catch (err) {
+            console.error("⚠️ [Auto-Sync 24/7] Lỗi đồng bộ ngầm Sheet->VPS:", err.message);
+        }
+    };
+
+    // Kích hoạt ngay sau 5 giây khi vừa khởi động Bot
+    setTimeout(doSync, 5000);
+
+    // Kích hoạt lịch chạy tự động định kỳ MỖI 5 PHÚT (300.000 ms) 24/7
+    setInterval(doSync, 5 * 60 * 1000);
+}
+
     // Khởi động các bộ hẹn giờ định kỳ
     startReminderScheduler(config);
     startSaleScheduler(config);
     startReferralAnnouncer(config);
     startTikTokDailyScheduler();
+    startAutoSyncSheetToVps(config);
 
     // Kích hoạt tiến trình quét ngầm đồng bộ đơn TikTok Shop định kỳ 30 phút/lần
     setInterval(async () => {
