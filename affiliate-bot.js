@@ -1235,7 +1235,10 @@ function startExpressServer(config) {
             }
 
             if (action === "save_bank_info") {
-                const { userId, bankBin, bankAcc } = reqBody;
+                const userId = req.query.userId || reqBody.userId;
+                const bankBin = req.query.bankBin !== undefined ? req.query.bankBin : reqBody.bankBin;
+                const bankAcc = req.query.bankAcc !== undefined ? req.query.bankAcc : reqBody.bankAcc;
+
                 if (!userId) return res.status(400).json({ success: false, error: "Thiếu userId" });
 
                 let updated = false;
@@ -1244,9 +1247,9 @@ function startExpressServer(config) {
                     let usersList = (sheetData && sheetData.data) ? sheetData.data : ((sheetData && sheetData.users) ? sheetData.users : []);
 
                     for (let u of usersList) {
-                        if (String(u.userId) === String(userId)) {
-                            if (bankBin !== undefined) u.bankBin = bankBin;
-                            if (bankAcc !== undefined) u.bankAcc = bankAcc;
+                        if (String(u.userId).trim() === String(userId).trim()) {
+                            if (bankBin !== undefined && bankBin !== null) u.bankBin = String(bankBin);
+                            if (bankAcc !== undefined && bankAcc !== null) u.bankAcc = String(bankAcc);
                             updated = true;
                             break;
                         }
@@ -1269,7 +1272,7 @@ function startExpressServer(config) {
                     } catch (e) {}
                 }
 
-                return res.json({ success: true, message: "Đã lưu thông tin ngân hàng thành công" });
+                return res.json({ success: true, message: "Đã lưu thông tin ngân hàng thành công", updated });
             }
 
             if (action === "save_qr") {
