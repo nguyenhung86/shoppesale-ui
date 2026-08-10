@@ -633,6 +633,7 @@
               <th>Thưởng GT</th>
               <th>Ngân Hàng</th>
               <th>Số TK</th>
+              <th>Ghi Chú</th>
               <th>Hành Động</th>
             </tr>
           </thead>
@@ -719,6 +720,10 @@
         <div class="form-group">
           <label>Số Tài Khoản</label>
           <input type="text" id="edit-user-bankacc" class="form-control" placeholder="Nhập STK...">
+        </div>
+        <div class="form-group">
+          <label>Ghi Chú Thành Viên</label>
+          <input type="text" id="edit-user-note" class="form-control" placeholder="Nhập ghi chú (ví dụ: Khách VIP, TK phụ...)...">
         </div>
         <button type="submit" class="btn-login"><i class="fa-solid fa-floppy-disk"></i> Lưu Thay Đổi</button>
       </form>
@@ -871,8 +876,9 @@
             <td>${refBonus.toLocaleString('vi-VN')}đ</td>
             <td>${u.bankBin || '-'}</td>
             <td>${u.bankAcc || '-'}</td>
+            <td><span style="color: var(--ink-soft); font-style: italic;">${u.note || u.ghiChu || '-'}</span></td>
             <td>
-              <button class="btn-sm btn-edit-sm" onclick="openEditModal('${u.userId}', '${u.userName}', ${unpaid}, ${paid}, '${u.bankBin||''}', '${u.bankAcc||''}')"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+              <button class="btn-sm btn-edit-sm" onclick="openEditModal('${u.userId}', '${(u.userName||'').replace(/'/g, "\\'")}', ${unpaid}, ${paid}, '${u.bankBin||''}', '${u.bankAcc||''}', '${(u.note||u.ghiChu||'').replace(/'/g, "\\'")}')"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
             </td>
           </tr>
         `;
@@ -883,7 +889,8 @@
       const q = document.getElementById("search-users-input").value.trim().toLowerCase();
       const filtered = adminUsers.filter(u => 
         (u.userName || '').toLowerCase().includes(q) || 
-        String(u.userId || '').toLowerCase().includes(q)
+        String(u.userId || '').toLowerCase().includes(q) ||
+        String(u.note || u.ghiChu || '').toLowerCase().includes(q)
       );
       renderUsersTable(filtered);
     }
@@ -973,13 +980,14 @@
       }
     }
 
-    function openEditModal(id, name, unpaid, paid, bankBin, bankAcc) {
+    function openEditModal(id, name, unpaid, paid, bankBin, bankAcc, note) {
       document.getElementById("edit-user-id").value = id;
       document.getElementById("edit-user-name").value = name;
       document.getElementById("edit-user-unpaid").value = unpaid;
       document.getElementById("edit-user-paid").value = paid;
       document.getElementById("edit-user-bankbin").value = bankBin;
       document.getElementById("edit-user-bankacc").value = bankAcc;
+      document.getElementById("edit-user-note").value = note || "";
       document.getElementById("edit-user-modal").style.display = "flex";
     }
 
@@ -994,16 +1002,17 @@
       const paid = Number(document.getElementById("edit-user-paid").value);
       const bankBin = document.getElementById("edit-user-bankbin").value.trim();
       const bankAcc = document.getElementById("edit-user-bankacc").value.trim();
+      const note = document.getElementById("edit-user-note").value.trim();
 
       try {
         const res = await fetch(`${API_URL}?action=updateUserBalance`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, unpaid, paid, bankBin, bankAcc })
+          body: JSON.stringify({ userId, unpaid, paid, bankBin, bankAcc, note })
         });
         const json = await res.json();
         if (json.success) {
-          alert("Đã cập nhật số dư & thông tin ngân hàng thành công!");
+          alert("Đã cập nhật số dư, ngân hàng & ghi chú thành công!");
           closeEditModal();
           loadAdminData();
         } else {
@@ -1017,9 +1026,9 @@
     function exportToCSV() {
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       if (activeTab === "users") {
-        csvContent += "STT,ID Zalo,Ten Hien Thi,So Tien Chua Rut,Da Thanh Toan,Bank BIN,So TK\n";
+        csvContent += "STT,ID Zalo,Ten Hien Thi,So Tien Chua Rut,Da Thanh Toan,Bank BIN,So TK,Ghi Chu\n";
         adminUsers.forEach((u, i) => {
-          csvContent += `"${i+1}","${u.userId}","${u.userName}","${u.unpaid||0}","${u.paid||0}","${u.bankBin||''}","${u.bankAcc||''}"\n`;
+          csvContent += `"${i+1}","${u.userId}","${u.userName}","${u.unpaid||0}","${u.paid||0}","${u.bankBin||''}","${u.bankAcc||''}","${u.note||u.ghiChu||''}"\n`;
         });
       } else {
         csvContent += "STT,Ngay Dat,Ma Don,Thanh Vien,San,Ten San Pham,Gia Don,Hoa Hong,Trang Thai\n";
