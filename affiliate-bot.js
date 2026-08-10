@@ -5246,8 +5246,37 @@ function startAutoSyncSheetToVps(config) {
             try { payoutData = JSON.parse(payoutText); } catch(e){}
 
             if (payoutData && payoutData.success) {
+                const newList = payoutData.data || payoutData.users || [];
+                
+                // Đọc dữ liệu cũ để bảo toàn STK/Ngân hàng/QR nếu trên Google Sheet lỡ bị rỗng
+                let existingUsers = {};
+                if (fs.existsSync("sheet_users_backup.json")) {
+                    try {
+                        const oldJson = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
+                        const oldList = oldJson.data || oldJson.users || [];
+                        oldList.forEach(u => {
+                            if (u.userId) existingUsers[String(u.userId)] = u;
+                        });
+                    } catch(e) {}
+                }
+
+                // Hợp nhất: Không bao giờ ghi đè làm mất STK đã lưu
+                const mergedList = newList.map(u => {
+                    const uIdStr = String(u.userId || '');
+                    const oldUser = existingUsers[uIdStr];
+                    if (oldUser) {
+                        if (!u.bankBin && oldUser.bankBin) u.bankBin = oldUser.bankBin;
+                        if (!u.bankAcc && oldUser.bankAcc) u.bankAcc = oldUser.bankAcc;
+                        if (!u.qrCodeUrl && oldUser.qrCodeUrl) u.qrCodeUrl = oldUser.qrCodeUrl;
+                    }
+                    return u;
+                });
+
+                if (payoutData.data) payoutData.data = mergedList;
+                if (payoutData.users) payoutData.users = mergedList;
+
                 writeFileSync("sheet_users_backup.json", JSON.stringify(payoutData, null, 2), "utf8");
-                console.log(`✅ [Auto-Sync 24/7] Đã tự động cập nhật dữ liệu ${payoutData.data?.length || payoutData.users?.length || 0} thành viên & số dư từ Google Sheet về VPS!`);
+                console.log(`✅ [Auto-Sync 24/7] Đã tự động cập nhật dữ liệu ${mergedList.length} thành viên & số dư từ Google Sheet về VPS (Bảo toàn STK/QR 100%)!`);
             }
 
             // 2. Đồng bộ Leaderboard (Bảng xếp hạng)
