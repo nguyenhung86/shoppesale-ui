@@ -3701,14 +3701,15 @@ function attachHandlers(api, config) {
             const isQrKeyword = /(mã qr|ảnh qr|gửi qr|chụp qr|qr thanh toán|qr nhóm|scan qr|quét qr|qr code)/i.test(msgLower);
             const isQrImageSpam = isQrKeyword || (isPhotoAttachment && (msgLower.includes("qr") || msgLower.includes("nhóm") || msgLower.includes("quét") || msgLower.includes("vào")));
 
-            // 3. DANH SÁCH TỪ NGỮ TỤC TĨU / NÓI BẬY
+            // 3. DANH SÁCH TỪ NGỮ TỤC TĨU / NÓI BẬY (Bỏ qua hoàn toàn nếu tin nhắn chứa link sản phẩm mua sắm)
+            const hasProductLink = /(shopee|shp\.ee|tiktok|lazada|accesstrade)/i.test(text || "");
             const VIETNAMESE_BAD_WORDS = [
-                "đm", "dm", "dmm", "đmm", "đmá", "dkm", "đkm", "đcm", "dcm", "vcl", "vkl", "vl", "cl", 
-                "địt", "dit", "lồn", "lon", "buồi", "buoi", "cặc", "cac", "dái", "dai", "sủa", "đoái", 
-                "mẹ kiếp", "đéo", "deo", "óc chó", "oc cho", "chó đẻ", "cho de", "mày chó", "thằng chó",
-                "địt mẹ", "dit me", "đm mày", "dm may", "đái", "ỉa", "vc", "vkr", "đụ", "du ma", "địt bà"
+                "đm", "dmm", "đmm", "đmá", "dkm", "đkm", "đcm", "dcm", "vcl", "vkl", 
+                "địt", "lồn", "buồi", "cặc", "dái", "sủa", "đoái", 
+                "mẹ kiếp", "đéo", "óc chó", "oc cho", "chó đẻ", "cho de", "mày chó", "thằng chó",
+                "địt mẹ", "dit me", "đm mày", "dm may", "đái", "ỉa", "vkr", "đụ", "du ma", "địt bà"
             ];
-            const isProfane = VIETNAMESE_BAD_WORDS.some(bw => {
+            const isProfane = !hasProductLink && VIETNAMESE_BAD_WORDS.some(bw => {
                 const regex = new RegExp(`(?:^|\\s)${bw}(?:$|\\s|\\!|\\?|\\.|\\,)`, "i");
                 return regex.test(msgLower);
             });
