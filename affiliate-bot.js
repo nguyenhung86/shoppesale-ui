@@ -1194,7 +1194,7 @@ function startExpressServer(config) {
             }
 
             if (action === "updateUserBalance") {
-                const { userId, unpaid, paid, unpaidReferral, bankBin, bankAcc } = req.body || {};
+                const { userId, unpaid, paid, unpaidReferral, bankBin, bankAcc, note } = reqBody;
                 if (!userId) return res.status(400).json({ success: false, error: "Thiếu userId" });
 
                 let updated = false;
@@ -1203,12 +1203,13 @@ function startExpressServer(config) {
                     let usersList = (sheetData && sheetData.data) ? sheetData.data : ((sheetData && sheetData.users) ? sheetData.users : []);
 
                     for (let u of usersList) {
-                        if (String(u.userId) === String(userId)) {
+                        if (String(u.userId).trim() === String(userId).trim()) {
                             if (unpaid !== undefined) u.unpaid = Number(unpaid);
                             if (paid !== undefined) u.paid = Number(paid);
                             if (unpaidReferral !== undefined) u.unpaidReferral = Number(unpaidReferral);
                             if (bankBin !== undefined) u.bankBin = bankBin;
                             if (bankAcc !== undefined) u.bankAcc = bankAcc;
+                            if (note !== undefined) u.note = note;
                             updated = true;
                             break;
                         }
@@ -5271,6 +5272,7 @@ function startAutoSyncSheetToVps(config) {
                         if (!u.bankBin && oldUser.bankBin) u.bankBin = oldUser.bankBin;
                         if (!u.bankAcc && oldUser.bankAcc) u.bankAcc = oldUser.bankAcc;
                         if (!u.qrCodeUrl && oldUser.qrCodeUrl) u.qrCodeUrl = oldUser.qrCodeUrl;
+                        if (!u.note && oldUser.note) u.note = oldUser.note;
                     }
                     return u;
                 });
