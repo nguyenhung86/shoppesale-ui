@@ -1018,6 +1018,30 @@ function startExpressServer(config) {
         });
     }
 
+    function getUserBankInfo() {
+        if (fs.existsSync("user_bank_info.json")) {
+            try {
+                return JSON.parse(fs.readFileSync("user_bank_info.json", "utf8")) || {};
+            } catch(e) {}
+        }
+        return {};
+    }
+
+    function saveUserBankInfo(userId, bankBin, bankAcc, qrCodeUrl) {
+        if (!userId) return;
+        const uIdStr = String(userId).trim();
+        const bankMap = getUserBankInfo();
+        if (!bankMap[uIdStr]) {
+            bankMap[uIdStr] = { bankBin: '', bankAcc: '', qrCodeUrl: '' };
+        }
+        if (bankBin !== undefined && bankBin !== null && bankBin !== "") bankMap[uIdStr].bankBin = String(bankBin).trim();
+        if (bankAcc !== undefined && bankAcc !== null && bankAcc !== "") bankMap[uIdStr].bankAcc = String(bankAcc).trim();
+        if (qrCodeUrl !== undefined && qrCodeUrl !== null && qrCodeUrl !== "") bankMap[uIdStr].qrCodeUrl = String(qrCodeUrl).trim();
+        try {
+            fs.writeFileSync("user_bank_info.json", JSON.stringify(bankMap, null, 2), "utf8");
+        } catch(e) {}
+    }
+
     function getUserNotes() {
         if (fs.existsSync("user_notes.json")) {
             try {
@@ -1056,6 +1080,7 @@ function startExpressServer(config) {
             if (action === "getAdminUsers" || action === "getPayoutList") {
                 const query = req.query.query || req.query.q || (reqBody && (reqBody.query || reqBody.q)) || "";
                 const savedNotes = getUserNotes();
+                const savedBankInfo = getUserBankInfo();
 
                 // 1. Thử truy vấn dữ liệu mới nhất 100% thời gian thực từ Google Sheet (timeout 3.5s)
                 if (config.orderAppsScriptUrl) {
@@ -1084,6 +1109,13 @@ function startExpressServer(config) {
                             const mergedList = newList.map(u => {
                                 const uIdStr = String(u.userId || '').trim();
                                 const oldUser = existingUsers[uIdStr];
+                                const bInfo = savedBankInfo[uIdStr];
+
+                                if (bInfo) {
+                                    if (bInfo.bankBin) u.bankBin = bInfo.bankBin;
+                                    if (bInfo.bankAcc) u.bankAcc = bInfo.bankAcc;
+                                    if (bInfo.qrCodeUrl) u.qrCodeUrl = bInfo.qrCodeUrl;
+                                }
                                 if (oldUser) {
                                     if (!u.bankBin && oldUser.bankBin) u.bankBin = oldUser.bankBin;
                                     if (!u.bankAcc && oldUser.bankAcc) u.bankAcc = oldUser.bankAcc;
@@ -1307,6 +1339,9 @@ function startExpressServer(config) {
                             if (unpaidReferral !== undefined) u.unpaidReferral = Number(unpaidReferral);
                             if (bankBin !== undefined) u.bankBin = bankBin;
                             if (bankAcc !== undefined) u.bankAcc = bankAcc;
+                            if (bankBin !== undefined || bankAcc !== undefined) {
+                                saveUserBankInfo(userId, bankBin, bankAcc);
+                            }
                             if (note !== undefined) {
                                 u.note = note;
                                 saveUserNote(userId, note);
@@ -1342,6 +1377,8 @@ function startExpressServer(config) {
                 const bankAcc = req.query.bankAcc !== undefined ? req.query.bankAcc : reqBody.bankAcc;
 
                 if (!userId) return res.status(400).json({ success: false, error: "Thiếu userId" });
+
+                saveUserBankInfo(userId, bankBin, bankAcc);
 
                 let updated = false;
                 if (fs.existsSync("sheet_users_backup.json")) {
