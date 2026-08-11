@@ -1035,28 +1035,95 @@ function startExpressServer(config) {
 
             const action = req.query.action || reqBody.action;
             
-            if (action === "getPayoutList") {
+            if (action === "getAdminUsers" || action === "getPayoutList") {
+                const query = req.query.query || req.query.q || (reqBody && (reqBody.query || reqBody.q)) || "";
+
+                // 1. Thử truy vấn dữ liệu mới nhất 100% thời gian thực từ Google Sheet (timeout 3.5s)
+                if (config.orderAppsScriptUrl) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 3500);
+                        const liveRes = await fetch(`${config.orderAppsScriptUrl}?action=getPayoutList`, { signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        const liveJson = await liveRes.json();
+
+                        if (liveJson && liveJson.success && Array.isArray(liveJson.data || liveJson.users)) {
+                            const newList = liveJson.data || liveJson.users || [];
+                            
+                            // Bảo toàn STK / Ngân hàng / QR / Ghi chú cũ nếu trên Sheet lỡ bị rỗng
+                            let existingUsers = {};
+                            if (fs.existsSync("sheet_users_backup.json")) {
+                                try {
+                                    const oldJson = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
+                                    const oldList = oldJson.data || oldJson.users || [];
+                                    oldList.forEach(u => {
+                                        if (u.userId) existingUsers[String(u.userId)] = u;
+                                    });
+                                } catch(e) {}
+                            }
+
+                            const mergedList = newList.map(u => {
+                                const uIdStr = String(u.userId || '');
+                                const oldUser = existingUsers[uIdStr];
+                                if (oldUser) {
+                                    if (!u.bankBin && oldUser.bankBin) u.bankBin = oldUser.bankBin;
+                                    if (!u.bankAcc && oldUser.bankAcc) u.bankAcc = oldUser.bankAcc;
+                                    if (!u.qrCodeUrl && oldUser.qrCodeUrl) u.qrCodeUrl = oldUser.qrCodeUrl;
+                                    if (!u.note && oldUser.note) u.note = oldUser.note;
+                                }
+                                return u;
+                            });
+
+                            if (liveJson.data) liveJson.data = mergedList;
+                            if (liveJson.users) liveJson.users = mergedList;
+
+                            fs.writeFileSync("sheet_users_backup.json", JSON.stringify(liveJson, null, 2), "utf8");
+
+                            if (query) {
+                                const qLower = query.trim().toLowerCase();
+                                const matched = mergedList.filter(u => 
+                                    String(u.userName || "").toLowerCase().includes(qLower) ||
+                                    String(u.userId || "").includes(qLower) ||
+                                    String(u.bankAcc || "").includes(qLower) ||
+                                    String(u.note || "").toLowerCase().includes(qLower)
+                                );
+                                return res.json({ success: true, data: matched, total: matched.length });
+                            }
+
+                            if (action === "getPayoutList") {
+                                const payoutUsers = mergedList.filter(u => (u.unpaid && u.unpaid > 0) || (u.unpaidReferral && u.unpaidReferral > 0));
+                                return res.json({ success: true, data: payoutUsers, total: payoutUsers.length });
+                            }
+
+                            return res.json({ success: true, data: mergedList, total: mergedList.length });
+                        }
+                    } catch(eLive) {}
+                }
+
+                // 2. Nếu Google Sheet chưa phản hồi kịp -> Lấy từ file lưu tạm trên VPS
                 let usersData = [];
-                // Đọc từ file backup do lệnh /dongbo tạo ra
                 if (fs.existsSync("sheet_users_backup.json")) {
                     const sheetData = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
                     usersData = (sheetData && sheetData.data) ? sheetData.data : ((sheetData && sheetData.users) ? sheetData.users : []);
                 }
-                
-                const query = req.query.query || req.query.q || (reqBody && (reqBody.query || reqBody.q)) || "";
+
                 if (query) {
                     const qLower = query.trim().toLowerCase();
                     const matched = usersData.filter(u => 
                         String(u.userName || "").toLowerCase().includes(qLower) ||
-                        String(u.userId || "").includes(qLower) ||
-                        String(u.bankAcc || "").includes(qLower)
+                        String(u.userId || "").toLowerCase().includes(qLower) ||
+                        String(u.bankAcc || "").toLowerCase().includes(qLower) ||
+                        String(u.note || "").toLowerCase().includes(qLower)
                     );
-                    return res.json({ success: true, data: matched });
+                    return res.json({ success: true, data: matched, total: matched.length });
                 }
 
-                // Lọc những người có unpaid > 0
-                const payoutUsers = usersData.filter(u => (u.unpaid && u.unpaid > 0) || (u.unpaidReferral && u.unpaidReferral > 0));
-                return res.json({ success: true, data: payoutUsers });
+                if (action === "getPayoutList") {
+                    const payoutUsers = usersData.filter(u => (u.unpaid && u.unpaid > 0) || (u.unpaidReferral && u.unpaidReferral > 0));
+                    return res.json({ success: true, data: payoutUsers, total: payoutUsers.length });
+                }
+
+                return res.json({ success: true, data: usersData, total: usersData.length });
             } 
 
             if (action === "getPaymentHistory") {
