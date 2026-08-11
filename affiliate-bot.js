@@ -1018,6 +1018,24 @@ function startExpressServer(config) {
         });
     }
 
+    function getUserNotes() {
+        if (fs.existsSync("user_notes.json")) {
+            try {
+                return JSON.parse(fs.readFileSync("user_notes.json", "utf8")) || {};
+            } catch(e) {}
+        }
+        return {};
+    }
+
+    function saveUserNote(userId, noteText) {
+        if (!userId) return;
+        const notes = getUserNotes();
+        notes[String(userId).trim()] = noteText || "";
+        try {
+            fs.writeFileSync("user_notes.json", JSON.stringify(notes, null, 2), "utf8");
+        } catch(e) {}
+    }
+
     app.all("/api/web", async (req, res, next) => {
         try {
             res.setHeader("Access-Control-Allow-Origin", "*");
@@ -1037,6 +1055,7 @@ function startExpressServer(config) {
             
             if (action === "getAdminUsers" || action === "getPayoutList") {
                 const query = req.query.query || req.query.q || (reqBody && (reqBody.query || reqBody.q)) || "";
+                const savedNotes = getUserNotes();
 
                 // 1. Thử truy vấn dữ liệu mới nhất 100% thời gian thực từ Google Sheet (timeout 3.5s)
                 if (config.orderAppsScriptUrl) {
@@ -1063,13 +1082,17 @@ function startExpressServer(config) {
                             }
 
                             const mergedList = newList.map(u => {
-                                const uIdStr = String(u.userId || '');
+                                const uIdStr = String(u.userId || '').trim();
                                 const oldUser = existingUsers[uIdStr];
                                 if (oldUser) {
                                     if (!u.bankBin && oldUser.bankBin) u.bankBin = oldUser.bankBin;
                                     if (!u.bankAcc && oldUser.bankAcc) u.bankAcc = oldUser.bankAcc;
                                     if (!u.qrCodeUrl && oldUser.qrCodeUrl) u.qrCodeUrl = oldUser.qrCodeUrl;
-                                    if (!u.note && oldUser.note) u.note = oldUser.note;
+                                }
+                                if (savedNotes[uIdStr] !== undefined && savedNotes[uIdStr] !== "") {
+                                    u.note = savedNotes[uIdStr];
+                                } else if (!u.note && oldUser && oldUser.note) {
+                                    u.note = oldUser.note;
                                 }
                                 return u;
                             });
@@ -1106,6 +1129,14 @@ function startExpressServer(config) {
                     const sheetData = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
                     usersData = (sheetData && sheetData.data) ? sheetData.data : ((sheetData && sheetData.users) ? sheetData.users : []);
                 }
+
+                usersData = usersData.map(u => {
+                    const uIdStr = String(u.userId || '').trim();
+                    if (savedNotes[uIdStr] !== undefined && savedNotes[uIdStr] !== "") {
+                        u.note = savedNotes[uIdStr];
+                    }
+                    return u;
+                });
 
                 if (query) {
                     const qLower = query.trim().toLowerCase();
@@ -1276,7 +1307,10 @@ function startExpressServer(config) {
                             if (unpaidReferral !== undefined) u.unpaidReferral = Number(unpaidReferral);
                             if (bankBin !== undefined) u.bankBin = bankBin;
                             if (bankAcc !== undefined) u.bankAcc = bankAcc;
-                            if (note !== undefined) u.note = note;
+                            if (note !== undefined) {
+                                u.note = note;
+                                saveUserNote(userId, note);
+                            }
                             updated = true;
                             break;
                         }
