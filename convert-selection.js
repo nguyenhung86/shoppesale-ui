@@ -152,7 +152,7 @@ function handleConvert() {
               shortLink: bridgeRes.affiliateLink || bridgeRes.shortLink,
               rawAffiliateLink: bridgeRes.affiliateLink || bridgeRes.shortLink,
               productName: bridgeRes.productName,
-              commissionRate: bridgeRes.commissionRate || parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 8.0,
+              commissionRate: bridgeRes.commissionRate !== undefined && bridgeRes.commissionRate !== null ? bridgeRes.commissionRate : (parseFloat(String(bridgeRes.formattedComm2 || "").replace(/,/g, ".").replace(/%/g, "")) || 0),
               commissionAmount: bridgeRes.commissionAmount || 0,
               price: bridgeRes.price || 0,
               imageUrl: bridgeRes.imageUrl || "",
