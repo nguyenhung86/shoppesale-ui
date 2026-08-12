@@ -1514,6 +1514,137 @@ function startExpressServer(config) {
                 return res.json({ success: true, data: cachedOrders, total: cachedOrders.length, timestamp: Date.now() });
             }
 
+            if (action === "convertLink") {
+                const rawUrl = req.query.url || req.query.link || (reqBody && (reqBody.url || reqBody.link)) || "";
+                const subId = req.query.subId || req.query.zaloId || (reqBody && (reqBody.subId || reqBody.zaloId)) || "web";
+
+                if (!rawUrl) return res.status(400).json({ success: false, error: "Thiếu URL sản phẩm" });
+
+                try {
+                    console.log(`[API Web] Đang chuyển đổi link cho web convert: ${rawUrl} (SubID: ${subId})`);
+                    const isTikTok = /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl);
+                    const isLazada = /lazada\.vn|lzd\.co|s\.lazada/i.test(rawUrl);
+                    const isShopee = /shopee\.vn|shp\.ee|s\.shopee/i.test(rawUrl);
+
+                    let affiliateLink = "";
+                    let productName = "";
+                    let price = 0;
+                    let shopeeRate = 8.0;
+                    let sellerRate = 0;
+                    let imageUrl = "";
+
+                    // 1. Nếu là TikTok Shop -> Gọi RioHub
+                    if (isTikTok) {
+                        const tikRes = await convertTikTokViaRioHub(rawUrl, subId);
+                        if (tikRes && tikRes.shortLink) {
+                            return res.json({
+                                success: true,
+                                shortLink: tikRes.shortLink,
+                                rawAffiliateLink: tikRes.shortLink,
+                                productName: tikRes.productName || "Sản phẩm TikTok Shop",
+                                commissionRate: tikRes.commissionRate || 10.0,
+                                commissionAmount: tikRes.commissionAmount || 0,
+                                price: tikRes.price || 0,
+                                imageUrl: tikRes.imageUrl || "",
+                                platformName: "TikTok Shop"
+                            });
+                        }
+                    }
+
+                    // 2. Thử gọi AddLiveTag API để giải mã thông tin sản phẩm chính xác
+                    try {
+                        const addLiveRes = await fetch("https://addlivetag.com/lazada-affiliate-api/", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: "action=get_tracking_link&product_input=" + encodeURIComponent(rawUrl) + "&sub_id=" + encodeURIComponent(subId)
+                        });
+                        const liveText = await addLiveRes.text();
+                        let liveJson = null;
+                        try { liveJson = JSON.parse(liveText); } catch(e){}
+
+                        if (liveJson) {
+                            if (liveJson.affiliate_link || liveJson.short_link) {
+                                affiliateLink = liveJson.affiliate_link || liveJson.short_link;
+                            }
+                            if (liveJson.product_name) productName = liveJson.product_name;
+                            if (liveJson.price) price = Number(liveJson.price) || 0;
+                            if (liveJson.image_url) imageUrl = liveJson.image_url;
+                            if (liveJson.shopee_rate) shopeeRate = Number(liveJson.shopee_rate) || 8.0;
+                            if (liveJson.seller_rate) sellerRate = Number(liveJson.seller_rate) || 0;
+                        }
+                    } catch(eAddLive) {}
+
+                    // 3. Nếu chưa có affiliateLink chính chủ Shopee -> Tạo link trực tiếp với AppID sếp
+                    if (!affiliateLink && isShopee) {
+                        const shopeeAppId = config.shopeeAppId || "17359760464";
+                        let ids = extractShopeeIds(rawUrl);
+                        if (ids) {
+                            affiliateLink = `https://shopee.vn/product/${ids.shopid}/${ids.itemid}?utm_source=an_${shopeeAppId}&utm_medium=affiliates&utm_campaign=an_${shopeeAppId}&sub_id=${subId}`;
+                        } else {
+                            affiliateLink = `https://shopee.vn/?utm_source=an_${shopeeAppId}&utm_medium=affiliates&utm_campaign=an_${shopeeAppId}&sub_id=${subId}`;
+                        }
+                    }
+
+                    // 4. Rút gọn qua Cloudflare Worker domain hoantienonline.io.vn
+                    const cleanDomain = config.customRedirectDomain || "https://hoantienonline.io.vn";
+                    if (cleanDomain && affiliateLink && affiliateLink.includes("shopee.vn")) {
+                        try {
+                            const targetDomain = cleanDomain.replace(/\/+$/, "");
+                            const postData = JSON.stringify({ url: affiliateLink });
+                            const apiUrls = [
+                                `${targetDomain}/create-link-secure-api`,
+                                `https://shoppesale.io.vn/create-link-secure-api`
+                            ];
+                            for (const apiUrl of apiUrls) {
+                                try {
+                                    const cfRes = await fetch(apiUrl, {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: postData
+                                    });
+                                    const cfJson = await cfRes.json();
+                                    if (cfJson && cfJson.shortUrl) {
+                                        const targetHost = new URL(targetDomain).host;
+                                        const resHost = new URL(cfJson.shortUrl).host;
+                                        affiliateLink = cfJson.shortUrl.replace(resHost, targetHost);
+                                        break;
+                                    }
+                                } catch(eCfInner) {}
+                            }
+                        } catch(eCf) {}
+                    }
+
+                    if (!productName) productName = isLazada ? "Sản phẩm Lazada" : (isTikTok ? "Sản phẩm TikTok Shop" : "Sản phẩm Shopee");
+                    const totalRate = (shopeeRate + sellerRate) || 8.0;
+                    const commAmount = price > 0 ? Math.round(price * (totalRate / 100)) : 0;
+
+                    return res.json({
+                        success: true,
+                        shortLink: affiliateLink || rawUrl,
+                        rawAffiliateLink: affiliateLink || rawUrl,
+                        productName: getShortProductName(productName),
+                        commissionRate: totalRate,
+                        commissionAmount: commAmount,
+                        price: price,
+                        shopeeRate: shopeeRate,
+                        sellerRate: sellerRate,
+                        imageUrl: imageUrl || "assets/hero-illustration-v3.png",
+                        platformName: isLazada ? "Lazada" : (isTikTok ? "TikTok Shop" : "Shopee")
+                    });
+                } catch(errConvert) {
+                    console.error("[Convert API Error]:", errConvert.message);
+                    return res.json({
+                        success: true,
+                        shortLink: rawUrl,
+                        productName: "Sản phẩm Shopee",
+                        commissionRate: 8.0,
+                        commissionAmount: 0,
+                        price: 0,
+                        platformName: "Shopee"
+                    });
+                }
+            }
+
             if (action === "updateOrderStatus") {
                 const { orderId, orderStatus, paymentStatus } = req.body || {};
                 if (config.orderAppsScriptUrl) {
