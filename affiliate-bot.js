@@ -3462,72 +3462,49 @@ function attachHandlers(api, config) {
                 const yesterdayStr = getYesterdayDateVN();
                 const yesterdayDisplay = formatDisplayDate(yesterdayStr);
                 
-                let result = null;
-                if (config.orderAppsScriptUrl) {
+                let localOrders = [];
+                if (fs.existsSync("all_orders_cache.json")) {
                     try {
-                        const queryUrl = `${config.orderAppsScriptUrl}?action=searchBySubId&subId=${senderUserId}&date=${yesterdayStr}`;
-                        result = await fetchAppsScriptJson(queryUrl);
-                    } catch(eFetch) {}
+                        const cached = JSON.parse(fs.readFileSync("all_orders_cache.json", "utf8"));
+                        const ordersArray = Array.isArray(cached.data) ? cached.data : (Array.isArray(cached) ? cached : []);
+                        localOrders = ordersArray.filter(o => String(o.subId || o.zaloId || "").trim() === String(senderUserId).trim());
+                    } catch(e) {}
                 }
+
+                // Lọc đơn hàng theo ngày hôm qua
+                const todayOrders = localOrders.filter(o => {
+                    if (!o.orderDate && !o.createdAt) return false;
+                    const dateVal = o.orderDate || o.createdAt || "";
+                    return String(dateVal).startsWith(yesterdayStr);
+                });
                 
                 let replyText = "";
                 let mentions = [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }];
                 
-                if (result && result.success && result.data && result.data.length > 0) {
+                if (todayOrders.length > 0) {
                     replyText = `@${senderName} 🛒 Danh sách đơn hàng ngày ${yesterdayDisplay} của bạn:\n`;
-                    result.data.forEach((order, idx) => {
-                        let shortName = order.itemName || "Sản phẩm";
+                    let totalComm = 0;
+                    todayOrders.forEach((order, idx) => {
+                        let shortName = order.itemName || order.productName || "Sản phẩm";
                         if (shortName.length > 40) {
                             shortName = shortName.substring(0, 37).trim() + "...";
                         }
+                        const comm = Number(order.commission || order.commissionAmount) || 0;
+                        totalComm += comm;
                         replyText += `${idx + 1}. ${shortName}\n` +
-                                     `   🔹 Mã ĐH: ${order.orderId}\n` +
-                                     `   🔹 Hoa hồng: +${formatVND(order.commission)}\n`;
+                                     `   🔹 Mã ĐH: ${order.orderId || order.id || "N/A"}\n` +
+                                     `   🔹 Hoa hồng: +${formatVND(comm)}\n`;
                     });
-                    replyText += `\n💰 Tổng hoa hồng: ${formatVND(result.totalCommission)}\n\n`;
+                    replyText += `\n💰 Tổng hoa hồng: ${formatVND(totalComm)}\n\n`;
+                    replyText += `(Dữ liệu lấy siêu tốc từ máy chủ VPS)\n\n`;
                 } else {
-                    // Thử đọc từ bộ nhớ RAM trên VPS nếu Google Sheet chưa phản hồi kịp
-                    let localOrders = [];
-                    if (fs.existsSync("all_orders_cache.json")) {
-                        try {
-                            const cached = JSON.parse(fs.readFileSync("all_orders_cache.json", "utf8"));
-                            if (Array.isArray(cached)) {
-                                localOrders = cached.filter(o => String(o.subId || o.zaloId || "").trim() === String(senderUserId).trim());
-                            }
-                        } catch(e) {}
-                    }
-
-                    if (localOrders.length > 0) {
-                        replyText = `@${senderName} 🛒 Danh sách đơn hàng ngày ${yesterdayDisplay} của bạn:\n`;
-                        let totalComm = 0;
-                        localOrders.slice(0, 5).forEach((order, idx) => {
-                            let shortName = order.itemName || "Sản phẩm";
-                            if (shortName.length > 40) {
-                                shortName = shortName.substring(0, 37).trim() + "...";
-                            }
-                            const comm = Number(order.commission) || 0;
-                            totalComm += comm;
-                            replyText += `${idx + 1}. ${shortName}\n` +
-                                         `   🔹 Mã ĐH: ${order.orderId}\n` +
-                                         `   🔹 Hoa hồng: +${formatVND(comm)}\n`;
-                        });
-                        replyText += `\n💰 Tổng hoa hồng: ${formatVND(totalComm)}\n\n`;
-                    } else {
-                        replyText = `@${senderName} 📪 Ngày ${yesterdayDisplay} anh/chị chưa có đơn hàng nào.\n\n`;
-                    }
+                    replyText = `@${senderName} 📪 Ngày ${yesterdayDisplay} anh/chị chưa có đơn hàng nào, hoặc hệ thống đang đồng bộ. Anh/chị đợi vài phút rồi kiểm tra lại nhé!\n\n`;
                 }
                 
                 replyText += `Để xem đầy đủ các đơn hàng, vui lòng tra cứu tại: https://hoantienonline.io.vn`;
                 await api.sendMessage({ msg: replyText, mentions: mentions }, groupId, msg.type);
             } catch (err) {
                 console.error(`[Command Error] Lỗi khi tra cứu đơn hàng: ${err.message}`);
-                try {
-                    const yesterdayStr = getYesterdayDateVN();
-                    const yesterdayDisplay = formatDisplayDate(yesterdayStr);
-                    const fallbackMsg = `@${senderName} 📪 Ngày ${yesterdayDisplay} anh/chị chưa có đơn hàng nào.\n\n` +
-                                        `Để xem đầy đủ các đơn hàng, vui lòng tra cứu tại: https://hoantienonline.io.vn`;
-                    await api.sendMessage({ msg: fallbackMsg, mentions: [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }] }, groupId, msg.type);
-                } catch (e) {}
             }
             return;
         }
@@ -3538,119 +3515,92 @@ function attachHandlers(api, config) {
             console.log(`[Command] Nhận lệnh /vitien từ ${senderName} (UID: ${senderUserId})`);
             
             try {
-                let result = null;
-                const queryUrl = `${config.orderAppsScriptUrl}?action=searchBySubId&subId=${senderUserId}`;
-                const fetchPromise = (async () => {
-                    if (!config.orderAppsScriptUrl) return null;
-                    try {
-                        return await fetchAppsScriptJson(queryUrl);
-                    } catch(e) { return null; }
-                })();
-
-                // Lấy thông tin trưởng nhóm để tag (chạy song song)
+                // Lấy thông tin trưởng nhóm để tag
                 let leaderId = "";
                 let leaderName = "Trưởng nhóm";
-                const leaderPromise = (async () => {
-                    if (msg.type === 1) { // Chỉ nhóm mới có trưởng nhóm
-                        let groupDetails = groupInfoCache[groupId];
-                        if (groupDetails && groupDetails._cachedLeaderName) {
-                            leaderId = groupDetails.creatorId;
-                            leaderName = groupDetails._cachedLeaderName;
-                            return;
-                        }
-                        if (!groupDetails) {
-                            try {
-                                const info = await api.getGroupInfo(groupId);
-                                if (info?.gridInfoMap?.[groupId]) {
-                                    groupDetails = info.gridInfoMap[groupId];
-                                    groupInfoCache[groupId] = groupDetails;
-                                }
-                            } catch (e) {}
-                        }
-                        leaderId = groupDetails?.creatorId;
-                        if (leaderId) {
-                            try {
+                if (msg.type === 1) { // Chỉ nhóm mới có trưởng nhóm
+                    let groupDetails = groupInfoCache[groupId];
+                    if (groupDetails && groupDetails._cachedLeaderName) {
+                        leaderId = groupDetails.creatorId;
+                        leaderName = groupDetails._cachedLeaderName;
+                    } else {
+                        try {
+                            const info = await api.getGroupInfo(groupId);
+                            if (info?.gridInfoMap?.[groupId]) {
+                                groupDetails = info.gridInfoMap[groupId];
+                                groupInfoCache[groupId] = groupDetails;
+                            }
+                            leaderId = groupDetails?.creatorId;
+                            if (leaderId) {
                                 const leaderInfo = await api.getUserInfo(leaderId);
                                 const leaderProfile = leaderInfo?.changed_profiles?.[leaderId] || leaderInfo?.changed_profiles?.[`${leaderId}_0`] || {};
                                 leaderName = leaderProfile.displayName || leaderProfile.zaloName || "Trưởng nhóm";
                                 if (groupDetails) groupDetails._cachedLeaderName = leaderName;
-                            } catch (e) {}
-                        }
+                            }
+                        } catch (e) {}
                     }
-                })();
-
-                [result] = await Promise.all([fetchPromise, leaderPromise]);
+                }
                 
-                let replyText = "";
-                let mentions = [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }];
-                const leaderMentionText = leaderId ? `@${leaderName}` : "Trưởng nhóm";
+                let localOrders = [];
+                if (fs.existsSync("all_orders_cache.json")) {
+                    try {
+                        const cached = JSON.parse(fs.readFileSync("all_orders_cache.json", "utf8"));
+                        const ordersArray = Array.isArray(cached.data) ? cached.data : (Array.isArray(cached) ? cached : []);
+                        localOrders = ordersArray.filter(o => String(o.subId || o.zaloId || "").trim() === String(senderUserId).trim());
+                    } catch(e) {}
+                }
 
                 let totalPending = 0;
                 let totalCompleted = 0;
                 let totalReceived = 0;
                 let totalComm = 0;
-
                 let totalReferralRewardAll = 0;
                 let totalReferralRewardPending = 0;
                 let referralCount = 0;
-                let hasValidData = false;
+                
+                localOrders.forEach(order => {
+                    const comm = Number(order.commission || order.commissionAmount) || 0;
+                    const st = String(order.orderStatus || order.status || "").toLowerCase().trim();
+                    const paySt = String(order.paymentStatus || "").toLowerCase().trim();
 
-                if (result && result.success) {
-                    hasValidData = true;
-                    if (result.data && Array.isArray(result.data)) {
-                        for (const order of result.data) {
-                            const comm = Number(order.commission) || 0;
-                            const st = String(order.orderStatus || "").toLowerCase().trim();
-                            const paySt = String(order.paymentStatus || "").toLowerCase().trim();
-
-                            if (order.orderId === "Thưởng GT") {
-                                totalReferralRewardAll += comm;
-                                referralCount++;
-                                if (paySt !== "đã tt" && paySt !== "đã thanh toán") {
-                                    totalReferralRewardPending += comm;
-                                }
-                                continue;
-                            }
-
-                            if (st.includes("hủy") || st.includes("invalid") || st.includes("cancelled")) {
-                                continue; // Bỏ qua đơn hủy
-                            }
-
-                            totalComm += comm;
-
-                            if (paySt.includes("đã tt") || paySt.includes("đã thanh toán")) {
-                                totalReceived += comm;
-                            } else if (st.includes("pending") || st.includes("chờ") || st.includes("đang")) {
-                                totalPending += comm;
-                            } else {
-                                totalCompleted += comm;
-                            }
+                    if (order.orderId === "Thưởng GT") {
+                        totalReferralRewardAll += comm;
+                        referralCount++;
+                        if (paySt !== "đã tt" && paySt !== "đã thanh toán") {
+                            totalReferralRewardPending += comm;
                         }
-                    } else {
-                        const summary = result.summary || result;
-                        totalPending = Number(summary.totalPending || result.totalPending) || 0;
-                        totalCompleted = Number(summary.totalCompleted || result.totalCompleted) || 0;
-                        totalReceived = Number(summary.totalReceived || result.totalReceived) || 0;
-                        totalComm = Number(summary.totalCommission || result.totalCommission) || (totalPending + totalCompleted + totalReceived);
-                    }
-                } else {
-                    // Dùng bộ nhớ tạm trên VPS làm phương án dự phòng khi Google Sheets bị quá tải
-                    let backupUser = null;
-                    if (fs.existsSync("sheet_users_backup.json")) {
-                        try {
-                            const sheetData = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
-                            const list = sheetData.data || sheetData.users || [];
-                            backupUser = list.find(u => String(u.userId || "").trim() === String(senderUserId).trim());
-                        } catch(e) {}
+                        return;
                     }
 
-                    if (backupUser) {
-                        hasValidData = true;
-                        totalCompleted = Number(backupUser.unpaid || 0);
-                        totalReceived = Number(backupUser.paid || 0);
-                        totalReferralRewardPending = Number(backupUser.unpaidReferral || 0);
-                        totalComm = totalCompleted + totalReceived;
+                    if (st.includes("hủy") || st.includes("invalid") || st.includes("cancelled") || st.includes("từ chối")) {
+                        return; // Bỏ qua đơn hủy
                     }
+
+                    totalComm += comm;
+
+                    if (paySt.includes("đã tt") || paySt.includes("đã thanh toán") || st === "đã thanh toán") {
+                        totalReceived += comm;
+                    } else if (st.includes("pending") || st.includes("chờ") || st.includes("đang")) {
+                        totalPending += comm;
+                    } else {
+                        // "Thành công", "Đã duyệt", v.v.
+                        totalCompleted += comm;
+                    }
+                });
+                
+                // Nếu không có dữ liệu local, fallback sang sheet_users_backup.json (đã được đồng bộ trước đó)
+                if (localOrders.length === 0 && fs.existsSync("sheet_users_backup.json")) {
+                    try {
+                        const sheetData = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
+                        const list = sheetData.data || sheetData.users || [];
+                        const backupUser = list.find(u => String(u.userId || "").trim() === String(senderUserId).trim());
+                        if (backupUser) {
+                            totalCompleted = Number(backupUser.unpaid || 0);
+                            totalReceived = Number(backupUser.paid || 0);
+                            totalReferralRewardPending = Number(backupUser.unpaidReferral || 0);
+                            totalComm = totalCompleted + totalReceived;
+                        }
+                    } catch(e) {}
                 }
 
                 const totalReferralRewardReceived = totalReferralRewardAll - totalReferralRewardPending;
@@ -3666,7 +3616,7 @@ function attachHandlers(api, config) {
                     ? ` (Hoa hồng: ${formatVND(totalOrderCommReceived)} + Giới thiệu: ${formatVND(totalReferralRewardReceived)})` 
                     : "";
 
-                replyText = `@${senderName} 💳VÍ TIỀN CỦA SẾP!\n` +
+                let replyText = `@${senderName} 💳VÍ TIỀN CỦA SẾP! (Siêu tốc VPS)\n` +
                             `💰  Tổng hoa hồng:   ${formatVND(totalOrderCommAll)}\n` +
                             `⏳  Đang chờ xử lý:  ${formatVND(totalPending)}\n` +
                             `✅  Đã hoàn thành:   ${formatVND(totalOrderCommPending)}\n` +
@@ -3674,32 +3624,21 @@ function attachHandlers(api, config) {
                             `💵  Có thể rút ngay: ${formatVND(totalCompleted)}\n` +
                             `📥  Đã nhận:        ${formatVND(totalAllReceived)}${recText}\n` +
                             `>  Đã trừ thuế shopee và chia bạn 8 phần mình 2 phần. Hợp tác vui vẻ lâu dài!\n` +
-                            `>  Liên hệ Trưởng nhóm ${leaderMentionText} để rút tiền\n\n` +
+                            `>  Liên hệ Trưởng nhóm ${leaderId ? '@'+leaderName : 'Trưởng nhóm'} để rút tiền\n\n` +
                             `👉 Tra cứu ví tiền chi tiết tại: https://hoantienonline.io.vn`;
 
+                let mentions = [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }];
                 if (leaderId) {
+                    const leaderMentionText = `@${leaderName}`;
                     const leaderPos = replyText.indexOf(leaderMentionText);
                     if (leaderPos !== -1) {
-                        mentions.push({
-                            pos: leaderPos,
-                            uid: leaderId,
-                            len: leaderMentionText.length
-                        });
+                        mentions.push({ pos: leaderPos, uid: leaderId, len: leaderMentionText.length });
                     }
                 }
 
                 await api.sendMessage({ msg: replyText, mentions: mentions }, groupId, msg.type);
             } catch (err) {
                 console.error(`[Command Error] Lỗi khi tra cứu ví tiền: ${err.message}`);
-                try {
-                    const fallbackMsg = `@${senderName} 💳VÍ TIỀN CỦA SẾP!\n` +
-                                        `💰  Tổng hoa hồng:   0đ\n` +
-                                        `⏳  Đang chờ xử lý:  0đ\n` +
-                                        `💵  Có thể rút ngay: 0đ\n` +
-                                        `📥  Đã nhận:        0đ\n\n` +
-                                        `👉 Tra cứu chi tiết tại: https://hoantienonline.io.vn`;
-                    await api.sendMessage({ msg: fallbackMsg, mentions: [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }] }, groupId, msg.type);
-                } catch (e) {}
             }
             return;
         }
