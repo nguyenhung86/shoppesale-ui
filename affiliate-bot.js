@@ -1523,33 +1523,6 @@ function startExpressServer(config) {
                 try {
                     console.log(`[API Web] Đang chuyển đổi link cho web convert: ${rawUrl} (SubID: ${subId})`);
                     
-                    // --- BƯỚC 1: Gọi Google Apps Script (Ma_perfect.gs) để lấy thông tin sản phẩm đầy đủ (Tên, Ảnh, Giá, Hoa hồng) ---
-                    if (config.orderAppsScriptUrl) {
-                        try {
-                            const gasUrl = config.orderAppsScriptUrl + '?action=convertLink&url=' + encodeURIComponent(rawUrl) + '&subId=' + encodeURIComponent(subId);
-                            const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 7000); // Đợi tối đa 7 giây
-                            const gasRes = await fetch(gasUrl, { signal: controller.signal });
-                            clearTimeout(timeoutId);
-                            const gasJson = await gasRes.json();
-                            
-                            // Nếu GAS thành công, trả về dữ liệu chuẩn xác đầy đủ (Có tên, ảnh đẹp, hoa hồng chính xác)
-                            if (gasJson && gasJson.success && gasJson.productName && !gasJson.productName.includes("không có hoa hồng")) {
-                                console.log('[API Web] Lấy dữ liệu sản phẩm từ GAS thành công!');
-                                return res.json(gasJson);
-                            }
-                        } catch(eGas) {
-                            console.log('[API Web] Lấy dữ liệu sản phẩm từ GAS thất bại, chuyển sang Native VPS. Lỗi:', eGas.message);
-                        }
-                    }
-
-                    // --- BƯỚC 2: Nếu GAS thất bại hoặc báo không có hoa hồng, DÙNG NATIVE VPS ĐỂ BẢO ĐẢM TẠO LINK THÀNH CÔNG 100% ---
-                    console.log('[API Web] Sử dụng trình tạo link Native VPS để đảm bảo 100% không báo lỗi...');
-                    
-                    const isTikTok = /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl);
-                    const isLazada = /lazada\.vn|lzd\.co|s\.lazada/i.test(rawUrl);
-                    const isShopee = /shopee\.vn|shp\.ee|s\.shopee/i.test(rawUrl);
-
                     let affiliateLink = "";
                     let productName = "";
                     let price = 0;
@@ -1557,7 +1530,12 @@ function startExpressServer(config) {
                     let sellerRate = 0;
                     let imageUrl = "";
 
-                    // --- BƯỚC 1.5: Thử hỏi Chrome Extension xem sản phẩm có bị cắt hoa hồng (0%) không (Ngăn báo ảo 8%) ---
+                    // --- BƯỚC 1: Bắt buộc hỏi Chrome Extension để biết CHÍNH XÁC CÓ HOA HỒNG HAY KHÔNG (Ngăn GAS báo ảo 8%) ---
+                    let trueCommissionRate = null;
+                    let trueSellerRate = null;
+                    let truePrice = null;
+                    let trueProductName = null;
+                    
                     if (isShopee) {
                         try {
                             const isExtensionActive = (Date.now() - lastExtensionActiveTime) < 5000;
@@ -1565,31 +1543,72 @@ function startExpressServer(config) {
                                 console.log('[API Web] Thử hỏi Chrome Extension kiểm tra hoa hồng Shopee...');
                                 const cdpData = await getProductDetailsViaExtension(rawUrl).catch(() => null);
                                 if (cdpData) {
-                                    // Sản phẩm bị cắt hoa hồng thật sự (0%) -> Báo lỗi chặn mua
+                                    // Sản phẩm bị cắt hoa hồng thật sự (0%) -> Báo lỗi chặn mua NGAY LẬP TỨC
                                     if (cdpData.commission_rate === 0 && cdpData.commission_amount === 0) {
                                         console.log('[API Web] Chrome Extension xác nhận sản phẩm 0% hoa hồng! Chặn ngay!');
                                         return res.json({ success: false, error: "⚠️ Sản phẩm Shopee này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" });
                                     }
                                     
-                                    // Nếu có hoa hồng -> Lưu tên và % thật để đi tiếp
+                                    // Nếu có hoa hồng -> Lưu % thật để đè lên kết quả ảo của GAS
                                     if (cdpData.commission_rate > 0 || cdpData.commission_amount > 0) {
-                                        productName = cdpData.itemName || cdpData.productName || cdpData.name || "Sản phẩm Shopee";
-                                        shopeeRate = cdpData.shopee_rate || cdpData.commission_rate || 8.0;
-                                        sellerRate = cdpData.seller_rate || 0;
-                                        price = cdpData.price || 0;
+                                        trueProductName = cdpData.itemName || cdpData.productName || cdpData.name || "";
+                                        trueCommissionRate = cdpData.shopee_rate || cdpData.commission_rate;
+                                        trueSellerRate = cdpData.seller_rate || 0;
+                                        truePrice = cdpData.price || 0;
+                                        console.log(`[API Web] Extension xác nhận có hoa hồng thật: ${trueCommissionRate}%`);
                                     }
                                 } else {
-                                    // Extension chạy nhưng không bắt được data
+                                    // Bắt buộc phải check ra hoa hồng mới cho qua (theo lệnh sếp)
                                     return res.json({ success: false, error: "⚠️ Hệ thống chưa thể trích xuất thông tin hoa hồng từ link này lúc này (có thể do lỗi mạng hoặc link bị lỗi). Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰" });
                                 }
                             } else {
-                                // Extension không bật
                                 return res.json({ success: false, error: "⚠️ Hệ thống đang quá tải không thể kiểm tra hoa hồng. Vui lòng thử lại sau ít phút!" });
                             }
                         } catch(eExt) {
-                            console.log('[API Web] Lỗi khi gọi Chrome Extension:', eExt.message);
                             return res.json({ success: false, error: "⚠️ Hệ thống chưa thể trích xuất thông tin hoa hồng từ link này lúc này. Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰" });
                         }
+                    }
+
+                    // --- BƯỚC 2: Gọi Google Apps Script (Ma_perfect.gs) CHỈ để lấy Tên đẹp và Ảnh đẹp (Hoa hồng sẽ bị ghi đè bằng đồ thật) ---
+                    if (config.orderAppsScriptUrl) {
+                        try {
+                            const gasUrl = config.orderAppsScriptUrl + '?action=convertLink&url=' + encodeURIComponent(rawUrl) + '&subId=' + encodeURIComponent(subId);
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 7000); 
+                            const gasRes = await fetch(gasUrl, { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            const gasJson = await gasRes.json();
+                            
+                            if (gasJson && gasJson.success && gasJson.productName && !gasJson.productName.includes("không có hoa hồng")) {
+                                console.log('[API Web] Lấy dữ liệu tên/ảnh từ GAS thành công!');
+                                
+                                // NẾU LÀ SHOPEE, BẮT BUỘC DÙNG HOA HỒNG THẬT TỪ EXTENSION ĐỂ GHI ĐÈ HOA HỒNG ẢO CỦA GAS
+                                if (isShopee && trueCommissionRate !== null) {
+                                    gasJson.commissionRate = trueCommissionRate + (trueSellerRate || 0);
+                                    if (truePrice > 0) gasJson.price = truePrice;
+                                    
+                                    // Tính lại số tiền hoa hồng dựa trên % thật
+                                    let calShopeeComm = (trueCommissionRate > 0 && gasJson.price > 0) ? Math.round(gasJson.price * (trueCommissionRate / 100)) : 0;
+                                    if (trueCommissionRate > 0 && calShopeeComm > 40000) calShopeeComm = 40000;
+                                    let calSellerComm = (trueSellerRate > 0 && gasJson.price > 0) ? Math.round(gasJson.price * (trueSellerRate / 100)) : 0;
+                                    
+                                    gasJson.commission = calShopeeComm + calSellerComm;
+                                }
+                                
+                                return res.json(gasJson);
+                            }
+                        } catch(eGas) {
+                            console.log('[API Web] Lấy dữ liệu tên/ảnh từ GAS thất bại, chuyển sang Native VPS.');
+                        }
+                    }
+
+                    // --- BƯỚC 3: Nếu GAS thất bại lấy ảnh, dùng thông tin thật từ Extension để tạo Native ---
+                    console.log('[API Web] Sử dụng trình tạo link Native VPS...');
+                    if (isShopee && trueCommissionRate !== null) {
+                        productName = trueProductName || "Sản phẩm Shopee";
+                        shopeeRate = trueCommissionRate;
+                        sellerRate = trueSellerRate || 0;
+                        price = truePrice || 0;
                     }
 
                     // 1. Nếu là TikTok Shop -> Gọi RioHub
