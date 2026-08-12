@@ -1522,6 +1522,30 @@ function startExpressServer(config) {
 
                 try {
                     console.log(`[API Web] Đang chuyển đổi link cho web convert: ${rawUrl} (SubID: ${subId})`);
+                    
+                    // --- BƯỚC 1: Gọi Google Apps Script (Ma_perfect.gs) để lấy thông tin sản phẩm đầy đủ (Tên, Ảnh, Giá, Hoa hồng) ---
+                    if (config.orderAppsScriptUrl) {
+                        try {
+                            const gasUrl = config.orderAppsScriptUrl + '?action=convertLink&url=' + encodeURIComponent(rawUrl) + '&subId=' + encodeURIComponent(subId);
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 7000); // Đợi tối đa 7 giây
+                            const gasRes = await fetch(gasUrl, { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            const gasJson = await gasRes.json();
+                            
+                            // Nếu GAS thành công, trả về dữ liệu chuẩn xác đầy đủ (Có tên, ảnh đẹp, hoa hồng chính xác)
+                            if (gasJson && gasJson.success && gasJson.productName && !gasJson.productName.includes("không có hoa hồng")) {
+                                console.log('[API Web] Lấy dữ liệu sản phẩm từ GAS thành công!');
+                                return res.json(gasJson);
+                            }
+                        } catch(eGas) {
+                            console.log('[API Web] Lấy dữ liệu sản phẩm từ GAS thất bại, chuyển sang Native VPS. Lỗi:', eGas.message);
+                        }
+                    }
+
+                    // --- BƯỚC 2: Nếu GAS thất bại hoặc báo không có hoa hồng, DÙNG NATIVE VPS ĐỂ BẢO ĐẢM TẠO LINK THÀNH CÔNG 100% ---
+                    console.log('[API Web] Sử dụng trình tạo link Native VPS để đảm bảo 100% không báo lỗi...');
+                    
                     const isTikTok = /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl);
                     const isLazada = /lazada\.vn|lzd\.co|s\.lazada/i.test(rawUrl);
                     const isShopee = /shopee\.vn|shp\.ee|s\.shopee/i.test(rawUrl);
