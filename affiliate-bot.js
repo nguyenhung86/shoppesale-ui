@@ -4658,7 +4658,7 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
 
             const replyPayload = {
                 msg: replyText,
-                quote: msg,
+                quote: msg.data || msg,
                 mentions: [
                     {
                         pos: 0,
