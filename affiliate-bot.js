@@ -1534,6 +1534,28 @@ function startExpressServer(config) {
                     let sellerRate = 0;
                     let imageUrl = "";
 
+                    // --- BƯỚC 0: Nếu là TikTok Shop -> Gọi thẳng RioHub siêu tốc (BỎ QUA GAS) ---
+                    if (isTikTok) {
+                        try {
+                            const tikRes = await convertTikTokViaRioHub(rawUrl, subId);
+                            if (tikRes && (tikRes.affiliateLink || tikRes.shortLink)) {
+                                return res.json({
+                                    success: true,
+                                    shortLink: tikRes.affiliateLink || tikRes.shortLink,
+                                    rawAffiliateLink: tikRes.affiliateLink || tikRes.shortLink,
+                                    productName: tikRes.productName || "Sản phẩm TikTok Shop",
+                                    commissionRate: tikRes.commissionRate || 10.0,
+                                    commissionAmount: tikRes.commissionAmount || 0,
+                                    price: tikRes.price || 0,
+                                    imageUrl: tikRes.imageUrl || "",
+                                    platformName: "TikTok Shop"
+                                });
+                            }
+                        } catch (eTik) {
+                            console.error("[API Web] Lỗi RioHub TikTok:", eTik.message);
+                        }
+                    }
+
                     // --- BƯỚC 1: Gọi Google Apps Script (Ma_perfect.gs) để lấy thông tin sản phẩm đầy đủ (Tên, Ảnh, Giá, Hoa hồng) ---
                     if (config.orderAppsScriptUrl) {
                         try {
@@ -1565,24 +1587,6 @@ function startExpressServer(config) {
                     // NẾU LÀ SHOPEE MÀ GAS THẤT BẠI -> KHÔNG QUÉT ĐƯỢC HOA HỒNG -> BÁO LỖI LUÔN THEO LỆNH SẾP!
                     if (isShopee) {
                         return res.json({ success: false, error: "⚠️ Hệ thống chưa thể trích xuất thông tin hoa hồng từ link này lúc này. Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰" });
-                    }
-
-                    // 1. Nếu là TikTok Shop -> Gọi RioHub
-                    if (isTikTok) {
-                        const tikRes = await convertTikTokViaRioHub(rawUrl, subId);
-                        if (tikRes && tikRes.shortLink) {
-                            return res.json({
-                                success: true,
-                                shortLink: tikRes.shortLink,
-                                rawAffiliateLink: tikRes.shortLink,
-                                productName: tikRes.productName || "Sản phẩm TikTok Shop",
-                                commissionRate: tikRes.commissionRate || 10.0,
-                                commissionAmount: tikRes.commissionAmount || 0,
-                                price: tikRes.price || 0,
-                                imageUrl: tikRes.imageUrl || "",
-                                platformName: "TikTok Shop"
-                            });
-                        }
                     }
 
                     // 2. Thử gọi AddLiveTag API để giải mã thông tin sản phẩm chính xác
