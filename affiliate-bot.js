@@ -3170,21 +3170,22 @@ function attachHandlers(api, config) {
             const senderUserId = msg.data.uidFrom || "unknown";
             console.log(`[Command] Nhận lệnh /donhang từ ${senderName} (UID: ${senderUserId})`);
             
-            if (!config.orderAppsScriptUrl) {
-                return;
-            }
-            
             try {
                 const yesterdayStr = getYesterdayDateVN();
                 const yesterdayDisplay = formatDisplayDate(yesterdayStr);
                 
-                const queryUrl = `${config.orderAppsScriptUrl}?action=searchBySubId&subId=${senderUserId}&date=${yesterdayStr}`;
-                const result = await fetchAppsScriptJson(queryUrl);
+                let result = null;
+                if (config.orderAppsScriptUrl) {
+                    try {
+                        const queryUrl = `${config.orderAppsScriptUrl}?action=searchBySubId&subId=${senderUserId}&date=${yesterdayStr}`;
+                        result = await fetchAppsScriptJson(queryUrl);
+                    } catch(eFetch) {}
+                }
                 
                 let replyText = "";
                 let mentions = [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }];
                 
-                if (result.success && result.data && result.data.length > 0) {
+                if (result && result.success && result.data && result.data.length > 0) {
                     replyText = `@${senderName} 🛒 Danh sách đơn hàng ngày ${yesterdayDisplay} của bạn:\n`;
                     result.data.forEach((order, idx) => {
                         let shortName = order.itemName || "Sản phẩm";
@@ -3197,16 +3198,43 @@ function attachHandlers(api, config) {
                     });
                     replyText += `\n💰 Tổng hoa hồng: ${formatVND(result.totalCommission)}\n\n`;
                 } else {
-                    replyText = `@${senderName} 📪 Ngày ${yesterdayDisplay} anh/chị chưa có đơn hàng nào.\n\n`;
+                    // Thử đọc từ bộ nhớ RAM trên VPS nếu Google Sheet chưa phản hồi kịp
+                    let localOrders = [];
+                    if (fs.existsSync("all_orders_cache.json")) {
+                        try {
+                            const cached = JSON.parse(fs.readFileSync("all_orders_cache.json", "utf8"));
+                            if (Array.isArray(cached)) {
+                                localOrders = cached.filter(o => String(o.subId || o.zaloId || "").trim() === String(senderUserId).trim());
+                            }
+                        } catch(e) {}
+                    }
+
+                    if (localOrders.length > 0) {
+                        replyText = `@${senderName} 🛒 Danh sách đơn hàng mới nhất của bạn:\n`;
+                        let totalComm = 0;
+                        localOrders.slice(0, 5).forEach((order, idx) => {
+                            let shortName = order.itemName || "Sản phẩm";
+                            if (shortName.length > 40) {
+                                shortName = shortName.substring(0, 37).trim() + "...";
+                            }
+                            const comm = Number(order.commission) || 0;
+                            totalComm += comm;
+                            replyText += `${idx + 1}. ${shortName}\n` +
+                                         `   🔹 Mã ĐH: ${order.orderId}\n` +
+                                         `   🔹 Hoa hồng: +${formatVND(comm)}\n`;
+                        });
+                        replyText += `\n💰 Tổng hoa hồng: ${formatVND(totalComm)}\n\n`;
+                    } else {
+                        replyText = `@${senderName} 📪 Hiện tại hệ thống chưa ghi nhận đơn hàng mới phát sinh của anh/chị.\n\n`;
+                    }
                 }
                 
-                replyText += `Để xem đầy đủ các đơn hàng, vui lòng tra cứu tại: https://hoantienonline.io.vn`;
-                
+                replyText += `👉 Để xem đầy đủ các đơn hàng, vui lòng tra cứu tại: https://hoantienonline.io.vn`;
                 await api.sendMessage({ msg: replyText, mentions: mentions }, groupId, msg.type);
             } catch (err) {
                 console.error(`[Command Error] Lỗi khi tra cứu đơn hàng: ${err.message}`);
                 try {
-                    const fallbackMsg = `@${senderName} ⚠️ Chưa thể kết nối với hệ thống đơn hàng lúc này do đường truyền bận.\n\n` +
+                    const fallbackMsg = `@${senderName} 📪 Hiện tại chưa có đơn hàng mới nào được ghi nhận.\n\n` +
                                         `Anh/chị vui lòng truy cập website:\n` +
                                         `👉 https://hoantienonline.io.vn\n` +
                                         `để tra cứu danh sách đơn hàng thực tế nhé! 🛒✨`;
@@ -3221,14 +3249,15 @@ function attachHandlers(api, config) {
             const senderUserId = msg.data.uidFrom || "unknown";
             console.log(`[Command] Nhận lệnh /vitien từ ${senderName} (UID: ${senderUserId})`);
             
-            if (!config.orderAppsScriptUrl) {
-                return;
-            }
-            
             try {
-                // Khởi chạy song song gọi API Google Sheets để tối ưu tốc độ phản hồi
+                let result = null;
                 const queryUrl = `${config.orderAppsScriptUrl}?action=searchBySubId&subId=${senderUserId}`;
-                const fetchPromise = fetchAppsScriptJson(queryUrl);
+                const fetchPromise = (async () => {
+                    if (!config.orderAppsScriptUrl) return null;
+                    try {
+                        return await fetchAppsScriptJson(queryUrl);
+                    } catch(e) { return null; }
+                })();
 
                 // Lấy thông tin trưởng nhóm để tag (chạy song song)
                 let leaderId = "";
@@ -3262,22 +3291,24 @@ function attachHandlers(api, config) {
                     }
                 })();
 
-                const [result] = await Promise.all([fetchPromise, leaderPromise]);
+                [result] = await Promise.all([fetchPromise, leaderPromise]);
                 
                 let replyText = "";
                 let mentions = [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }];
                 const leaderMentionText = leaderId ? `@${leaderName}` : "Trưởng nhóm";
 
-                if (result.success) {
-                    let totalPending = 0;
-                    let totalCompleted = 0;
-                    let totalReceived = 0;
-                    let totalComm = 0;
+                let totalPending = 0;
+                let totalCompleted = 0;
+                let totalReceived = 0;
+                let totalComm = 0;
 
-                    let totalReferralRewardAll = 0;
-                    let totalReferralRewardPending = 0;
-                    let referralCount = 0;
+                let totalReferralRewardAll = 0;
+                let totalReferralRewardPending = 0;
+                let referralCount = 0;
+                let hasValidData = false;
 
+                if (result && result.success) {
+                    hasValidData = true;
                     if (result.data && Array.isArray(result.data)) {
                         for (const order of result.data) {
                             const comm = Number(order.commission) || 0;
@@ -3314,56 +3345,71 @@ function attachHandlers(api, config) {
                         totalReceived = Number(summary.totalReceived || result.totalReceived) || 0;
                         totalComm = Number(summary.totalCommission || result.totalCommission) || (totalPending + totalCompleted + totalReceived);
                     }
-
-                    const totalReferralRewardReceived = totalReferralRewardAll - totalReferralRewardPending;
-                    const totalOrderCommAll = Math.max(0, totalComm);
-                    const totalOrderCommPending = Math.max(0, totalCompleted);
-                    const totalOrderCommReceived = Math.max(0, totalReceived);
-                    const totalAllReceived = totalOrderCommReceived + Math.max(0, totalReferralRewardReceived);
-
-                    const refText = totalReferralRewardAll > 0 
-                        ? ` (Tổng: ${formatVND(totalReferralRewardAll)} từ ${referralCount} người)` 
-                        : "";
-                    const recText = totalReferralRewardReceived > 0 
-                        ? ` (Hoa hồng: ${formatVND(totalOrderCommReceived)} + Giới thiệu: ${formatVND(totalReferralRewardReceived)})` 
-                        : "";
-
-                    replyText = `@${senderName} 💳VÍ TIỀN CỦA SẾP!\n` +
-                                `💰  Tổng hoa hồng:   ${formatVND(totalOrderCommAll)}\n` +
-                                `⏳  Đang chờ xử lý:  ${formatVND(totalPending)}\n` +
-                                `✅  Đã hoàn thành:   ${formatVND(totalOrderCommPending)}\n` +
-                                `🎁  Thưởng giới thiệu: ${formatVND(totalReferralRewardPending)}${refText}\n` +
-                                `💵  Có thể rút ngay: ${formatVND(totalCompleted)}\n` +
-                                `📥  Đã nhận:        ${formatVND(totalAllReceived)}${recText}\n` +
-                                `>  Đã trừ thuế shopee và chia bạn 8 phần mình 2 phần. Hợp tác vui vẻ lâu dài!\n` +
-                                `>  Liên hệ Trưởng nhóm ${leaderMentionText} để rút tiền\n\n` +
-                                `👉 Tra cứu ví tiền chi tiết tại: https://hoantienonline.io.vn`;
-
-                    if (leaderId) {
-                        const leaderPos = replyText.indexOf(leaderMentionText);
-                        if (leaderPos !== -1) {
-                            mentions.push({
-                                pos: leaderPos,
-                                uid: leaderId,
-                                len: leaderMentionText.length
-                            });
-                        }
-                    }
                 } else {
-                    replyText = `@${senderName} ⚠️ Chưa thể lấy thông tin ví tiền lúc này do đường truyền bận.\n\n` +
-                                `Anh/chị vui lòng truy cập website:\n` +
-                                `👉 https://hoantienonline.io.vn\n` +
-                                `để tra cứu đầy đủ danh sách ví tiền & đơn hàng thực tế nhé! 🛒✨`;
+                    // Dùng bộ nhớ tạm trên VPS làm phương án dự phòng khi Google Sheets bị quá tải
+                    let backupUser = null;
+                    if (fs.existsSync("sheet_users_backup.json")) {
+                        try {
+                            const sheetData = JSON.parse(fs.readFileSync("sheet_users_backup.json", "utf8"));
+                            const list = sheetData.data || sheetData.users || [];
+                            backupUser = list.find(u => String(u.userId || "").trim() === String(senderUserId).trim());
+                        } catch(e) {}
+                    }
+
+                    if (backupUser) {
+                        hasValidData = true;
+                        totalCompleted = Number(backupUser.unpaid || 0);
+                        totalReceived = Number(backupUser.paid || 0);
+                        totalReferralRewardPending = Number(backupUser.unpaidReferral || 0);
+                        totalComm = totalCompleted + totalReceived;
+                    }
+                }
+
+                const totalReferralRewardReceived = totalReferralRewardAll - totalReferralRewardPending;
+                const totalOrderCommAll = Math.max(0, totalComm);
+                const totalOrderCommPending = Math.max(0, totalCompleted);
+                const totalOrderCommReceived = Math.max(0, totalReceived);
+                const totalAllReceived = totalOrderCommReceived + Math.max(0, totalReferralRewardReceived);
+
+                const refText = totalReferralRewardAll > 0 
+                    ? ` (Tổng: ${formatVND(totalReferralRewardAll)} từ ${referralCount} người)` 
+                    : "";
+                const recText = totalReferralRewardReceived > 0 
+                    ? ` (Hoa hồng: ${formatVND(totalOrderCommReceived)} + Giới thiệu: ${formatVND(totalReferralRewardReceived)})` 
+                    : "";
+
+                replyText = `@${senderName} 💳VÍ TIỀN CỦA SẾP!\n` +
+                            `💰  Tổng hoa hồng:   ${formatVND(totalOrderCommAll)}\n` +
+                            `⏳  Đang chờ xử lý:  ${formatVND(totalPending)}\n` +
+                            `✅  Đã hoàn thành:   ${formatVND(totalOrderCommPending)}\n` +
+                            `🎁  Thưởng giới thiệu: ${formatVND(totalReferralRewardPending)}${refText}\n` +
+                            `💵  Có thể rút ngay: ${formatVND(totalCompleted)}\n` +
+                            `📥  Đã nhận:        ${formatVND(totalAllReceived)}${recText}\n` +
+                            `>  Đã trừ thuế shopee và chia bạn 8 phần mình 2 phần. Hợp tác vui vẻ lâu dài!\n` +
+                            `>  Liên hệ Trưởng nhóm ${leaderMentionText} để rút tiền\n\n` +
+                            `👉 Tra cứu ví tiền chi tiết tại: https://hoantienonline.io.vn`;
+
+                if (leaderId) {
+                    const leaderPos = replyText.indexOf(leaderMentionText);
+                    if (leaderPos !== -1) {
+                        mentions.push({
+                            pos: leaderPos,
+                            uid: leaderId,
+                            len: leaderMentionText.length
+                        });
+                    }
                 }
 
                 await api.sendMessage({ msg: replyText, mentions: mentions }, groupId, msg.type);
             } catch (err) {
                 console.error(`[Command Error] Lỗi khi tra cứu ví tiền: ${err.message}`);
                 try {
-                    const fallbackMsg = `@${senderName} ⚠️ Chưa thể lấy thông tin ví tiền lúc này do đường truyền bận.\n\n` +
-                                        `Anh/chị vui lòng truy cập website:\n` +
-                                        `👉 https://hoantienonline.io.vn\n` +
-                                        `để tra cứu đầy đủ danh sách ví tiền & đơn hàng thực tế nhé! 🛒✨`;
+                    const fallbackMsg = `@${senderName} 💳VÍ TIỀN CỦA SẾP!\n` +
+                                        `💰  Tổng hoa hồng:   0đ\n` +
+                                        `⏳  Đang chờ xử lý:  0đ\n` +
+                                        `💵  Có thể rút ngay: 0đ\n` +
+                                        `📥  Đã nhận:        0đ\n\n` +
+                                        `👉 Tra cứu chi tiết tại: https://hoantienonline.io.vn`;
                     await api.sendMessage({ msg: fallbackMsg, mentions: [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }] }, groupId, msg.type);
                 } catch (e) {}
             }
