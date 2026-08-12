@@ -527,14 +527,18 @@ function handleConvert() {
           // Lưu lịch sử chuyển đổi vào localStorage
           saveConvertHistory(platform, rawUrl, shortLink, productName, price, commissionRate, commissionAmount, imageUrl);
         } else {
-          let platformName = "Shopee";
-        if (/tiktok/i.test(rawUrl)) platformName = "TikTok";
-        else if (/lazada/i.test(rawUrl)) platformName = "Lazada";
-        else if (/shopeefood/i.test(rawUrl)) platformName = "ShopeeFood";
-        else if (/shopee/i.test(rawUrl)) platformName = "Shopee";
-        
-        const customErrMsg = `⚠️ Sản phẩm ${platformName} này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!`;
-        alert(customErrMsg);
+          // Hiển thị đúng câu báo lỗi từ API trả về, không tự ý gán cứng chữ "không có hoa hồng"
+          const serverError = (response && response.error) ? response.error : null;
+          if (serverError) {
+            alert(serverError);
+          } else {
+            let platformName = "Shopee";
+            if (/tiktok/i.test(rawUrl)) platformName = "TikTok";
+            else if (/lazada/i.test(rawUrl)) platformName = "Lazada";
+            else if (/shopeefood/i.test(rawUrl)) platformName = "ShopeeFood";
+            
+            alert(`⚠️ Không thể tạo link cho sản phẩm ${platformName} này lúc này. Vui lòng thử lại!`);
+          }
         }
       } catch (err) {
         console.error("Lỗi chuyển đổi:", err);
