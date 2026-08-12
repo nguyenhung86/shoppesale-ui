@@ -1557,6 +1557,34 @@ function startExpressServer(config) {
                     let sellerRate = 0;
                     let imageUrl = "";
 
+                    // --- BƯỚC 1.5: Thử hỏi Chrome Extension xem sản phẩm có bị cắt hoa hồng (0%) không (Ngăn báo ảo 8%) ---
+                    if (isShopee) {
+                        try {
+                            const isExtensionActive = (Date.now() - lastExtensionActiveTime) < 5000;
+                            if (isExtensionActive) {
+                                console.log('[API Web] Thử hỏi Chrome Extension kiểm tra hoa hồng Shopee...');
+                                const cdpData = await getProductDetailsViaExtension(rawUrl).catch(() => null);
+                                if (cdpData) {
+                                    // Sản phẩm bị cắt hoa hồng thật sự (0%) -> Báo lỗi chặn mua
+                                    if (cdpData.commission_rate === 0 && cdpData.commission_amount === 0) {
+                                        console.log('[API Web] Chrome Extension xác nhận sản phẩm 0% hoa hồng! Chặn ngay!');
+                                        return res.json({ success: false, error: "⚠️ Sản phẩm Shopee này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" });
+                                    }
+                                    
+                                    // Nếu có hoa hồng -> Lưu tên và % thật để dùng ở dưới thay cho 8% mặc định
+                                    if (cdpData.commission_rate > 0 || cdpData.commission_amount > 0) {
+                                        productName = cdpData.itemName || cdpData.productName || cdpData.name || "";
+                                        shopeeRate = cdpData.shopee_rate || cdpData.commission_rate || 8.0;
+                                        sellerRate = cdpData.seller_rate || 0;
+                                        price = cdpData.price || 0;
+                                    }
+                                }
+                            }
+                        } catch(eExt) {
+                            console.log('[API Web] Lỗi khi gọi Chrome Extension:', eExt.message);
+                        }
+                    }
+
                     // 1. Nếu là TikTok Shop -> Gọi RioHub
                     if (isTikTok) {
                         const tikRes = await convertTikTokViaRioHub(rawUrl, subId);
