@@ -1601,11 +1601,30 @@ function startExpressServer(config) {
                     // 3. Nếu chưa có affiliateLink chính chủ Shopee -> Tạo link trực tiếp với AppID sếp
                     if (!affiliateLink && isShopee) {
                         const shopeeAppId = config.shopeeAppId || "17359760464";
-                        let ids = extractShopeeIds(rawUrl);
-                        if (ids) {
-                            affiliateLink = `https://shopee.vn/product/${ids.shopid}/${ids.itemid}?utm_source=an_${shopeeAppId}&utm_medium=affiliates&utm_campaign=an_${shopeeAppId}&sub_id=${subId}`;
+                        
+                        let shopId = null;
+                        let itemId = null;
+                        
+                        // Extract from shopee.vn/product/SHOPID/ITEMID
+                        const match1 = rawUrl.match(/product\/(\d+)\/(\d+)/i);
+                        if (match1) {
+                            shopId = match1[1];
+                            itemId = match1[2];
                         } else {
-                            affiliateLink = `https://shopee.vn/?utm_source=an_${shopeeAppId}&utm_medium=affiliates&utm_campaign=an_${shopeeAppId}&sub_id=${subId}`;
+                            // Extract from shopee.vn/name-i.SHOPID.ITEMID
+                            const match2 = rawUrl.match(/-i\.(\d+)\.(\d+)/i);
+                            if (match2) {
+                                shopId = match2[1];
+                                itemId = match2[2];
+                            }
+                        }
+
+                        if (shopId && itemId) {
+                            affiliateLink = `https://shopee.vn/product/${shopId}/${itemId}?utm_source=an_${shopeeAppId}&utm_medium=affiliates&utm_campaign=an_${shopeeAppId}&sub_id=${subId}`;
+                        } else {
+                            // Nếu là link rút gọn ko tách được ID, gắn trực tiếp params
+                            const separator = rawUrl.includes('?') ? '&' : '?';
+                            affiliateLink = `${rawUrl}${separator}utm_source=an_${shopeeAppId}&utm_medium=affiliates&utm_campaign=an_${shopeeAppId}&sub_id=${subId}`;
                         }
                     }
 
