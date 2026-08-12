@@ -3496,7 +3496,6 @@ function attachHandlers(api, config) {
                                      `   🔹 Hoa hồng: +${formatVND(comm)}\n`;
                     });
                     replyText += `\n💰 Tổng hoa hồng: ${formatVND(totalComm)}\n\n`;
-                    replyText += `(Dữ liệu lấy siêu tốc từ máy chủ VPS)\n\n`;
                 } else {
                     replyText = `@${senderName} 📪 Ngày ${yesterdayDisplay} anh/chị chưa có đơn hàng nào, hoặc hệ thống đang đồng bộ. Anh/chị đợi vài phút rồi kiểm tra lại nhé!\n\n`;
                 }
@@ -3616,7 +3615,7 @@ function attachHandlers(api, config) {
                     ? ` (Hoa hồng: ${formatVND(totalOrderCommReceived)} + Giới thiệu: ${formatVND(totalReferralRewardReceived)})` 
                     : "";
 
-                let replyText = `@${senderName} 💳VÍ TIỀN CỦA SẾP! (Siêu tốc VPS)\n` +
+                let replyText = `@${senderName} 💳VÍ TIỀN CỦA SẾP!\n` +
                             `💰  Tổng hoa hồng:   ${formatVND(totalOrderCommAll)}\n` +
                             `⏳  Đang chờ xử lý:  ${formatVND(totalPending)}\n` +
                             `✅  Đã hoàn thành:   ${formatVND(totalOrderCommPending)}\n` +
