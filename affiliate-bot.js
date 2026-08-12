@@ -4801,8 +4801,13 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
                 }
             }
 
-            // Nếu sản phẩm Shopee không có hoa hồng (0%) -> Báo cảnh báo đồng nhất 100% y hệt 2 sàn TikTok & Lazada
-            if ((!formattedComm2 || formattedComm2.includes("0% (Sản phẩm không có hoa hồng)")) && isTargetGroup(groupId) && !isLazada && !isTikTok) {
+            // Đồng nhất trải nghiệm Web và Zalo: Nếu không đọc được hoa hồng (vd: link khó vn.shp.ee), fallback về 8% ước tính để khách vẫn mua được hàng thay vì báo lỗi "không có hoa hồng".
+            if (!formattedComm2 && isShopee) {
+                formattedComm2 = "8% (Ước tính) 💰";
+            }
+
+            // Nếu sản phẩm Shopee chắc chắn không có hoa hồng (0%) -> Báo cảnh báo đồng nhất
+            if (formattedComm2 && formattedComm2.includes("0% (Sản phẩm không có hoa hồng)") && isTargetGroup(groupId) && !isLazada && !isTikTok) {
                 console.log(`-> [Shopee] Sản phẩm KHÔNG CÓ HOA HỒNG. Gửi tin nhắn thông báo cảnh báo đồng nhất 3 sàn cho khách.`);
                 const shopeeErrMsg = `@${senderName} ⚠️ Sản phẩm Shopee này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé! 🥰`;
                 await api.sendMessage({
