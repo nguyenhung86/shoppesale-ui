@@ -1539,7 +1539,7 @@ function startExpressServer(config) {
                         try {
                             const gasUrl = config.orderAppsScriptUrl + '?action=convertLink&url=' + encodeURIComponent(rawUrl) + '&subId=' + encodeURIComponent(subId);
                             const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 10000); 
+                            const timeoutId = setTimeout(() => controller.abort(), 15000); 
                             const gasRes = await fetch(gasUrl, { signal: controller.signal });
                             clearTimeout(timeoutId);
                             const gasJson = await gasRes.json();
