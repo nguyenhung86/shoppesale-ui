@@ -3210,7 +3210,7 @@ function attachHandlers(api, config) {
                     }
 
                     if (localOrders.length > 0) {
-                        replyText = `@${senderName} 🛒 Danh sách đơn hàng mới nhất của bạn:\n`;
+                        replyText = `@${senderName} 🛒 Danh sách đơn hàng ngày ${yesterdayDisplay} của bạn:\n`;
                         let totalComm = 0;
                         localOrders.slice(0, 5).forEach((order, idx) => {
                             let shortName = order.itemName || "Sản phẩm";
@@ -3225,19 +3225,19 @@ function attachHandlers(api, config) {
                         });
                         replyText += `\n💰 Tổng hoa hồng: ${formatVND(totalComm)}\n\n`;
                     } else {
-                        replyText = `@${senderName} 📪 Hiện tại hệ thống chưa ghi nhận đơn hàng mới phát sinh của anh/chị.\n\n`;
+                        replyText = `@${senderName} 📪 Ngày ${yesterdayDisplay} anh/chị chưa có đơn hàng nào.\n\n`;
                     }
                 }
                 
-                replyText += `👉 Để xem đầy đủ các đơn hàng, vui lòng tra cứu tại: https://hoantienonline.io.vn`;
+                replyText += `Để xem đầy đủ các đơn hàng, vui lòng tra cứu tại: https://hoantienonline.io.vn`;
                 await api.sendMessage({ msg: replyText, mentions: mentions }, groupId, msg.type);
             } catch (err) {
                 console.error(`[Command Error] Lỗi khi tra cứu đơn hàng: ${err.message}`);
                 try {
-                    const fallbackMsg = `@${senderName} 📪 Hiện tại chưa có đơn hàng mới nào được ghi nhận.\n\n` +
-                                        `Anh/chị vui lòng truy cập website:\n` +
-                                        `👉 https://hoantienonline.io.vn\n` +
-                                        `để tra cứu danh sách đơn hàng thực tế nhé! 🛒✨`;
+                    const yesterdayStr = getYesterdayDateVN();
+                    const yesterdayDisplay = formatDisplayDate(yesterdayStr);
+                    const fallbackMsg = `@${senderName} 📪 Ngày ${yesterdayDisplay} anh/chị chưa có đơn hàng nào.\n\n` +
+                                        `Để xem đầy đủ các đơn hàng, vui lòng tra cứu tại: https://hoantienonline.io.vn`;
                     await api.sendMessage({ msg: fallbackMsg, mentions: [{ pos: 0, uid: senderUserId, len: senderName.length + 1 }] }, groupId, msg.type);
                 } catch (e) {}
             }
