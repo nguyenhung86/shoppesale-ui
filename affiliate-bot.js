@@ -1556,8 +1556,33 @@ function startExpressServer(config) {
                         }
                     }
 
+                    // --- BƯỚC 0.5: Nếu là Shopee -> Gọi thẳng AddLiveTag (BỎ QUA GAS) ---
+                    if (isShopee) {
+                        try {
+                            const shopeeRes = await convertShopeeViaAddLiveTag(rawUrl);
+                            if (shopeeRes && shopeeRes.success && shopeeRes.productName) {
+                                console.log('[API Web] Lấy dữ liệu Shopee từ AddLiveTag siêu tốc thành công!');
+                                
+                                if (shopeeRes.commissionRate === undefined || shopeeRes.commissionRate === null || shopeeRes.commissionRate === 0) {
+                                    return res.json({ success: false, error: "⚠️ Sản phẩm Shopee này hiện tại KHÔNG CÓ HOA HỒNG tiếp thị liên kết (0%). Sếp vui lòng chọn sản phẩm khác nhé!" });
+                                }
+                                
+                                // Nếu có hoa hồng, mình vẫn cần tạo affiliateLink bằng Native VPS ở Bước 2.
+                                // Do đó, lưu dữ liệu vào biến và đi tiếp xuống Bước 2 (bỏ qua Bước 1 GAS).
+                                productName = shopeeRes.productName;
+                                price = shopeeRes.price;
+                                shopeeRate = shopeeRes.shopeeRate;
+                                sellerRate = shopeeRes.sellerRate;
+                                imageUrl = shopeeRes.imageUrl;
+                            }
+                        } catch (eShopee) {
+                            console.error("[API Web] Lỗi AddLiveTag Shopee:", eShopee.message);
+                        }
+                    }
+
                     // --- BƯỚC 1: Gọi Google Apps Script (Ma_perfect.gs) để lấy thông tin sản phẩm đầy đủ (Tên, Ảnh, Giá, Hoa hồng) ---
-                    if (config.orderAppsScriptUrl) {
+                    // NẾU ĐÃ LẤY ĐƯỢC TÊN/ẢNH Ở BƯỚC TRÊN THÌ BỎ QUA GAS LUÔN!
+                    if (config.orderAppsScriptUrl && !productName && !isShopee && !isTikTok) {
                         try {
                             const gasUrl = config.orderAppsScriptUrl + '?action=convertLink&url=' + encodeURIComponent(rawUrl) + '&subId=' + encodeURIComponent(subId);
                             const controller = new AbortController();
@@ -1584,8 +1609,8 @@ function startExpressServer(config) {
                     // --- BƯỚC 2: Nếu GAS thất bại, dùng trình tạo link Native VPS ---
                     console.log('[API Web] Sử dụng trình tạo link Native VPS...');
                     
-                    // NẾU LÀ SHOPEE MÀ GAS THẤT BẠI -> KHÔNG QUÉT ĐƯỢC HOA HỒNG -> BÁO LỖI LUÔN THEO LỆNH SẾP!
-                    if (isShopee) {
+                    // NẾU LÀ SHOPEE MÀ KHÔNG QUÉT ĐƯỢC TÊN/HOA HỒNG -> BÁO LỖI LUÔN THEO LỆNH SẾP!
+                    if (isShopee && !productName) {
                         return res.json({ success: false, error: "⚠️ Hệ thống chưa thể trích xuất thông tin hoa hồng từ link này lúc này. Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰" });
                     }
 
@@ -2287,6 +2312,53 @@ function getShortProductName(name) {
         clean = clean.substring(0, 42) + "...";
     }
     return clean;
+}
+
+async function convertShopeeViaAddLiveTag(rawUrl) {
+    try {
+        const response = await fetch('https://addlivetag.com/product/?q=' + encodeURIComponent(rawUrl));
+        const html = await response.text();
+        const descMatch = html.match(/<meta name="description" content="([^"]+)"/i);
+        const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
+        const imgMatch = html.match(/<meta property="og:image" content="([^"]+)"/i);
+        
+        let productName = "";
+        if (titleMatch) {
+            productName = titleMatch[1].replace(/Hoa hồng.*?% — /i, '').replace(/ \| AddLiveTag/i, '').trim();
+        }
+        
+        let price = 0;
+        let shopeeRate = 0;
+        let sellerRate = 0;
+        let commissionRate = 0;
+        
+        if (descMatch) {
+            const desc = descMatch[1];
+            const totalMatch = desc.match(/tổng\s+[\d.,]+đ\s+\(([\d.]+)%\)/i);
+            if (totalMatch) commissionRate = parseFloat(totalMatch[1]);
+            
+            const shopeeMatch = desc.match(/Shopee\s+([\d.]+)%/i);
+            if (shopeeMatch) shopeeRate = parseFloat(shopeeMatch[1]);
+            
+            const sellerMatch = desc.match(/Seller\s+([\d.]+)%/i);
+            if (sellerMatch) sellerRate = parseFloat(sellerMatch[1]);
+            
+            const priceMatch = desc.match(/Giá\s+([\d.,]+)đ/i);
+            if (priceMatch) price = parseInt(priceMatch[1].replace(/[.,]/g, ''), 10);
+        }
+        
+        return {
+            success: true,
+            productName,
+            price,
+            commissionRate,
+            shopeeRate,
+            sellerRate,
+            imageUrl: imgMatch ? imgMatch[1] : ""
+        };
+    } catch (e) {
+        return null;
+    }
 }
 
 async function convertTikTokViaRioHub(rawUrl, senderUserId, resolvedUrl = "") {
