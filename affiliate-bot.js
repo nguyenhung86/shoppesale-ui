@@ -2347,6 +2347,34 @@ async function convertShopeeViaAddLiveTag(rawUrl) {
             if (priceMatch) price = parseInt(priceMatch[1].replace(/[.,]/g, ''), 10);
         }
         
+        // Tự động điều chỉnh tỷ lệ hoa hồng Shopee theo cơ chế Bot chuẩn
+        if (shopeeRate > 0 || sellerRate > 0) {
+            const nameLower = (productName || "").toLowerCase();
+            const isPetProduct = nameLower.includes("chó") || nameLower.includes("mèo") || 
+                                 nameLower.includes("thú cưng") || nameLower.includes("pet") || 
+                                 nameLower.includes("cát vệ sinh") || nameLower.includes("pate") || 
+                                 nameLower.includes("royal canin") || nameLower.includes("whiskas") || 
+                                 nameLower.includes("ve rận");
+                                 
+            const isMotorcycle = nameLower.includes("xe máy") || nameLower.includes("xe may") || 
+                                 nameLower.includes("ô tô") || nameLower.includes("o to") || 
+                                 nameLower.includes("xe hơi") || nameLower.includes("salaya") || 
+                                 nameLower.includes("nhông sên") || nameLower.includes("nhớt") || 
+                                 nameLower.includes("dầu nhớt") || nameLower.includes("bao tay") || 
+                                 nameLower.includes("tay nắm") || nameLower.includes("kính chiếu hậu") || 
+                                 nameLower.includes("gương xe") || nameLower.includes("pô xe") ||
+                                 nameLower.includes("mũ bảo hiểm") || nameLower.includes("mu bao hiem") ||
+                                 nameLower.includes("nón bảo hiểm") || nameLower.includes("non bao hiem");
+                                 
+            if (isPetProduct) {
+                shopeeRate = 0.0;
+            } else if (isMotorcycle) {
+                shopeeRate = 3.5;
+            } else {
+                shopeeRate = 8.0; // Hầu hết các ngành hàng còn lại đều được 8%
+            }
+        }
+        
         return {
             success: true,
             productName,
