@@ -1571,17 +1571,24 @@ function startExpressServer(config) {
                                         return res.json({ success: false, error: "⚠️ Sản phẩm Shopee này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!" });
                                     }
                                     
-                                    // Nếu có hoa hồng -> Lưu tên và % thật để dùng ở dưới thay cho 8% mặc định
+                                    // Nếu có hoa hồng -> Lưu tên và % thật để đi tiếp
                                     if (cdpData.commission_rate > 0 || cdpData.commission_amount > 0) {
-                                        productName = cdpData.itemName || cdpData.productName || cdpData.name || "";
+                                        productName = cdpData.itemName || cdpData.productName || cdpData.name || "Sản phẩm Shopee";
                                         shopeeRate = cdpData.shopee_rate || cdpData.commission_rate || 8.0;
                                         sellerRate = cdpData.seller_rate || 0;
                                         price = cdpData.price || 0;
                                     }
+                                } else {
+                                    // Extension chạy nhưng không bắt được data
+                                    return res.json({ success: false, error: "⚠️ Hệ thống chưa thể trích xuất thông tin hoa hồng từ link này lúc này (có thể do lỗi mạng hoặc link bị lỗi). Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰" });
                                 }
+                            } else {
+                                // Extension không bật
+                                return res.json({ success: false, error: "⚠️ Hệ thống đang quá tải không thể kiểm tra hoa hồng. Vui lòng thử lại sau ít phút!" });
                             }
                         } catch(eExt) {
                             console.log('[API Web] Lỗi khi gọi Chrome Extension:', eExt.message);
+                            return res.json({ success: false, error: "⚠️ Hệ thống chưa thể trích xuất thông tin hoa hồng từ link này lúc này. Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰" });
                         }
                     }
 
@@ -4829,9 +4836,15 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
                 }
             }
 
-            // Đồng nhất trải nghiệm Web và Zalo: Nếu không đọc được hoa hồng (vd: link khó vn.shp.ee), fallback về 8% ước tính để khách vẫn mua được hàng thay vì báo lỗi "không có hoa hồng".
-            if (!formattedComm2 && isShopee) {
-                formattedComm2 = "8% (Ước tính) 💰";
+            // Xử lý nghiêm ngặt: Nếu KHÔNG quét được hoa hồng, KHÔNG cho qua, báo lỗi yêu cầu quét lại.
+            if (!formattedComm2 && isShopee && isTargetGroup(groupId)) {
+                console.log(`-> [Shopee] Không quét được hoa hồng. Báo lỗi yêu cầu thử lại.`);
+                const failMsg = `@${senderName} ⚠️ Hệ thống chưa thể trích xuất thông tin hoa hồng từ link này lúc này (có thể do lỗi mạng hoặc link bị lỗi). Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰`;
+                await api.sendMessage({
+                    msg: failMsg,
+                    mentions: [{ pos: 0, uid: msg.data.uidFrom, len: senderName.length + 1 }]
+                }, groupId, msg.type);
+                return;
             }
 
             // Nếu sản phẩm Shopee chắc chắn không có hoa hồng (0%) -> Báo cảnh báo đồng nhất
