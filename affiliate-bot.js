@@ -1547,9 +1547,9 @@ function startExpressServer(config) {
                             if (gasJson && gasJson.success && gasJson.productName && !gasJson.productName.includes("không có hoa hồng")) {
                                 console.log('[API Web] Lấy dữ liệu tên/ảnh từ GAS thành công!');
                                 
-                                // Kiểm tra nghiêm ngặt: Phải lấy được hoa hồng mới cho qua!
+                                // Kiểm tra nghiêm ngặt: Nếu bằng 0 thì báo đúng là 0% (Sản phẩm không có hoa hồng)
                                 if (isShopee && (gasJson.commissionRate === undefined || gasJson.commissionRate === null || gasJson.commissionRate === 0)) {
-                                    return res.json({ success: false, error: "⚠️ Hệ thống chưa thể trích xuất được thông tin hoa hồng từ link này (có thể do lỗi mạng hoặc link rút gọn). Sếp vui lòng thử lại sau ít phút hoặc copy gửi link gốc shopee.vn nhé! 🥰" });
+                                    return res.json({ success: false, error: "⚠️ Sản phẩm Shopee này hiện tại KHÔNG CÓ HOA HỒNG tiếp thị liên kết (0%). Sếp vui lòng chọn sản phẩm khác nhé!" });
                                 }
                                 
                                 return res.json(gasJson);
