@@ -1523,6 +1523,10 @@ function startExpressServer(config) {
                 try {
                     console.log(`[API Web] Đang chuyển đổi link cho web convert: ${rawUrl} (SubID: ${subId})`);
                     
+                    const isTikTok = /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl);
+                    const isLazada = /lazada\.vn|lzd\.co|s\.lazada/i.test(rawUrl);
+                    const isShopee = /shopee\.vn|shp\.ee|s\.shopee/i.test(rawUrl);
+
                     let affiliateLink = "";
                     let productName = "";
                     let price = 0;
