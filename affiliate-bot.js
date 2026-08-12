@@ -4647,7 +4647,8 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
             replyText += `✨ Link hoàn tiền: ${affiliateLink}\n`;
 
             if (formattedComm2 && isTargetGroup(groupId)) {
-                replyText += `💰 Hoa hồng ước tính: ${formattedComm2}\n`;
+                const cleanComm = String(formattedComm2).replace(/💰/g, '').trim();
+                replyText += `💰 Hoa hồng ước tính: ${cleanComm}\n`;
             }
 
             replyText += `\n⚠️ LƯU Ý QUAN TRỌNG:\n` +
@@ -4657,6 +4658,7 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
 
             const replyPayload = {
                 msg: replyText,
+                quote: msg,
                 mentions: [
                     {
                         pos: 0,
@@ -4667,7 +4669,7 @@ async function fetchLazadaRateDirectly(rawUrl, config) {
             };
 
             await api.sendMessage(replyPayload, groupId, msg.type);
-            console.log("-> Đã gửi Tin nhắn gộp (Link + Hoa hồng) thành công!");
+            console.log("-> Đã gửi Tin nhắn gộp (Link + Hoa hồng + Quote) thành công!");
         } catch (e) {
             console.error(`-> Lỗi xử lý chuyển đổi link: ${e.message}`);
         }
