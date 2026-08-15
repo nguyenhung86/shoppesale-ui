@@ -541,6 +541,23 @@ function syncRealDataToUI() {
     }
   }
   
+  const activeHash = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') || 'dashboard';
+
+  // Luôn kích hoạt nạp đơn hàng ngay lập tức khi chuyển sang tab Đơn hàng
+  if (activeHash === 'orders') {
+    if (typeof setupOrderResults === 'function') {
+      setupOrderResults();
+    }
+  }
+
+  // Cập nhật trạng thái liên kết Zalo trên tab Tài khoản
+  if (activeHash === 'account') {
+    const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
+    if (typeof updateZaloSyncUI === 'function') {
+      updateZaloSyncUI(savedZaloId);
+    }
+  }
+
   console.log("syncRealDataToUI: Bắt đầu đồng bộ số liệu, cachedOrders:", cachedOrders);
   // 2. Nếu có dữ liệu đơn hàng trong cache, đồng bộ số liệu
   if (cachedOrders && cachedOrders.success) {
@@ -569,8 +586,6 @@ function syncRealDataToUI() {
         }
       }
     });
-
-    const activeHash = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') || 'dashboard';
 
     // Cập nhật tab TỔNG QUAN (Dashboard)
     if (activeHash === 'dashboard') {
@@ -630,19 +645,6 @@ function syncRealDataToUI() {
         const orderStatEl = statsGrid.querySelector('article:first-child strong');
         if (orderStatEl) orderStatEl.textContent = ordersList.length + " đơn";
       }
-
-      // 3. Đồng bộ trạng thái liên kết Zalo trên giao diện Account
-      const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
-      if (typeof updateZaloSyncUI === 'function') {
-        updateZaloSyncUI(savedZaloId);
-      }
-    }
-
-    // Cập nhật tab ĐƠN HÀNG (Orders)
-    if (activeHash === 'orders') {
-      if (typeof setupOrderResults === 'function') {
-        setupOrderResults();
-      }
     }
 
     // Cập nhật tab XẾP HẠNG (Leaderboard)
@@ -657,6 +659,23 @@ function syncRealDataToUI() {
       window.updateCommissionRange();
     }
   }
+}
+
+if (typeof pages !== 'undefined') {
+  pages.orders = function() {
+    setTimeout(() => {
+      if (typeof setupOrderResults === 'function') {
+        setupOrderResults();
+      }
+    }, 0);
+    return `
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
+        <div class="loader" style="display: block; width: 40px; height: 40px; border: 4px solid rgba(242, 83, 35, 0.1); border-radius: 50%; border-top-color: #f25323; animation: spin 1s linear infinite;"></div>
+        <p style="margin-top: 15px; color: #7787a0; font-size: 14px; font-weight: 500;">Đang đồng bộ dữ liệu đơn hàng mới nhất...</p>
+      </div>
+      <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+    `;
+  };
 }
 
 // Tải ngầm đơn hàng trong nền để lấy số liệu sẵn sàng cho các tab khác
