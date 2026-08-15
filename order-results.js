@@ -456,15 +456,16 @@ if (initialZaloId && initialZaloId !== 'null' && initialZaloId !== 'undefined' &
 }
 // Kiểm tra định kỳ để ghi đè giao diện mẫu khi chuyển tab đã được chuyển vào syncRealDataToUI
 function getJoinDate() {
-  if (!date) {
+  let joinDate = localStorage.getItem('shoppesale_join_date');
+  if (!joinDate) {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const year = now.getFullYear();
-    date = `${day}/${month}/${year}`;
-    localStorage.setItem('shoppesale_join_date', date);
+    joinDate = `${day}/${month}/${year}`;
+    localStorage.setItem('shoppesale_join_date', joinDate);
   }
-  return date;
+  return joinDate;
 }
 
 function syncRealDataToUI() {
