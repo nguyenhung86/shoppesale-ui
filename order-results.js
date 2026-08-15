@@ -542,6 +542,7 @@ function syncRealDataToUI() {
   }
   
   const activeHash = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') || 'dashboard';
+  const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
 
   // Luôn kích hoạt nạp đơn hàng ngay lập tức khi chuyển sang tab Đơn hàng
   if (activeHash === 'orders') {
@@ -552,14 +553,30 @@ function syncRealDataToUI() {
 
   // Cập nhật trạng thái liên kết Zalo trên tab Tài khoản
   if (activeHash === 'account') {
-    const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
     if (typeof updateZaloSyncUI === 'function') {
       updateZaloSyncUI(savedZaloId);
     }
   }
 
-  console.log("syncRealDataToUI: Bắt đầu đồng bộ số liệu, cachedOrders:", cachedOrders);
-  // 2. Nếu có dữ liệu đơn hàng trong cache, đồng bộ số liệu
+  // Tự động nạp dữ liệu từ localStorage vào RAM nếu RAM chưa có
+  if (!cachedOrders && savedZaloId) {
+    const localCacheKey = "v2_orders_cache_" + String(savedZaloId).trim().toLowerCase();
+    const cachedDataStr = localStorage.getItem(localCacheKey);
+    if (cachedDataStr) {
+      try {
+        const parsed = JSON.parse(cachedDataStr);
+        if (parsed && parsed.success && Array.isArray(parsed.data)) {
+          cachedOrders = parsed;
+          window.cachedOrders = parsed;
+          cachedZaloId = savedZaloId;
+        }
+      } catch(e) {}
+    } else {
+      fetchOrdersInBackground(savedZaloId);
+    }
+  }
+
+  // 2. Nếu có dữ liệu đơn hàng trong cache, đồng bộ số liệu lên các tab
   if (cachedOrders && cachedOrders.success) {
     const ordersList = cachedOrders.data || [];
     
@@ -589,57 +606,35 @@ function syncRealDataToUI() {
 
     // Cập nhật tab TỔNG QUAN (Dashboard)
     if (activeHash === 'dashboard') {
-      // 1. Cập nhật cho giao diện Redesign mới (nếu có)
-      const totalEl = document.querySelector('.dash-total strong');
-      if (totalEl) totalEl.textContent = formatVND(totalCommission);
-      
-      const processingEl = document.querySelector('.dash-status.processing b');
-      if (processingEl) processingEl.textContent = formatVND(totalPending);
-      
-      const completedEl = document.querySelector('.dash-status.completed b');
-      if (completedEl) completedEl.textContent = formatVND(totalCompleted);
-      
-      const receivedEl = document.querySelector('.dash-status.received b');
-      if (receivedEl) receivedEl.textContent = formatVND(totalReceived);
-      
-      // Số đơn hàng góc phải
-      const totalOrdersEl = document.querySelector('.dash-member-stats div:first-child b');
-      if (totalOrdersEl) totalOrdersEl.textContent = ordersList.length;
-
-      // 2. Cập nhật cho giao diện gốc cũ (nếu đang hiển thị như trong hình)
-      const origTotalEl = document.querySelector('.wallet-balance strong');
-      if (origTotalEl) origTotalEl.textContent = formatVND(totalCommission);
-      
-      const origProcessingEl = document.querySelector('.status-processing b');
-      if (origProcessingEl) origProcessingEl.textContent = formatVND(totalPending);
-      
-      const origCompletedEl = document.querySelector('.status-completed b');
-      if (origCompletedEl) origCompletedEl.textContent = formatVND(totalCompleted);
-      
-      const origReceivedEl = document.querySelector('.status-received b');
-      if (origReceivedEl) origReceivedEl.textContent = formatVND(totalReceived);
-      
-      const origTotalOrdersEl = document.querySelector('.dashboard-counters div:first-child b');
-      if (origTotalOrdersEl) origTotalOrdersEl.textContent = ordersList.length;
+      document.querySelectorAll('.dash-total strong, .wallet-balance strong').forEach(el => {
+        el.textContent = formatVND(totalCommission);
+      });
+      document.querySelectorAll('.dash-status.processing b, .status-processing b').forEach(el => {
+        el.textContent = formatVND(totalPending);
+      });
+      document.querySelectorAll('.dash-status.completed b, .status-completed b').forEach(el => {
+        el.textContent = formatVND(totalCompleted);
+      });
+      document.querySelectorAll('.dash-status.received b, .status-received b').forEach(el => {
+        el.textContent = formatVND(totalReceived);
+      });
+      document.querySelectorAll('.dash-member-stats div:first-child b, .dashboard-counters div:first-child b, .dashboard-counters div:first-child p b').forEach(el => {
+        el.textContent = ordersList.length;
+      });
     }
     
     // Cập nhật tab TÀI KHOẢN (Account)
     if (activeHash === 'account') {
-      // 1. Cập nhật cho giao diện Redesign mới (nếu có)
-      const balanceEl = document.querySelector('.account-balance-card .account-balance-main strong');
-      if (balanceEl) balanceEl.textContent = formatVND(totalCommission);
+      document.querySelectorAll('.account-balance-main strong, .hero-wallet .money').forEach(el => {
+        el.textContent = formatVND(totalCommission);
+      });
       
-      const quickStats = document.querySelectorAll('.account-quick-stats b');
-      if (quickStats.length === 3) {
-        quickStats[0].textContent = ordersList.length; // Tổng đơn hàng
-        // Đã giới thiệu: giữ nguyên
-        quickStats[2].textContent = formatVND(totalPending); // Đang chờ hoàn
-      }
+      const accOrderCount = document.querySelector('.account-quick-stats div:nth-child(1) b');
+      if (accOrderCount) accOrderCount.textContent = ordersList.length;
 
-      // 2. Cập nhật cho giao diện gốc cũ (nếu đang hiển thị)
-      const walletBalanceEl = document.querySelector('.hero-wallet .money');
-      if (walletBalanceEl) walletBalanceEl.textContent = formatVND(totalCommission);
-      
+      const accPendingMoney = document.querySelector('.account-quick-stats div:nth-child(3) b');
+      if (accPendingMoney) accPendingMoney.textContent = formatVND(totalPending);
+
       const statsGrid = document.querySelector('.hero-wallet + .grid-3');
       if (statsGrid) {
         const orderStatEl = statsGrid.querySelector('article:first-child strong');
@@ -681,36 +676,30 @@ if (typeof pages !== 'undefined') {
 // Tải ngầm đơn hàng trong nền để lấy số liệu sẵn sàng cho các tab khác
 function fetchOrdersInBackground(zaloId) {
   if (!zaloId) return;
-  console.log("fetchOrdersInBackground: Bắt đầu tải ngầm đơn hàng cho Zalo ID:", zaloId);
   
   const localCacheKey = "v2_orders_cache_" + String(zaloId).trim().toLowerCase();
   const localTimeKey = "v2_orders_time_" + String(zaloId).trim().toLowerCase();
   
   const cachedDataStr = localStorage.getItem(localCacheKey);
-  const cachedTimeStr = localStorage.getItem(localTimeKey);
-  
-  if (cachedDataStr && cachedTimeStr && isOrderCacheValid(cachedTimeStr)) {
+  if (cachedDataStr) {
     try {
       const parsedResponse = JSON.parse(cachedDataStr);
       if (parsedResponse && parsedResponse.success && Array.isArray(parsedResponse.data)) {
-        console.log("fetchOrdersInBackground: Nạp từ bộ nhớ đệm (8h30/17h00 valid) cho ID:", zaloId);
         cachedOrders = parsedResponse;
         window.cachedOrders = parsedResponse;
         cachedZaloId = zaloId;
         syncRealDataToUI();
-        return;
       }
     } catch(e) {}
   }
 
-  const url = CONFIG.API_URL + "?action=unifiedSearch&query=" + encodeURIComponent(zaloId);
+  const url = CONFIG.API_URL + "?action=unifiedSearch&query=" + encodeURIComponent(zaloId) + "&_t=" + Date.now();
   fetch(url)
     .then(res => res.json())
     .then(response => {
-      console.log("fetchOrdersInBackground: Tải ngầm hoàn tất, phản hồi:", response);
-      if (response.success) {
+      if (response && response.success) {
         cachedOrders = response;
-        window.cachedOrders = response; // Xuất ra window cho biểu đồ dùng
+        window.cachedOrders = response;
         cachedZaloId = zaloId;
         
         try {
@@ -718,11 +707,11 @@ function fetchOrdersInBackground(zaloId) {
           localStorage.setItem(localTimeKey, String(Date.now()));
         } catch(e) {}
 
-        syncRealDataToUI(); // Cập nhật giao diện ngay lập tức
+        syncRealDataToUI(); // Cập nhật số liệu tức thì lên các tab
       }
     })
     .catch(err => {
-      console.error("Lỗi tải ngầm đơn hàng:", err);
+      console.warn("Lỗi tải ngầm đơn hàng:", err.message);
     });
 }
 
