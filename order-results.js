@@ -2,6 +2,22 @@
 let cachedOrders = null;
 let cachedZaloId = null;
 
+try {
+  const initZaloId = localStorage.getItem('shoppesale_zalo_id');
+  if (initZaloId) {
+    const localCacheKey = "v2_orders_cache_" + String(initZaloId).trim().toLowerCase();
+    const cachedDataStr = localStorage.getItem(localCacheKey);
+    if (cachedDataStr) {
+      const parsed = JSON.parse(cachedDataStr);
+      if (parsed && parsed.success && Array.isArray(parsed.data)) {
+        cachedOrders = parsed;
+        window.cachedOrders = parsed;
+        cachedZaloId = initZaloId;
+      }
+    }
+  }
+} catch(e) {}
+
 function getPlatform(orderId) {
   if (!orderId) return "Shopee";
   const cleaned = String(orderId).trim();
@@ -718,3 +734,10 @@ function fetchOrdersInBackground(zaloId) {
 // Xuất các hàm này ra phạm vi toàn cục (window) để các file khác (auth.js, app.js) gọi được
 window.syncRealDataToUI = syncRealDataToUI;
 window.fetchOrdersInBackground = fetchOrdersInBackground;
+
+// Kích hoạt đồng bộ số liệu ngay lập tức khi file tải xong
+syncRealDataToUI();
+window.addEventListener('popstate', syncRealDataToUI);
+window.addEventListener('hashchange', syncRealDataToUI);
+document.addEventListener('DOMContentLoaded', syncRealDataToUI);
+setInterval(syncRealDataToUI, 400);
