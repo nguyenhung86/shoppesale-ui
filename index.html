@@ -18,7 +18,50 @@
         if (to) {
           var targetUrl = atob(to);
           if (targetUrl && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'))) {
-            window.location.href = targetUrl;
+            var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
+            if (isMobile) {
+              window.location.replace(targetUrl);
+              return;
+            } else {
+              // Hiển thị trang Mã QR trên Máy tính (PC)
+              window.__QR_TARGET_URL__ = targetUrl;
+              window.__CURRENT_URL__ = window.location.href;
+              document.addEventListener('DOMContentLoaded', function() {
+                var qrApi = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&margin=10&data=' + encodeURIComponent(window.__CURRENT_URL__);
+                document.body.innerHTML = `
+                  <div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f8fafc; font-family: 'Be Vietnam Pro', sans-serif; padding: 20px;">
+                    <div style="background: #ffffff; border-radius: 28px; padding: 40px 32px; max-width: 450px; width: 100%; text-align: center; box-shadow: 0 25px 50px -12px rgba(15,23,42,0.12); border: 1px solid #f1f5f9;">
+                      <div style="display: inline-flex; align-items: center; gap: 6px; background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; padding: 6px 16px; border-radius: 999px; font-size: 13px; font-weight: 700; margin-bottom: 20px;">💎 HOÀN TIỀN MUA SẮM ONLINE</div>
+                      <h1 style="font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 8px;">Mở Shopee Trên Điện Thoại</h1>
+                      <p style="font-size: 14px; color: #64748b; line-height: 1.5; margin-bottom: 24px;">Vui lòng quét mã QR bằng điện thoại để mở App Shopee và được <b>tự động ghi nhận hoàn tiền 80%</b>.</p>
+                      
+                      <div style="background: #ffffff; border: 2px dashed #fed7aa; border-radius: 20px; padding: 16px; display: inline-block; margin-bottom: 24px; box-shadow: 0 10px 25px -5px rgba(234,88,12,0.08);">
+                        <img src="${qrApi}" alt="Mã QR mua hàng" style="width: 220px; height: 220px; display: block; border-radius: 12px;" />
+                      </div>
+
+                      <div style="background: #f8fafc; border-radius: 18px; padding: 18px 20px; text-align: left; margin-bottom: 24px;">
+                        <div style="display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: #334155; margin-bottom: 12px;">
+                          <span style="width: 22px; height: 22px; background: #ea580c; color: #fff; font-size: 12px; font-weight: bold; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;">1</span>
+                          <span>Mở <b>Camera điện thoại</b> hoặc <b>Zalo</b></span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: #334155; margin-bottom: 12px;">
+                          <span style="width: 22px; height: 22px; background: #ea580c; color: #fff; font-size: 12px; font-weight: bold; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;">2</span>
+                          <span>Quét mã QR hiển thị ở trên</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 12px; font-size: 13.5px; color: #334155;">
+                          <span style="width: 22px; height: 22px; background: #ea580c; color: #fff; font-size: 12px; font-weight: bold; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0;">3</span>
+                          <span>App Shopee sẽ tự động mở để bạn mua hàng</span>
+                        </div>
+                      </div>
+
+                      <div style="font-size: 12.5px; color: #16a34a; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        🛡️ Bảo mật & Ghi nhận hoàn tiền 100% tự động
+                      </div>
+                    </div>
+                  </div>
+                `;
+              });
+            }
           }
         }
       } catch(e) {}
@@ -174,7 +217,7 @@
   <script src="convert-bot.js?v=3"></script>
   <script src="convert-important.js"></script>
   <script src="convert-selection.js?v=10011"></script>
-  <script src="orders-redesign.js"></script>
+  
   <script src="order-results.js?v=10017"></script>
   <script src="orders-visual-polish.js?v=3"></script>
   <script src="referrals.js?v=11"></script>
