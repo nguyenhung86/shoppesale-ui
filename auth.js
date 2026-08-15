@@ -286,13 +286,21 @@ function updateTopbarUI(user) {
 
 function checkZaloIdAndSync(email) {
   const user = getLoggedUser();
+  if (!user || !email) return;
 
-  // Tài khoản thử nghiệm cũng đi qua bước nhập Zalo ID để kiểm tra đúng luồng thật.
-  const url = CONFIG.API_URL + "?action=getUserInfo&email=" + encodeURIComponent(email);
+  const existingZaloId = localStorage.getItem('shoppesale_zalo_id');
+  const existingEmail = localStorage.getItem('shoppesale_zalo_email');
+
+  // Nếu đã có sẵn Zalo ID của tài khoản này thì ưu tiên dùng ngay để không bị gián đoạn F5
+  if (existingZaloId && existingEmail === email) {
+    updateZaloSyncUI(existingZaloId);
+  }
+
+  const url = CONFIG.API_URL + "?action=getUserInfo&email=" + encodeURIComponent(email) + "&_t=" + Date.now();
   fetch(url)
     .then(res => res.json())
     .then(response => {
-      if (response.success && response.zaloId) {
+      if (response && response.success && response.zaloId) {
         if (response.phone) {
           localStorage.setItem('shoppesale_phone', String(response.phone));
         } else {
@@ -300,7 +308,8 @@ function checkZaloIdAndSync(email) {
         }
         applySyncedZaloId(user, String(response.zaloId));
         hideZaloLinkModal();
-      } else {
+      } else if (!existingZaloId) {
+        // Chỉ khi người dùng thực sự chưa từng liên kết Zalo ID thì mới hiện modal
         localStorage.removeItem('shoppesale_zalo_id');
         localStorage.removeItem('shoppesale_zalo_email');
         localStorage.removeItem('shoppesale_phone');
@@ -310,8 +319,11 @@ function checkZaloIdAndSync(email) {
       }
     })
     .catch(err => {
-      console.error("Lỗi đồng bộ Zalo ID", err);
-      showZaloLinkModal(user, 'Chưa kiểm tra được thông tin đã liên kết. Bạn hãy nhập ID Zalo để tiếp tục.');
+      console.warn("Đồng bộ Zalo ID chạy nền gặp lỗi mạng, sử dụng dữ liệu cục bộ:", err.message);
+      // Nếu chưa từng có Zalo ID thì mới nhắc người dùng
+      if (!existingZaloId) {
+        showZaloLinkModal(user, 'Chưa kiểm tra được thông tin đã liên kết. Bạn hãy nhập ID Zalo để tiếp tục.');
+      }
     });
 }
 
