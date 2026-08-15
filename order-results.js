@@ -130,48 +130,49 @@ function performSearch(query, forceRefresh = false) {
   const localCacheKey = "v2_orders_cache_" + String(query).trim().toLowerCase();
   const localTimeKey = "v2_orders_time_" + String(query).trim().toLowerCase();
 
-  // 1. Sử dụng dữ liệu đệm mượt mà nếu chưa quá 30 giây
-  if (!forceRefresh) {
-    const cachedDataStr = localStorage.getItem(localCacheKey);
-    const cachedTimeStr = localStorage.getItem(localTimeKey);
-    if (cachedDataStr && cachedTimeStr && isOrderCacheValid(cachedTimeStr)) {
-      try {
-        const parsedResponse = JSON.parse(cachedDataStr);
-        if (parsedResponse && parsedResponse.success && Array.isArray(parsedResponse.data)) {
-          cachedOrders = parsedResponse;
-          window.cachedOrders = parsedResponse;
-          cachedZaloId = query;
-          renderDashboard(parsedResponse, query, formatVND);
-          return;
-        }
-      } catch(e) {}
-    }
-  }
-
-  const app = document.querySelector('#app');
-  if (app) {
-    app.innerHTML = `
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
-        <div class="loader" style="display: block; width: 40px; height: 40px; border: 4px solid rgba(242, 83, 35, 0.1); border-radius: 50%; border-top-color: #f25323; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 15px; color: #7787a0; font-size: 14px; font-weight: 500;">Đang đồng bộ dữ liệu đơn hàng mới nhất...</p>
-      </div>
-      <style>
-        @keyframes spin { to { transform: rotate(360deg); } }
-      </style>
-    `;
+  // 1. Luôn hiển thị ngay tức thì từ bộ nhớ đệm cache (0ms) để khi F5 không bao giờ bị chập chờn
+  const cachedDataStr = localStorage.getItem(localCacheKey);
+  let hasRenderedFromCache = false;
+  if (cachedDataStr) {
+    try {
+      const parsedResponse = JSON.parse(cachedDataStr);
+      if (parsedResponse && parsedResponse.success && Array.isArray(parsedResponse.data)) {
+        cachedOrders = parsedResponse;
+        window.cachedOrders = parsedResponse;
+        cachedZaloId = query;
+        renderDashboard(parsedResponse, query, formatVND);
+        hasRenderedFromCache = true;
+      }
+    } catch(e) {}
   }
   
+  // Nếu chưa có cache thì mới hiển thị vòng xoay loader
+  if (!hasRenderedFromCache) {
+    const app = document.querySelector('#app');
+    if (app) {
+      app.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
+          <div class="loader" style="display: block; width: 40px; height: 40px; border: 4px solid rgba(242, 83, 35, 0.1); border-radius: 50%; border-top-color: #f25323; animation: spin 1s linear infinite;"></div>
+          <p style="margin-top: 15px; color: #7787a0; font-size: 14px; font-weight: 500;">Đang đồng bộ dữ liệu đơn hàng mới nhất...</p>
+        </div>
+        <style>
+          @keyframes spin { to { transform: rotate(360deg); } }
+        </style>
+      `;
+    }
+  }
+  
+  // 2. Luôn kết nối máy chủ Google Sheets ngầm để lấy đơn hàng mới nhất
   const url = CONFIG.API_URL + "?action=unifiedSearch&query=" + encodeURIComponent(query) + "&_t=" + Date.now();
   fetch(url)
     .then(res => res.json())
     .then(response => {
-      // CHỐT CHẶN BẢO VỆ: Nếu người dùng đã chuyển tab khác trong lúc đang tải dữ liệu thì không ghi đè giao diện nữa
-      if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') return;
+      const currentPath = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
+      if (currentPath !== 'orders') return;
 
-      if (response.success) {
-        // Lưu trữ vào bộ nhớ đệm RAM và localStorage
+      if (response && response.success) {
         cachedOrders = response;
-        window.cachedOrders = response; // Xuất ra window cho biểu đồ
+        window.cachedOrders = response;
         cachedZaloId = query;
         
         try {
@@ -180,20 +181,61 @@ function performSearch(query, forceRefresh = false) {
         } catch(e) {}
         
         renderDashboard(response, query, formatVND);
-      } else {
-        if (app) {
-          app.innerHTML = `<div style="max-width:600px; margin:50px auto; padding:20px; text-align:center; color:#d93838; font-weight:600;">Lỗi: ${response.error || 'Không thể đồng bộ dữ liệu.'}</div>`;
-        }
       }
     })
     .catch(err => {
-      console.error(err);
-      if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') return;
-      if (app) {
-        app.innerHTML = `<div style="max-width:600px; margin:50px auto; padding:20px; text-align:center; color:#d93838; font-weight:600;">Lỗi kết nối máy chủ. Vui lòng thử lại sau.</div>`;
-      }
+      console.warn("Lỗi kết nối máy chủ khi nạp đơn ngầm:", err.message);
     });
 }
+
+function setupOrderResults() {
+  const currentPath = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
+  if (currentPath !== 'orders') return;
+  
+  const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
+  if (savedZaloId && savedZaloId !== 'null' && savedZaloId !== 'undefined' && savedZaloId.trim() !== '') {
+    performSearch(savedZaloId);
+  } else {
+    const user = getLoggedUser();
+    if (user && user.email) {
+      const app = document.querySelector('#app');
+      if (app) {
+        app.innerHTML = `
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
+            <div class="loader" style="display: block; width: 40px; height: 40px; border: 4px solid rgba(242, 83, 35, 0.1); border-radius: 50%; border-top-color: #f25323; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 15px; color: #7787a0; font-size: 14px; font-weight: 500;">Đang kết nối tài khoản Zalo...</p>
+          </div>
+        `;
+      }
+    } else {
+      const app = document.querySelector('#app');
+      if (app) {
+        app.innerHTML = `
+          <div class="empty">
+            <div class="empty-icon" style="filter: drop-shadow(0 4px 10px rgba(242, 83, 35, 0.15)); font-size: 48px; margin-bottom: 15px;">⚡</div>
+            <h2>Kết Nối Tài Khoản Zalo</h2>
+            <p class="subtitle" style="max-width: 480px; margin: 8px auto 20px; line-height: 1.6;">Để bắt đầu tích lũy hoa hồng, vui lòng liên kết Zalo ID cá nhân giúp hệ thống tự động đồng bộ danh sách đơn hàng và thông tin hoàn tiền của bạn.</p>
+            <a class="button" href="#account">Liên kết Zalo ngay</a>
+          </div>
+        `;
+      }
+    }
+  }
+}
+
+window.addEventListener('hashchange', setupOrderResults);
+window.addEventListener('popstate', setupOrderResults);
+
+window.addEventListener('zalo_id_synced', (e) => {
+  cachedOrders = null;
+  cachedZaloId = null;
+  const currentPath = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
+  if (currentPath === 'orders') {
+    performSearch(e.detail, true);
+  }
+});
+
+setupOrderResults();
 
 function renderDashboard(response, query, formatVND) {
   const app = document.querySelector('#app');
@@ -396,21 +438,8 @@ if (initialZaloId && initialZaloId !== 'null' && initialZaloId !== 'undefined' &
     fetchOrdersInBackground(initialZaloId);
   }
 }
-// Kiểm tra định kỳ để ghi đè giao diện mẫu khi chuyển tab
-let checkInterval = setInterval(() => {
-  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'orders') {
-    const resultsContainer = document.querySelector('.order-results');
-    const noticeContainer = document.querySelector('.empty');
-    const loaderContainer = document.querySelector('.loader');
-    if (!resultsContainer && !noticeContainer && !loaderContainer) {
-      setupOrderResults();
-    }
-  }
-}, 300);
-
-// ĐỒNG BỘ DỮ LIỆU ĐƠN HÀNG THẬT SANG TẤT CẢ CÁC TAB KHÁC
+// Kiểm tra định kỳ để ghi đè giao diện mẫu khi chuyển tab đã được chuyển vào syncRealDataToUI
 function getJoinDate() {
-  let date = localStorage.getItem('shoppesale_join_date');
   if (!date) {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
@@ -606,6 +635,13 @@ function syncRealDataToUI() {
       const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
       if (typeof updateZaloSyncUI === 'function') {
         updateZaloSyncUI(savedZaloId);
+      }
+    }
+
+    // Cập nhật tab ĐƠN HÀNG (Orders)
+    if (activeHash === 'orders') {
+      if (typeof setupOrderResults === 'function') {
+        setupOrderResults();
       }
     }
 
