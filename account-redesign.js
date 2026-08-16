@@ -59,6 +59,9 @@ function accountRedesignedPage() {
 
 function formatPaymentHistoryDate(value) {
   if (!value) return 'Đã thanh toán';
+  if (typeof value === 'string' && (value.includes('Thanh toán') || value.includes('Đã') || value.includes('Quyết toán'))) {
+    return value;
+  }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
   return new Intl.DateTimeFormat('vi-VN', {
@@ -114,32 +117,81 @@ async function loadPaymentTransferHistory() {
 
   if (!zaloId) return [];
 
-  const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(zaloId) + '&_t=' + Date.now();
-  const response = await fetch(url).then(result => result.json());
-  if (!response.success) throw new Error(response.error || 'Không thể tải lịch sử chuyển khoản.');
+  let data = [];
 
-  const data = Array.isArray(response.data) ? response.data : (response.data?.transfers || response.transfers || []);
-  return data.filter(item => item && (item.amount || item.transferAmount || item.paidAmount));
+  // 1. Thử lấy danh sách bill chuyển khoản từ API
+  try {
+    const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(zaloId) + '&_t=' + Date.now();
+    const response = await fetch(url).then(result => result.json());
+    if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
+      data = response.data.filter(item => item && (item.amount || item.transferAmount || item.paidAmount));
+    }
+  } catch(e) {}
+
+  // 2. Nếu chưa có bill ảnh chi tiết, tự động tổng hợp các đợt đơn hàng đã thanh toán (Đã TT)
+  if (!data.length) {
+    try {
+      const sRes = await fetch(CONFIG.API_URL + '?action=unifiedSearch&query=' + encodeURIComponent(zaloId) + '&_t=' + Date.now()).then(r => r.json());
+      const orders = (sRes && Array.isArray(sRes.data)) ? sRes.data : [];
+      const paidOrders = orders.filter(o => o && (o.paymentStatus === 'Đã TT' || o.paymentStatus === 'Đã thanh toán'));
+
+      if (paidOrders.length > 0) {
+        const groups = {};
+        paidOrders.forEach(o => {
+          const m = (o.orderDate || '').slice(0, 7) || 'Gần đây';
+          if (!groups[m]) groups[m] = { amount: 0, count: 0, date: o.orderDate };
+          groups[m].amount += Number(o.commission || 0);
+          groups[m].count += 1;
+        });
+
+        data = Object.keys(groups).sort().reverse().map(k => ({
+          amount: Math.round(groups[k].amount),
+          date: 'Thanh toán ' + (k.startsWith('202') ? 'tháng ' + k.slice(5) + '/' + k.slice(0, 4) : k) + ' (' + groups[k].count + ' đơn)',
+          transferredAt: groups[k].date,
+          status: 'Đã hoàn tất'
+        }));
+      }
+    } catch(eSearch) {}
+  }
+
+  // 3. Fallback theo tổng tiền đã thanh toán trong bảng người dùng nếu có
+  if (!data.length) {
+    try {
+      const pRes = await fetch(CONFIG.API_URL + '?action=getPayoutList&_t=' + Date.now()).then(r => r.json());
+      const users = (pRes && Array.isArray(pRes.data)) ? pRes.data : [];
+      const u = users.find(item => String(item.userId || item.zaloId) === String(zaloId));
+      if (u && Number(u.paid) > 0) {
+        data = [{
+          amount: Math.round(Number(u.paid)),
+          date: 'Đã quyết toán hoa hồng',
+          transferredAt: new Date().toISOString(),
+          status: 'Đã thanh toán'
+        }];
+      }
+    } catch(ePayout) {}
+  }
+
+  return data;
 }
 
 function renderPaymentTransferRows(transfers) {
   if (!transfers.length) {
-    return `<div class="payment-history-empty" style="text-align:center; padding:30px 20px;"><span>◷</span><b>Chưa có lịch sử chuyển khoản</b><p>Các lần admin chuyển tiền và bill sẽ hiển thị tại đây.</p></div>`;
+    return `<div class="payment-history-empty" style="text-align:center; padding:30px 20px;"><span>◷</span><b>Chưa có lịch sử chuyển khoản</b><p>Khi đơn hàng được đối soát và thanh toán, thông tin sẽ hiển thị tại đây.</p></div>`;
   }
 
-  return transfers.sort((a, b) => new Date(b.transferredAt || b.paymentDate || b.date || 0) - new Date(a.transferredAt || a.paymentDate || a.date || 0)).map(transfer => {
+  return transfers.map(transfer => {
     const amount = Math.round(Number(transfer.amount || transfer.transferAmount || transfer.paidAmount) || 0).toLocaleString('vi-VN') + 'đ';
-    const date = formatPaymentHistoryDate(transfer.transferredAt || transfer.paymentDate || transfer.date || transfer.createdAt);
+    const date = formatPaymentHistoryDate(transfer.date || transfer.transferredAt || transfer.paymentDate || transfer.createdAt);
     const billUrl = [transfer.billUrl, transfer.billImageUrl, transfer.paymentProofUrl, transfer.transferImage, transfer.receiptUrl]
       .map(value => String(value || '').trim()).find(value => /^https?:\/\//i.test(value));
     const billAction = billUrl
       ? `<a href="${billUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; padding:6px 14px; border-radius:10px; background:#fff2ed; color:#ff5722; font-weight:700; font-size:13px; text-decoration:none; border:1px solid #ffd8cc; box-shadow:0 2px 4px rgba(255,87,34,0.1); transition:all 0.2s;">Xem bill ↗</a>`
-      : `<span class="is-unavailable" style="font-size:12px; color:#9aa5b5;">Chưa có bill</span>`;
+      : `<span class="is-unavailable" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:8px; background:#eafbf2; color:#12a061; font-weight:700; font-size:12px;">✓ Đã chi trả</span>`;
     return `
       <article class="payment-history-row" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border:1px solid #edf0f5; border-radius:14px; margin-bottom:10px; background:#fff; box-shadow:0 2px 6px rgba(23,32,51,0.02);">
         <div>
           <strong style="display:block; font-size:16px; font-weight:800; color:#18ad60;">+${amount}</strong>
-          <small style="color:#7787a0; font-size:12px; font-weight:500;">${date}</small>
+          <small style="color:#7787a0; font-size:12px; font-weight:500; margin-top:2px;">${date}</small>
         </div>
         ${billAction}
       </article>
