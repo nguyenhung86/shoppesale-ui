@@ -422,12 +422,6 @@ function setupOrderResults(force = false) {
     return;
   }
 
-  const container = document.querySelector('.orders-view, .order-list');
-  if (!container) {
-    isOrderResultsMounted = false;
-    return;
-  }
-
   if (isOrderResultsMounted && !force) return;
   isOrderResultsMounted = true;
   
@@ -680,8 +674,9 @@ function syncRealDataToUI() {
 if (typeof pages !== 'undefined') {
   pages.orders = function() {
     setTimeout(() => {
+      isOrderResultsMounted = false;
       if (typeof setupOrderResults === 'function') {
-        setupOrderResults();
+        setupOrderResults(true);
       }
     }, 0);
     return `
