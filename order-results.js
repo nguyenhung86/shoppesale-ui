@@ -413,12 +413,27 @@ function renderDashboard(response, query, formatVND) {
   renderOrders(initialFiltered, formatVND);
 }
 
-function setupOrderResults() {
-  if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'orders') return;
+let isOrderResultsMounted = false;
+
+function setupOrderResults(force = false) {
+  const currentTab = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
+  if (currentTab !== 'orders') {
+    isOrderResultsMounted = false;
+    return;
+  }
+
+  const container = document.querySelector('.orders-view, .order-list');
+  if (!container) {
+    isOrderResultsMounted = false;
+    return;
+  }
+
+  if (isOrderResultsMounted && !force) return;
+  isOrderResultsMounted = true;
   
   const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
   if (savedZaloId && savedZaloId !== 'null' && savedZaloId !== 'undefined' && savedZaloId.trim() !== '') {
-    performSearch(savedZaloId);
+    performSearch(savedZaloId, force);
   } else {
     const app = document.querySelector('#app');
     if (app) {
@@ -434,12 +449,14 @@ function setupOrderResults() {
   }
 }
 
-window.addEventListener('hashchange', setupOrderResults);
+window.addEventListener('hashchange', () => { isOrderResultsMounted = false; setupOrderResults(); });
+window.addEventListener('popstate', () => { isOrderResultsMounted = false; setupOrderResults(); });
 
 window.addEventListener('zalo_id_synced', (e) => {
   // Xóa cache khi ID Zalo thay đổi
   cachedOrders = null;
   cachedZaloId = null;
+  isOrderResultsMounted = false;
   if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'orders') {
     performSearch(e.detail, true);
   }
@@ -561,11 +578,13 @@ function syncRealDataToUI() {
   const activeHash = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') || 'dashboard';
   const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
 
-  // Luôn kích hoạt nạp đơn hàng ngay lập tức khi chuyển sang tab Đơn hàng
+  // Luôn kích hoạt nạp đơn hàng ngay lập tức khi chuyển sang tab Đơn hàng (chỉ nạp 1 lần)
   if (activeHash === 'orders') {
-    if (typeof setupOrderResults === 'function') {
+    if (!isOrderResultsMounted && typeof setupOrderResults === 'function') {
       setupOrderResults();
     }
+  } else {
+    isOrderResultsMounted = false;
   }
 
   // Cập nhật trạng thái liên kết Zalo trên tab Tài khoản
@@ -621,42 +640,27 @@ function syncRealDataToUI() {
       }
     });
 
+    const setIfChanged = (selector, text) => {
+      document.querySelectorAll(selector).forEach(el => {
+        if (el && el.textContent !== String(text)) el.textContent = String(text);
+      });
+    };
+
     // Cập nhật tab TỔNG QUAN (Dashboard)
     if (activeHash === 'dashboard') {
-      document.querySelectorAll('.dash-total strong, .wallet-balance strong').forEach(el => {
-        el.textContent = formatVND(totalCommission);
-      });
-      document.querySelectorAll('.dash-status.processing b, .status-processing b').forEach(el => {
-        el.textContent = formatVND(totalPending);
-      });
-      document.querySelectorAll('.dash-status.completed b, .status-completed b').forEach(el => {
-        el.textContent = formatVND(totalCompleted);
-      });
-      document.querySelectorAll('.dash-status.received b, .status-received b').forEach(el => {
-        el.textContent = formatVND(totalReceived);
-      });
-      document.querySelectorAll('.dash-member-stats div:first-child b, .dashboard-counters div:first-child b, .dashboard-counters div:first-child p b').forEach(el => {
-        el.textContent = ordersList.length;
-      });
+      setIfChanged('.dash-total strong, .wallet-balance strong', formatVND(totalCommission));
+      setIfChanged('.dash-status.processing b, .status-processing b', formatVND(totalPending));
+      setIfChanged('.dash-status.completed b, .status-completed b', formatVND(totalCompleted));
+      setIfChanged('.dash-status.received b, .status-received b', formatVND(totalReceived));
+      setIfChanged('.dash-member-stats div:first-child b, .dashboard-counters div:first-child b, .dashboard-counters div:first-child p b', ordersList.length);
     }
     
     // Cập nhật tab TÀI KHOẢN (Account)
     if (activeHash === 'account') {
-      document.querySelectorAll('.account-balance-main strong, .hero-wallet .money').forEach(el => {
-        el.textContent = formatVND(totalCommission);
-      });
-      
-      const accOrderCount = document.querySelector('.account-quick-stats div:nth-child(1) b');
-      if (accOrderCount) accOrderCount.textContent = ordersList.length;
-
-      const accPendingMoney = document.querySelector('.account-quick-stats div:nth-child(3) b');
-      if (accPendingMoney) accPendingMoney.textContent = formatVND(totalPending);
-
-      const statsGrid = document.querySelector('.hero-wallet + .grid-3');
-      if (statsGrid) {
-        const orderStatEl = statsGrid.querySelector('article:first-child strong');
-        if (orderStatEl) orderStatEl.textContent = ordersList.length + " đơn";
-      }
+      setIfChanged('.account-balance-main strong, .hero-wallet .money', formatVND(totalCommission));
+      setIfChanged('.account-quick-stats div:nth-child(1) b', ordersList.length);
+      setIfChanged('.account-quick-stats div:nth-child(3) b', formatVND(totalPending));
+      setIfChanged('.hero-wallet + .grid-3 article:first-child strong', ordersList.length + " đơn");
     }
 
     // Cập nhật tab XẾP HẠNG (Leaderboard)
