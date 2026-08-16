@@ -280,9 +280,10 @@ function checkZaloIdAndSync(email) {
   const existingZaloId = localStorage.getItem('shoppesale_zalo_id');
   const existingEmail = localStorage.getItem('shoppesale_zalo_email');
 
-  // Nếu đã có sẵn Zalo ID của tài khoản này thì ưu tiên dùng ngay để không bị gián đoạn F5
-  if (existingZaloId && existingEmail === email) {
+  // Nếu đã có sẵn Zalo ID của tài khoản này thì giữ nguyên tuyệt đối, không ghi đè
+  if (existingZaloId) {
     updateZaloSyncUI(existingZaloId);
+    return;
   }
 
   const url = CONFIG.API_URL + "?action=getUserInfo&email=" + encodeURIComponent(email) + "&_t=" + Date.now();
