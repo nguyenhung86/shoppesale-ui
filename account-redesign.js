@@ -112,12 +112,6 @@ async function loadPaymentTransferHistory() {
     } catch(e) {}
   }
 
-  // Tự động nhận diện cho tài khoản chính
-  if (!zaloId && user && (user.email === 'nguyenhung86@gmail.com' || (user.name && user.name.toLowerCase().includes('hung')))) {
-    zaloId = '60961192439956996';
-    localStorage.setItem('shoppesale_zalo_id', zaloId);
-  }
-
   if (!zaloId) return [];
 
   const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(zaloId) + '&_t=' + Date.now();
