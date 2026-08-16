@@ -204,54 +204,7 @@ function performSearch(query, forceRefresh = false) {
     });
 }
 
-function setupOrderResults() {
-  const currentPath = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
-  if (currentPath !== 'orders') return;
-  
-  const savedZaloId = localStorage.getItem('shoppesale_zalo_id');
-  if (savedZaloId && savedZaloId !== 'null' && savedZaloId !== 'undefined' && savedZaloId.trim() !== '') {
-    performSearch(savedZaloId);
-  } else {
-    const user = getLoggedUser();
-    if (user && user.email) {
-      const app = document.querySelector('#app');
-      if (app) {
-        app.innerHTML = `
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px;">
-            <div class="loader" style="display: block; width: 40px; height: 40px; border: 4px solid rgba(242, 83, 35, 0.1); border-radius: 50%; border-top-color: #f25323; animation: spin 1s linear infinite;"></div>
-            <p style="margin-top: 15px; color: #7787a0; font-size: 14px; font-weight: 500;">Đang kết nối tài khoản Zalo...</p>
-          </div>
-        `;
-      }
-    } else {
-      const app = document.querySelector('#app');
-      if (app) {
-        app.innerHTML = `
-          <div class="empty">
-            <div class="empty-icon" style="filter: drop-shadow(0 4px 10px rgba(242, 83, 35, 0.15)); font-size: 48px; margin-bottom: 15px;">⚡</div>
-            <h2>Kết Nối Tài Khoản Zalo</h2>
-            <p class="subtitle" style="max-width: 480px; margin: 8px auto 20px; line-height: 1.6;">Để bắt đầu tích lũy hoa hồng, vui lòng liên kết Zalo ID cá nhân giúp hệ thống tự động đồng bộ danh sách đơn hàng và thông tin hoàn tiền của bạn.</p>
-            <a class="button" href="#account">Liên kết Zalo ngay</a>
-          </div>
-        `;
-      }
-    }
-  }
-}
 
-window.addEventListener('hashchange', setupOrderResults);
-window.addEventListener('popstate', setupOrderResults);
-
-window.addEventListener('zalo_id_synced', (e) => {
-  cachedOrders = null;
-  cachedZaloId = null;
-  const currentPath = (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard');
-  if (currentPath === 'orders') {
-    performSearch(e.detail, true);
-  }
-});
-
-setupOrderResults();
 
 function renderDashboard(response, query, formatVND) {
   const app = document.querySelector('#app');
