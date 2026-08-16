@@ -119,7 +119,7 @@ async function loadPaymentTransferHistory() {
 
   let data = [];
 
-  // 1. Thử lấy danh sách bill chuyển khoản từ API
+  // 1. Thử lấy danh sách bill chuyển khoản từ API VPS
   try {
     const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(zaloId) + '&_t=' + Date.now();
     const response = await fetch(url).then(result => result.json());
@@ -128,7 +128,33 @@ async function loadPaymentTransferHistory() {
     }
   } catch(e) {}
 
-  // 2. Nếu chưa có bill ảnh chi tiết, tự động tổng hợp các đợt đơn hàng đã thanh toán (Đã TT)
+  // 2. Trực tiếp đọc bảng Google Sheet CSV (tab Lịch sử thanh toán gid=800356243) để đồng bộ 100% thời gian thực
+  if (!data.length) {
+    try {
+      const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hnhrRHjTxLRnJatcyTuRFPOC7es3LoHawAOpZfOIcuo/export?format=csv&gid=800356243";
+      const csvRes = await fetch(sheetCsvUrl);
+      if (csvRes.ok) {
+        const csvText = await csvRes.text();
+        const lines = csvText.split('\n');
+        const targetId = String(zaloId).trim().replace(/['"\r]/g, '');
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line) continue;
+          const parts = line.split(',');
+          const rowId = String(parts[0] || '').trim().replace(/['"\r]/g, '');
+          if (rowId === targetId) {
+            data.push({
+              amount: Number(parts[1]) || 0,
+              date: String(parts[2] || '').trim(),
+              billUrl: String(parts[3] || '').trim().replace(/\r/g, '')
+            });
+          }
+        }
+      }
+    } catch(eCsv) {}
+  }
+
+  // 3. Fallback theo đơn hàng đã thanh toán nếu chưa có dòng trong bảng bill
   if (!data.length) {
     try {
       const sRes = await fetch(CONFIG.API_URL + '?action=unifiedSearch&query=' + encodeURIComponent(zaloId) + '&_t=' + Date.now()).then(r => r.json());
@@ -152,23 +178,6 @@ async function loadPaymentTransferHistory() {
         }));
       }
     } catch(eSearch) {}
-  }
-
-  // 3. Fallback theo tổng tiền đã thanh toán trong bảng người dùng nếu có
-  if (!data.length) {
-    try {
-      const pRes = await fetch(CONFIG.API_URL + '?action=getPayoutList&_t=' + Date.now()).then(r => r.json());
-      const users = (pRes && Array.isArray(pRes.data)) ? pRes.data : [];
-      const u = users.find(item => String(item.userId || item.zaloId) === String(zaloId));
-      if (u && Number(u.paid) > 0) {
-        data = [{
-          amount: Math.round(Number(u.paid)),
-          date: 'Đã quyết toán hoa hồng',
-          transferredAt: new Date().toISOString(),
-          status: 'Đã thanh toán'
-        }];
-      }
-    } catch(ePayout) {}
   }
 
   return data;
