@@ -73,7 +73,11 @@ function handleConvert() {
   const convertBtnEl = document.querySelector('.input-row .button');
   if (!inputEl) return;
   
-  const rawUrl = inputEl.value.trim();
+  let rawUrl = inputEl.value.trim();
+  const urlMatch = rawUrl.match(/https?:\/\/[^\s]+/i);
+  if (urlMatch) {
+    rawUrl = urlMatch[0];
+  }
   let zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
   const ENABLE_TIKTOK = true;
   
