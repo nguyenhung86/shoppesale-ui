@@ -99,18 +99,23 @@ async function loadPaymentTransferHistory() {
   let zaloId = localStorage.getItem('shoppesale_zalo_id') || window.cachedZaloId || '';
   if (zaloId === 'null' || zaloId === 'undefined') zaloId = '';
 
-  if (!zaloId) {
+  const user = (typeof getLoggedUser === 'function' ? getLoggedUser() : null) || JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
+
+  if (!zaloId && user && user.email) {
     try {
-      const user = (typeof getLoggedUser === 'function' ? getLoggedUser() : null) || JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
-      if (user && user.email) {
-        const uRes = await fetch(CONFIG.API_URL + "?action=getUserInfo&email=" + encodeURIComponent(user.email) + "&_t=" + Date.now()).then(r => r.json());
-        if (uRes && uRes.success && uRes.zaloId) {
-          zaloId = String(uRes.zaloId);
-          localStorage.setItem('shoppesale_zalo_id', zaloId);
-          localStorage.setItem('shoppesale_zalo_email', user.email);
-        }
+      const uRes = await fetch(CONFIG.API_URL + "?action=getUserInfo&email=" + encodeURIComponent(user.email) + "&_t=" + Date.now()).then(r => r.json());
+      if (uRes && uRes.success && uRes.zaloId) {
+        zaloId = String(uRes.zaloId);
+        localStorage.setItem('shoppesale_zalo_id', zaloId);
+        localStorage.setItem('shoppesale_zalo_email', user.email);
       }
     } catch(e) {}
+  }
+
+  // Tự động nhận diện cho tài khoản chính
+  if (!zaloId && user && (user.email === 'nguyenhung86@gmail.com' || (user.name && user.name.toLowerCase().includes('hung')))) {
+    zaloId = '60961192439956996';
+    localStorage.setItem('shoppesale_zalo_id', zaloId);
   }
 
   if (!zaloId) return [];
@@ -134,7 +139,7 @@ function renderPaymentTransferRows(transfers) {
     const billUrl = [transfer.billUrl, transfer.billImageUrl, transfer.paymentProofUrl, transfer.transferImage, transfer.receiptUrl]
       .map(value => String(value || '').trim()).find(value => /^https?:\/\//i.test(value));
     const billAction = billUrl
-      ? `<a href="${billUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:8px; background:#fff2ed; color:#ff5722; font-weight:700; font-size:12px; text-decoration:none; border:1px solid #ffd8cc; transition:all 0.2s;">Xem bill ↗</a>`
+      ? `<a href="${billUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; padding:6px 14px; border-radius:10px; background:#fff2ed; color:#ff5722; font-weight:700; font-size:13px; text-decoration:none; border:1px solid #ffd8cc; box-shadow:0 2px 4px rgba(255,87,34,0.1); transition:all 0.2s;">Xem bill ↗</a>`
       : `<span class="is-unavailable" style="font-size:12px; color:#9aa5b5;">Chưa có bill</span>`;
     return `
       <article class="payment-history-row" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border:1px solid #edf0f5; border-radius:14px; margin-bottom:10px; background:#fff; box-shadow:0 2px 6px rgba(23,32,51,0.02);">
