@@ -61,17 +61,6 @@
       }
 
       try {
-        const validation = await window.validateZaloIdOnSheet(zaloId);
-        if (!validation.exists) {
-          if (saveBtn) {
-            saveBtn.disabled = false;
-            saveBtn.textContent = 'Lưu thông tin';
-          }
-          alert("Không tìm thấy ID Zalo này trên hệ thống. Vui lòng kiểm tra lại ID đã dùng trong nhóm!");
-          input?.focus();
-          return;
-        }
-
         if (saveBtn) saveBtn.textContent = 'Đang lưu...';
         const url = CONFIG.API_URL + "?action=linkZaloId&email=" + encodeURIComponent(user.email) + "&zaloId=" + encodeURIComponent(zaloId);
         const response = await fetch(url).then(res => res.json());
