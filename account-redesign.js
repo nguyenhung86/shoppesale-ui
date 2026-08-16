@@ -73,15 +73,16 @@ function openPaymentHistoryModal() {
   modal.className = 'payment-history-modal-overlay';
   modal.innerHTML = `<section class="payment-history-modal" role="dialog" aria-modal="true" aria-labelledby="payment-history-title">
     <header><div><span>◷</span><div><h2 id="payment-history-title">Lịch sử thanh toán</h2><p>Danh sách hoa hồng đã được thanh toán cho bạn.</p></div></div><button type="button" aria-label="Đóng">×</button></header>
-    <div class="payment-history-list"><div class="payment-history-empty"><span>◷</span><b>Đang tải lịch sử chuyển khoản</b><p>Vui lòng chờ trong giây lát.</p></div></div>
+    <div class="payment-history-list"><div class="payment-history-empty" style="text-align:center; padding:30px 20px;"><div class="loader" style="display:inline-block; width:30px; height:30px; border:3px solid rgba(255,87,34,0.15); border-top-color:#ff5722; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:12px;"></div><p style="margin:0; color:#7787a0; font-size:13px; font-weight:600;">Đang tải lịch sử thanh toán...</p></div></div>
   </section>`;
   document.body.appendChild(modal);
 
   const list = modal.querySelector('.payment-history-list');
   loadPaymentTransferHistory()
     .then(transfers => { if (list) list.innerHTML = renderPaymentTransferRows(transfers); })
-    .catch(() => {
-      if (list) list.innerHTML = `<div class="payment-history-empty"><span>!</span><b>Chưa tải được lịch sử chuyển khoản</b><p>Vui lòng thử lại sau hoặc liên hệ admin.</p></div>`;
+    .catch(err => {
+      console.error("Lỗi tải lịch sử thanh toán:", err);
+      if (list) list.innerHTML = `<div class="payment-history-empty" style="text-align:center; padding:30px 20px;"><span>!</span><b>Chưa tải được lịch sử chuyển khoản</b><p>Vui lòng thử lại sau hoặc liên hệ admin.</p></div>`;
     });
 
   const close = () => modal.remove();
