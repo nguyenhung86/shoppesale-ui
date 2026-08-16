@@ -95,10 +95,26 @@ function openPaymentHistoryModal() {
 }
 
 async function loadPaymentTransferHistory() {
-  const zaloId = localStorage.getItem('shoppesale_zalo_id') || '';
+  let zaloId = localStorage.getItem('shoppesale_zalo_id') || window.cachedZaloId || '';
+  if (zaloId === 'null' || zaloId === 'undefined') zaloId = '';
+
+  if (!zaloId) {
+    try {
+      const user = (typeof getLoggedUser === 'function' ? getLoggedUser() : null) || JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
+      if (user && user.email) {
+        const uRes = await fetch(CONFIG.API_URL + "?action=getUserInfo&email=" + encodeURIComponent(user.email) + "&_t=" + Date.now()).then(r => r.json());
+        if (uRes && uRes.success && uRes.zaloId) {
+          zaloId = String(uRes.zaloId);
+          localStorage.setItem('shoppesale_zalo_id', zaloId);
+          localStorage.setItem('shoppesale_zalo_email', user.email);
+        }
+      }
+    } catch(e) {}
+  }
+
   if (!zaloId) return [];
 
-  const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(zaloId);
+  const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(zaloId) + '&_t=' + Date.now();
   const response = await fetch(url).then(result => result.json());
   if (!response.success) throw new Error(response.error || 'Không thể tải lịch sử chuyển khoản.');
 
@@ -108,7 +124,7 @@ async function loadPaymentTransferHistory() {
 
 function renderPaymentTransferRows(transfers) {
   if (!transfers.length) {
-    return `<div class="payment-history-empty"><span>◷</span><b>Chưa có lịch sử chuyển khoản</b><p>Các lần admin chuyển tiền và bill sẽ hiển thị tại đây.</p></div>`;
+    return `<div class="payment-history-empty" style="text-align:center; padding:30px 20px;"><span>◷</span><b>Chưa có lịch sử chuyển khoản</b><p>Các lần admin chuyển tiền và bill sẽ hiển thị tại đây.</p></div>`;
   }
 
   return transfers.sort((a, b) => new Date(b.transferredAt || b.paymentDate || b.date || 0) - new Date(a.transferredAt || a.paymentDate || a.date || 0)).map(transfer => {
@@ -117,9 +133,17 @@ function renderPaymentTransferRows(transfers) {
     const billUrl = [transfer.billUrl, transfer.billImageUrl, transfer.paymentProofUrl, transfer.transferImage, transfer.receiptUrl]
       .map(value => String(value || '').trim()).find(value => /^https?:\/\//i.test(value));
     const billAction = billUrl
-      ? `<a href="${billUrl}" target="_blank" rel="noopener noreferrer">Xem bill ↗</a>`
-      : `<span class="is-unavailable">Chưa có bill</span>`;
-    return `<article class="payment-history-row"><div><strong>+${amount}</strong><small>${date}</small></div>${billAction}</article>`;
+      ? `<a href="${billUrl}" target="_blank" rel="noopener noreferrer" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; border-radius:8px; background:#fff2ed; color:#ff5722; font-weight:700; font-size:12px; text-decoration:none; border:1px solid #ffd8cc; transition:all 0.2s;">Xem bill ↗</a>`
+      : `<span class="is-unavailable" style="font-size:12px; color:#9aa5b5;">Chưa có bill</span>`;
+    return `
+      <article class="payment-history-row" style="display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border:1px solid #edf0f5; border-radius:14px; margin-bottom:10px; background:#fff; box-shadow:0 2px 6px rgba(23,32,51,0.02);">
+        <div>
+          <strong style="display:block; font-size:16px; font-weight:800; color:#18ad60;">+${amount}</strong>
+          <small style="color:#7787a0; font-size:12px; font-weight:500;">${date}</small>
+        </div>
+        ${billAction}
+      </article>
+    `;
   }).join('');
 }
 
