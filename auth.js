@@ -122,17 +122,6 @@ async function submitZaloLinkForm(event) {
   }
 
   try {
-    if (elements.submit) elements.submit.textContent = 'Đang kiểm tra ID...';
-    const validation = await validateZaloIdOnSheet(zaloId);
-    if (!validation.exists) {
-      if (elements.error) {
-        elements.error.textContent = 'Không tìm thấy ID Zalo này trên hệ thống. Vui lòng kiểm tra lại ID đã dùng trong nhóm rồi nhập lại.';
-        elements.error.classList.add('is-visible');
-      }
-      elements.input?.focus();
-      return;
-    }
-
     if (elements.submit) elements.submit.textContent = 'Đang lưu liên kết...';
     const url = CONFIG.API_URL + '?action=linkZaloId&email=' + encodeURIComponent(user.email) + '&zaloId=' + encodeURIComponent(zaloId);
     const response = await fetch(url).then(res => res.json());
