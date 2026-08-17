@@ -348,6 +348,8 @@ function handleConvert() {
             if (!finalRate || finalRate <= 0) finalRate = 10.0;
           } else if (platform === "Lazada") {
             if (!finalRate || finalRate <= 0) finalRate = 8.0;
+          } else if (platform === "ShopeeFood") {
+            if (!finalRate || finalRate <= 0) finalRate = 9.0;
           }
           
           // Tên sản phẩm hiển thị chuẩn từ API
@@ -419,6 +421,8 @@ function handleConvert() {
             breakdownStr = `TikTok ${finalRate}%`;
           } else if (platform === "Lazada") {
             breakdownStr = `Lazada ${finalRate}%`;
+          } else if (platform === "ShopeeFood") {
+            breakdownStr = `${finalRate}%`;
           } else {
             breakdownStr = `${platform} ${finalRate}%`;
           }
