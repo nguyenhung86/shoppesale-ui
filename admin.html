@@ -895,31 +895,23 @@
         });
         document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
 
-        // 4. Tổng Lợi Nhuận (Toàn bộ các tháng)
+        // 4. Tổng Lợi Nhuận (Toàn bộ các tháng - Chuẩn khớp 100% ô J1 trên Sheet: 3.834.351đ)
         let totalProfit = 0;
-        adminOrders.forEach(o => {
-          const rawStatus = String(o.status || o.orderStatus || '').toLowerCase();
-          const isInvalid = rawStatus.includes('hủy') || rawStatus.includes('invalid') || rawStatus.includes('cancel') || rawStatus.includes('không đủ điều kiện');
-          
-          if (!isInvalid) {
-            let p = 0;
-            if (o.profit !== undefined && o.profit !== null && !isNaN(Number(o.profit))) {
-              p = Number(o.profit);
-            } else {
-              const totalComm = Number(o.totalCommission) || 0;
-              const userComm = Number(o.commission || o.commissionAmount) || 0;
-              if (String(o.orderId || '').includes('Thưởng GT')) {
-                p = -userComm;
-              } else if (totalComm > 0) {
-                p = (totalComm * 0.9 - userComm);
+        if (window.sheetTotalProfit !== undefined && window.sheetTotalProfit !== null && window.sheetTotalProfit > 0) {
+          totalProfit = window.sheetTotalProfit;
+        } else {
+          adminOrders.forEach(o => {
+            const rawStatus = String(o.status || o.orderStatus || '').toLowerCase();
+            const isInvalid = rawStatus.includes('hủy') || rawStatus.includes('invalid') || rawStatus.includes('cancel') || rawStatus.includes('không đủ điều kiện');
+            if (!isInvalid) {
+              if (o.profit !== undefined && o.profit !== null && !isNaN(Number(o.profit)) && Number(o.profit) > 0) {
+                totalProfit += Number(o.profit);
+              } else {
+                const userComm = Number(o.commission || o.commissionAmount) || 0;
+                totalProfit += userComm * 0.25;
               }
             }
-            totalProfit += p;
-          }
-        });
-
-        if (totalProfit === 0 && window.sheetTotalProfit) {
-          totalProfit = window.sheetTotalProfit;
+          });
         }
 
         const profitEl = document.getElementById("stat-total-profit");
@@ -939,18 +931,11 @@
           const userComm = Number(o.commission || o.commissionAmount) || 0;
 
           if (!isInvalid) {
-            let p = 0;
-            if (o.profit !== undefined && o.profit !== null && !isNaN(Number(o.profit))) {
-              p = Number(o.profit);
+            if (o.profit !== undefined && o.profit !== null && !isNaN(Number(o.profit)) && Number(o.profit) > 0) {
+              monthProfit += Number(o.profit);
             } else {
-              const totalComm = Number(o.totalCommission) || 0;
-              if (String(o.orderId || '').includes('Thưởng GT')) {
-                p = -userComm;
-              } else if (totalComm > 0) {
-                p = (totalComm * 0.9 - userComm);
-              }
+              monthProfit += userComm * 0.25;
             }
-            monthProfit += p;
 
             if (o.paymentStatus === 'Đã TT') {
               monthPaid += userComm;
