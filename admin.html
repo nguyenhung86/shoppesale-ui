@@ -874,23 +874,28 @@
     }
 
     function updateOverviewStats() {
+      // 1. Tổng Thành Viên
       document.getElementById("stat-total-users").innerText = adminUsers.length;
       
+      // 2. Tổng Tiền Chờ Rút (Số dư ví thực tế của toàn bộ thành viên đang chờ chuyển khoản)
+      let totalUnpaid = 0;
+      adminUsers.forEach(u => {
+        totalUnpaid += Number(u.unpaid || 0) + Number(u.unpaidReferral || 0);
+      });
+      document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
+
       const monthSelect = document.getElementById("filter-month-select");
       const selectedMonth = monthSelect ? monthSelect.value : "all";
 
       if (selectedMonth === "all") {
-        // 1. Tất cả thời gian: Lấy tổng tiền thành viên
-        let totalUnpaid = 0;
+        // 3. Đã Thanh Toán (Toàn bộ lịch sử)
         let totalPaid = 0;
         adminUsers.forEach(u => {
-          totalUnpaid += Number(u.unpaid || 0) + Number(u.unpaidReferral || 0);
           totalPaid += Number(u.paid || 0);
         });
-        document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
         document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
 
-        // Tính Tổng Lợi Nhuận độc lập trực tiếp từ toàn bộ đơn hàng hợp lệ (Completed + Pending), loại trừ đơn Hủy/Invalid
+        // 4. Tổng Lợi Nhuận (Toàn bộ các tháng)
         let totalProfit = 0;
         adminOrders.forEach(o => {
           const rawStatus = String(o.status || o.orderStatus || '').toLowerCase();
@@ -906,7 +911,6 @@
               if (String(o.orderId || '').includes('Thưởng GT')) {
                 p = -userComm;
               } else if (totalComm > 0) {
-                // Trừ 10% thuế của sàn trước khi tính 20% lợi nhuận sau thuế của Admin
                 p = (totalComm * 0.9 - userComm);
               }
             }
@@ -923,9 +927,8 @@
           profitEl.innerText = Math.round(totalProfit).toLocaleString("vi-VN") + "đ";
         }
       } else {
-        // 2. Theo tháng cụ thể:
+        // Theo tháng cụ thể:
         let monthProfit = 0;
-        let monthUnpaid = 0;
         let monthPaid = 0;
 
         const monthOrders = adminOrders.filter(o => String(o.orderDate || '').startsWith(selectedMonth));
@@ -951,13 +954,10 @@
 
             if (o.paymentStatus === 'Đã TT') {
               monthPaid += userComm;
-            } else {
-              monthUnpaid += userComm;
             }
           }
         });
 
-        document.getElementById("stat-total-unpaid").innerText = Math.round(monthUnpaid).toLocaleString("vi-VN") + "đ";
         document.getElementById("stat-total-paid").innerText = Math.round(monthPaid).toLocaleString("vi-VN") + "đ";
 
         const profitEl = document.getElementById("stat-total-profit");
