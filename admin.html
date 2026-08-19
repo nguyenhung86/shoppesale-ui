@@ -920,17 +920,18 @@
         let statusClass = "badge-pending";
         let displayStatus = "Chờ duyệt";
 
-        if (stLower.includes("completed") || stLower.includes("hoàn thành") || stLower.includes("hoàn tất") || stLower.includes("thành công")) {
+        if (stLower.includes("completed") || stLower.includes("hoàn thành") || stLower.includes("hoàn tất") || stLower.includes("thành công") || stLower.includes("waiting for payment") || stLower.includes("waiting_for_payment")) {
           statusClass = "badge-success";
           displayStatus = "Đã hoàn thành";
-        } else if (stLower.includes("hủy") || stLower.includes("invalid") || stLower.includes("cancel")) {
+        } else if (stLower.includes("hủy") || stLower.includes("invalid") || stLower.includes("cancel") || stLower.includes("không đủ điều kiện")) {
           statusClass = "badge-canceled";
           displayStatus = "Đã hủy";
-        } else if (stLower.includes("pending") || stLower.includes("chờ") || stLower.includes("xử lý") || stLower.includes("giao")) {
+        } else if (stLower.includes("pending") || stLower.includes("chờ") || stLower.includes("xử lý") || stLower.includes("giao") || stLower.includes("processing") || stLower.includes("shipping")) {
           statusClass = "badge-pending";
           displayStatus = "Chờ duyệt";
         } else {
-          displayStatus = rawStatus;
+          statusClass = "badge-pending";
+          displayStatus = "Chờ duyệt";
         }
 
         const commission = Math.round(Number(o.commission || o.commissionAmount || 0));
@@ -972,11 +973,11 @@
         let matchStatus = true;
         const st = String(o.status || o.orderStatus || '').toLowerCase();
         if (statusFilter === "completed") {
-          matchStatus = st.includes("hoàn thành") || st.includes("completed") || st.includes("hoàn tất") || st.includes("thành công");
+          matchStatus = st.includes("hoàn thành") || st.includes("completed") || st.includes("hoàn tất") || st.includes("thành công") || st.includes("waiting for payment") || st.includes("waiting_for_payment");
         } else if (statusFilter === "pending") {
-          matchStatus = st.includes("pending") || st.includes("giao") || st.includes("chờ") || st.includes("xử lý") || st.includes("tạm giữ");
+          matchStatus = st.includes("pending") || st.includes("giao") || st.includes("chờ") || st.includes("xử lý") || st.includes("tạm giữ") || st.includes("processing") || st.includes("shipping");
         } else if (statusFilter === "canceled" || statusFilter === "cancelled") {
-          matchStatus = st.includes("hủy") || st.includes("invalid") || st.includes("cancel");
+          matchStatus = st.includes("hủy") || st.includes("invalid") || st.includes("cancel") || st.includes("không đủ điều kiện");
         }
 
         return matchQ && matchPlat && matchStatus;
