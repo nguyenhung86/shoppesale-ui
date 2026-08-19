@@ -890,19 +890,27 @@
         document.getElementById("stat-total-unpaid").innerText = Math.round(totalUnpaid).toLocaleString("vi-VN") + "đ";
         document.getElementById("stat-total-paid").innerText = Math.round(totalPaid).toLocaleString("vi-VN") + "đ";
 
-        // Tính Tổng Lợi Nhuận độc lập trực tiếp từ toàn bộ đơn hàng Hoàn thành
+        // Tính Tổng Lợi Nhuận độc lập trực tiếp từ toàn bộ đơn hàng hợp lệ (Completed + Pending), loại trừ đơn Hủy/Invalid
         let totalProfit = 0;
         adminOrders.forEach(o => {
           const rawStatus = String(o.status || o.orderStatus || '').toLowerCase();
-          const isCompleted = rawStatus.includes('completed') || rawStatus.includes('hoàn thành') || rawStatus.includes('waiting for payment') || rawStatus.includes('waiting_for_payment') || rawStatus.includes('thành công');
-          if (isCompleted) {
-            const totalComm = Number(o.totalCommission) || 0;
-            const userComm = Number(o.commission || o.commissionAmount) || 0;
-            if (String(o.orderId || '').includes('Thưởng GT')) {
-              totalProfit -= userComm;
-            } else if (totalComm > 0) {
-              totalProfit += (totalComm - userComm);
+          const isInvalid = rawStatus.includes('hủy') || rawStatus.includes('invalid') || rawStatus.includes('cancel') || rawStatus.includes('không đủ điều kiện');
+          
+          if (!isInvalid) {
+            let p = 0;
+            if (o.profit !== undefined && o.profit !== null && !isNaN(Number(o.profit))) {
+              p = Number(o.profit);
+            } else {
+              const totalComm = Number(o.totalCommission) || 0;
+              const userComm = Number(o.commission || o.commissionAmount) || 0;
+              if (String(o.orderId || '').includes('Thưởng GT')) {
+                p = -userComm;
+              } else if (totalComm > 0) {
+                // Trừ 10% thuế của sàn trước khi tính 20% lợi nhuận sau thuế của Admin
+                p = (totalComm * 0.9 - userComm);
+              }
             }
+            totalProfit += p;
           }
         });
 
@@ -924,16 +932,22 @@
 
         monthOrders.forEach(o => {
           const rawStatus = String(o.status || o.orderStatus || '').toLowerCase();
-          const isCompleted = rawStatus.includes('completed') || rawStatus.includes('hoàn thành') || rawStatus.includes('waiting for payment') || rawStatus.includes('waiting_for_payment') || rawStatus.includes('thành công');
-          const totalComm = Number(o.totalCommission) || 0;
+          const isInvalid = rawStatus.includes('hủy') || rawStatus.includes('invalid') || rawStatus.includes('cancel') || rawStatus.includes('không đủ điều kiện');
           const userComm = Number(o.commission || o.commissionAmount) || 0;
 
-          if (isCompleted) {
-            if (String(o.orderId || '').includes('Thưởng GT')) {
-              monthProfit -= userComm;
-            } else if (totalComm > 0) {
-              monthProfit += (totalComm - userComm);
+          if (!isInvalid) {
+            let p = 0;
+            if (o.profit !== undefined && o.profit !== null && !isNaN(Number(o.profit))) {
+              p = Number(o.profit);
+            } else {
+              const totalComm = Number(o.totalCommission) || 0;
+              if (String(o.orderId || '').includes('Thưởng GT')) {
+                p = -userComm;
+              } else if (totalComm > 0) {
+                p = (totalComm * 0.9 - userComm);
+              }
             }
+            monthProfit += p;
 
             if (o.paymentStatus === 'Đã TT') {
               monthPaid += userComm;
