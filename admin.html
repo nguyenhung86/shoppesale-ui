@@ -914,25 +914,39 @@
         if ((o.platform || '').toLowerCase() === "tiktok") platformClass = "badge-tiktok";
         if ((o.platform || '').toLowerCase() === "lazada") platformClass = "badge-lazada";
 
-        let statusClass = "badge-success";
-        const st = (o.orderStatus || '').toLowerCase();
-        if (st.includes("giao") || st.includes("chờ") || st.includes("xử lý")) statusClass = "badge-pending";
-        if (st.includes("hủy")) statusClass = "badge-canceled";
+        const rawStatus = String(o.status || o.orderStatus || 'Pending').trim();
+        const stLower = rawStatus.toLowerCase();
 
-        const commission = Math.round(Number(o.commission || 0));
-        const amount = Math.round(Number(o.amount || 0));
+        let statusClass = "badge-pending";
+        let displayStatus = "Chờ duyệt";
+
+        if (stLower.includes("completed") || stLower.includes("hoàn thành") || stLower.includes("hoàn tất") || stLower.includes("thành công")) {
+          statusClass = "badge-success";
+          displayStatus = "Đã hoàn thành";
+        } else if (stLower.includes("hủy") || stLower.includes("invalid") || stLower.includes("cancel")) {
+          statusClass = "badge-canceled";
+          displayStatus = "Đã hủy";
+        } else if (stLower.includes("pending") || stLower.includes("chờ") || stLower.includes("xử lý") || stLower.includes("giao")) {
+          statusClass = "badge-pending";
+          displayStatus = "Chờ duyệt";
+        } else {
+          displayStatus = rawStatus;
+        }
+
+        const commission = Math.round(Number(o.commission || o.commissionAmount || 0));
+        const amount = Math.round(Number(o.amount || o.price || 0));
 
         tbody.innerHTML += `
           <tr>
             <td>${i + 1}</td>
             <td>${o.orderDate || '-'}</td>
-            <td><strong>${o.orderId}</strong></td>
-            <td>${o.customerName || o.subId || '-'}</td>
+            <td><strong>${o.orderId || '-'}</strong></td>
+            <td>${o.customerName || o.zaloName || o.subId || '-'}</td>
             <td><span class="badge-tag ${platformClass}">${o.platform || 'Shopee'}</span></td>
             <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${o.itemName || 'Sản phẩm hoàn tiền'}</td>
             <td>${amount.toLocaleString('vi-VN')}đ</td>
             <td style="color: var(--success); font-weight: 700;">+${commission.toLocaleString('vi-VN')}đ</td>
-            <td><span class="badge-tag ${statusClass}">${o.orderStatus || 'Đã hoàn thành'}</span></td>
+            <td><span class="badge-tag ${statusClass}">${displayStatus}</span></td>
             <td><span class="badge-tag ${o.paymentStatus === 'Đã TT' ? 'badge-success' : 'badge-pending'}">${o.paymentStatus || 'Chưa TT'}</span></td>
           </tr>
         `;
@@ -948,6 +962,7 @@
         const matchQ = !q || String(o.orderId || '').toLowerCase().includes(q) || 
                               String(o.itemName || '').toLowerCase().includes(q) || 
                               String(o.customerName || '').toLowerCase().includes(q) ||
+                              String(o.zaloName || '').toLowerCase().includes(q) ||
                               String(o.subId || '').toLowerCase().includes(q) ||
                               String(o.userId || '').toLowerCase().includes(q) ||
                               String(o.zaloId || '').toLowerCase().includes(q);
@@ -955,13 +970,13 @@
         const matchPlat = platform === "all" || String(o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
 
         let matchStatus = true;
-        const st = String(o.orderStatus || '').toLowerCase();
+        const st = String(o.status || o.orderStatus || '').toLowerCase();
         if (statusFilter === "completed") {
-          matchStatus = st.includes("hoàn thành") || st.includes("hoàn tất") || st.includes("thành công");
+          matchStatus = st.includes("hoàn thành") || st.includes("completed") || st.includes("hoàn tất") || st.includes("thành công");
         } else if (statusFilter === "pending") {
-          matchStatus = st.includes("giao") || st.includes("chờ") || st.includes("xử lý") || st.includes("tạm giữ");
+          matchStatus = st.includes("pending") || st.includes("giao") || st.includes("chờ") || st.includes("xử lý") || st.includes("tạm giữ");
         } else if (statusFilter === "canceled" || statusFilter === "cancelled") {
-          matchStatus = st.includes("hủy") || st.includes("invalid");
+          matchStatus = st.includes("hủy") || st.includes("invalid") || st.includes("cancel");
         }
 
         return matchQ && matchPlat && matchStatus;
