@@ -853,19 +853,22 @@
       });
 
       const sortedMonths = Array.from(monthsSet).sort().reverse();
-      let html = `<option value="all">📅 Tất cả thời gian</option>`;
+      let html = `<option value="all">📅 Tất cả thời gian (Cộng dồn các tháng)</option>`;
       sortedMonths.forEach(m => {
         const parts = m.split('-');
         html += `<option value="${m}">📅 Tháng ${parts[1]}/${parts[0]}</option>`;
       });
 
       monthSelect.innerHTML = html;
-      if (currentVal && (currentVal === "all" || sortedMonths.includes(currentVal))) {
+      if (currentVal && currentVal !== "all" && sortedMonths.includes(currentVal)) {
         monthSelect.value = currentVal;
+      } else if (sortedMonths.length > 0 && !window.hasSelectedMonth) {
+        monthSelect.value = sortedMonths[0];
       }
     }
 
     function onMonthFilterChange() {
+      window.hasSelectedMonth = true;
       updateOverviewStats();
       filterOrdersTable();
     }
