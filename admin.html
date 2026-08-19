@@ -969,20 +969,25 @@
 
     function renderUsersTable(users) {
       const tbody = document.getElementById("users-tbody");
-      tbody.innerHTML = "";
+      if (!tbody) return;
       
+      if (!users || users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--ink-soft); padding: 30px;">Không tìm thấy thành viên nào.</td></tr>`;
+        return;
+      }
+
       const sortedUsers = [...users].sort((a, b) => {
         const valA = Number(a.unpaid || 0) + Number(a.unpaidReferral || 0);
         const valB = Number(b.unpaid || 0) + Number(b.unpaidReferral || 0);
         return valB - valA;
       });
 
-      sortedUsers.forEach((u, i) => {
+      const rowsHtml = sortedUsers.map((u, i) => {
         const unpaid = Math.round(Number(u.unpaid || 0));
         const paid = Math.round(Number(u.paid || 0));
         const refBonus = Math.round(Number(u.unpaidReferral || 0));
 
-        tbody.innerHTML += `
+        return `
           <tr>
             <td>${i + 1}</td>
             <td><strong>${u.userId}</strong></td>
@@ -999,6 +1004,8 @@
           </tr>
         `;
       });
+
+      tbody.innerHTML = rowsHtml.join("");
     }
 
     function filterUsersTable() {
@@ -1013,7 +1020,7 @@
 
     function renderOrdersTable(orders) {
       const tbody = document.getElementById("orders-tbody");
-      tbody.innerHTML = "";
+      if (!tbody) return;
 
       if (!orders || orders.length === 0) {
         tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: var(--ink-soft); padding: 30px;">
@@ -1023,7 +1030,7 @@
         return;
       }
 
-      orders.forEach((o, i) => {
+      const rowsHtml = orders.map((o, i) => {
         let platformClass = "badge-shopee";
         if ((o.platform || '').toLowerCase() === "tiktok") platformClass = "badge-tiktok";
         if ((o.platform || '').toLowerCase() === "lazada") platformClass = "badge-lazada";
@@ -1051,7 +1058,7 @@
         const commission = Math.round(Number(o.commission || o.commissionAmount || 0));
         const amount = Math.round(Number(o.amount || o.price || 0));
 
-        tbody.innerHTML += `
+        return `
           <tr>
             <td>${i + 1}</td>
             <td>${o.orderDate || '-'}</td>
@@ -1066,6 +1073,8 @@
           </tr>
         `;
       });
+
+      tbody.innerHTML = rowsHtml.join("");
     }
 
     function filterOrdersTable() {
