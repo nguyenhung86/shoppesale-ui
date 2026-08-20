@@ -36,7 +36,7 @@
       const orders = window.cachedOrders.data;
       orders.forEach(o => {
         const commission = Number(o.commission) || 0;
-        const status = o.orderStatus ? o.orderStatus.toLowerCase() : "";
+        const status = String(o.status || o.orderStatus || "").toLowerCase();
         if (status.includes("hủy") || status.includes("invalid") || status.includes("đơn hủy")) {
           return; // Bỏ qua đơn hủy
         }
