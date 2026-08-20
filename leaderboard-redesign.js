@@ -77,7 +77,7 @@ function enhanceLeaderboard() {
   if (window.cachedOrders && window.cachedOrders.success && window.cachedOrders.data) {
     const ordersList = window.cachedOrders.data;
     ordersList.forEach(o => {
-      const cleaned = (o.orderStatus || "").toLowerCase();
+      const cleaned = String(o.status || o.orderStatus || "").toLowerCase();
       const isCancelled = cleaned.includes("hủy") || cleaned.includes("invalid") || cleaned.includes("đơn hủy");
       if (!isCancelled) {
         userTotal += Number(o.commission) || 0;
