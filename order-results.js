@@ -34,21 +34,29 @@ function getPlatform(orderId) {
 }
 
 function getOrderCategory(status, paymentStatus) {
-  if (!status) return "pending";
-  const cleaned = String(status).trim().toLowerCase();
-  const payClean = String(paymentStatus || '').trim().toLowerCase();
+  let rawStatus = status;
+  let rawPayment = paymentStatus;
+  if (status && typeof status === 'object') {
+    rawPayment = status.paymentStatus;
+    rawStatus = status.status || status.orderStatus || status.checkout_status;
+  }
   
-  if (payClean === "đã tt" || payClean.includes("thanh toán")) {
+  const payClean = String(rawPayment || '').trim().toLowerCase();
+  if (payClean === "đã tt" || payClean.includes("thanh toán") || payClean.includes("paid")) {
     return "completed";
   }
-  if (cleaned.includes("hủy") || cleaned.includes("invalid") || cleaned.includes("cancelled") || cleaned.includes("không đủ điều kiện") || cleaned.includes("đơn hủy")) {
+
+  if (!rawStatus) return "pending";
+  const cleaned = String(rawStatus).trim().toLowerCase();
+  
+  if (cleaned.includes("hủy") || cleaned.includes("invalid") || cleaned.includes("cancelled") || cleaned.includes("canceled") || cleaned.includes("không đủ điều kiện") || cleaned.includes("đơn hủy")) {
     return "cancelled";
   }
-  if (cleaned === "pending" || cleaned.includes("đang giao") || cleaned.includes("chờ giao") || cleaned.includes("đang xử lý") || cleaned.includes("processing") || cleaned.includes("shipping")) {
-    return "pending";
-  }
-  if (cleaned.includes("hoàn thành") || cleaned.includes("completed") || cleaned.includes("waiting for payment") || cleaned.includes("thưởng gt")) {
+  if (cleaned.includes("hoàn thành") || cleaned.includes("completed") || cleaned.includes("waiting for payment") || cleaned.includes("waiting_for_payment") || cleaned.includes("thưởng gt") || cleaned.includes("thành công") || cleaned.includes("hoàn tất")) {
     return "completed";
+  }
+  if (cleaned === "pending" || cleaned.includes("đang giao") || cleaned.includes("chờ giao") || cleaned.includes("đang xử lý") || cleaned.includes("processing") || cleaned.includes("shipping") || cleaned.includes("chờ")) {
+    return "pending";
   }
   return "pending";
 }
@@ -68,7 +76,7 @@ function renderOrders(filteredOrders, formatVND) {
   
   listContainer.innerHTML = filteredOrders.map(o => {
     const platform = getPlatform(o.orderId);
-    const category = getOrderCategory(o.orderStatus, o.paymentStatus);
+    const category = getOrderCategory(o.status || o.orderStatus, o.paymentStatus);
     
     let borderLeftColor = '#18ad60'; // completed
     let statusText = 'ĐÃ HOÀN TẤT';
@@ -262,7 +270,7 @@ function renderDashboard(response, query, formatVND) {
   let cancelledCount = 0;
   
   ordersList.forEach(o => {
-    const cat = getOrderCategory(o.orderStatus, o.paymentStatus);
+    const cat = getOrderCategory(o.status || o.orderStatus, o.paymentStatus);
     const commission = Number(o.commission) || 0;
     const isPaid = o.paymentStatus === 'Đã TT';
     
@@ -330,7 +338,7 @@ function renderDashboard(response, query, formatVND) {
       if (activeBadge) activeBadge.style.background = '#fff0eb';
       
       const tabName = tab.dataset.tab;
-      const filtered = ordersList.filter(o => getOrderCategory(o.orderStatus, o.paymentStatus) === tabName);
+      const filtered = ordersList.filter(o => getOrderCategory(o.status || o.orderStatus, o.paymentStatus) === tabName);
       renderOrders(filtered, formatVND);
     });
   });
@@ -362,7 +370,7 @@ function renderDashboard(response, query, formatVND) {
     }
   });
   
-  const initialFiltered = ordersList.filter(o => getOrderCategory(o.orderStatus, o.paymentStatus) === initialTab);
+  const initialFiltered = ordersList.filter(o => getOrderCategory(o.status || o.orderStatus, o.paymentStatus) === initialTab);
   renderOrders(initialFiltered, formatVND);
 }
 
@@ -569,7 +577,7 @@ function syncRealDataToUI() {
     let totalReceived = 0;
     
     ordersList.forEach(o => {
-      const cat = getOrderCategory(o.orderStatus, o.paymentStatus);
+      const cat = getOrderCategory(o.status || o.orderStatus, o.paymentStatus);
       const commission = Number(o.commission) || 0;
       const isPaid = o.paymentStatus === 'Đã TT';
       
