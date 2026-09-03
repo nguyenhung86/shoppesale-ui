@@ -1074,6 +1074,7 @@
             window.sheetTotalProfit = Number(resUsers.value.totalProfit);
           }
           renderUsersTable(adminUsers);
+          updateOverviewStats();
         }
 
         // 2. Cập nhật Đơn hàng
@@ -1081,6 +1082,7 @@
           adminOrders = resOrders.value.data;
           try { localStorage.setItem("cached_admin_orders", JSON.stringify(adminOrders)); } catch(e){}
           populateMonthOptions();
+          updateOverviewStats();
           filterOrdersTable();
         }
 
@@ -1596,9 +1598,15 @@
     }
 
     function filterOrdersTable() {
-      const q = document.getElementById("search-orders-input").value.trim().toLowerCase();
-      const platform = document.getElementById("filter-platform").value;
-      const statusFilter = document.getElementById("filter-status").value;
+      const searchInput = document.getElementById("search-orders-input");
+      const q = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+      const statusSelect = document.getElementById("filter-order-status");
+      const statusFilter = statusSelect ? statusSelect.value : "all";
+
+      const paymentSelect = document.getElementById("filter-payment-status");
+      const paymentFilter = paymentSelect ? paymentSelect.value : "all";
+
       const monthSelect = document.getElementById("filter-month-select");
       const selectedMonth = monthSelect ? monthSelect.value : "all";
 
@@ -1611,20 +1619,24 @@
                               String(o.subId || '').toLowerCase().includes(q) ||
                               String(o.userId || '').toLowerCase().includes(q) ||
                               String(o.zaloId || '').toLowerCase().includes(q);
-        
-        const matchPlat = platform === "all" || String(o.platform || 'Shopee').toLowerCase() === platform.toLowerCase();
 
         let matchStatus = true;
-        const st = String(o.status || o.orderStatus || '').toLowerCase();
-        if (statusFilter === "completed") {
-          matchStatus = st.includes("hoàn thành") || st.includes("completed") || st.includes("hoàn tất") || st.includes("thành công") || st.includes("waiting for payment") || st.includes("waiting_for_payment");
-        } else if (statusFilter === "pending") {
-          matchStatus = st.includes("pending") || st.includes("giao") || st.includes("chờ") || st.includes("xử lý") || st.includes("tạm giữ") || st.includes("processing") || st.includes("shipping");
-        } else if (statusFilter === "canceled" || statusFilter === "cancelled") {
-          matchStatus = st.includes("hủy") || st.includes("invalid") || st.includes("cancel") || st.includes("không đủ điều kiện");
+        if (statusFilter !== "all") {
+          const st = String(o.status || o.orderStatus || '').toLowerCase();
+          matchStatus = st.includes(statusFilter.toLowerCase());
         }
 
-        return matchMonth && matchQ && matchPlat && matchStatus;
+        let matchPayment = true;
+        if (paymentFilter !== "all") {
+          const ps = String(o.paymentStatus || o.payment_status || o.payoutStatus || '').toLowerCase();
+          if (paymentFilter === "Đã TT") {
+            matchPayment = ps.includes("đã") || ps.includes("paid") || ps.includes("hoàn tất");
+          } else if (paymentFilter === "Chưa TT") {
+            matchPayment = !ps.includes("đã") && !ps.includes("paid");
+          }
+        }
+
+        return matchMonth && matchQ && matchStatus && matchPayment;
       });
 
       renderOrdersTable(filtered);
