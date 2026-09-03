@@ -936,6 +936,41 @@
       if (token) {
         document.getElementById("admin-login-screen").style.display = "none";
         document.getElementById("admin-dashboard-screen").style.display = "block";
+
+        // 1. Phục hồi tab đang xem trước đó khi F5 (mặc định 'users')
+        const savedTab = localStorage.getItem("admin_active_tab") || "users";
+        if (["users", "orders", "profiles"].includes(savedTab)) {
+          switchAdminTab(savedTab);
+        }
+
+        // 2. Tải ngay từ LocalStorage để hiện tức thì 0ms (F5 không bao giờ bị trắng màn hình)
+        try {
+          const cachedProfiles = localStorage.getItem("cached_admin_profiles");
+          if (cachedProfiles) {
+            adminProfiles = JSON.parse(cachedProfiles);
+            if (Array.isArray(adminProfiles) && adminProfiles.length > 0) {
+              renderProfilesList(adminProfiles);
+            }
+          }
+          const cachedUsers = localStorage.getItem("cached_admin_users");
+          if (cachedUsers) {
+            adminUsers = JSON.parse(cachedUsers);
+            if (Array.isArray(adminUsers) && adminUsers.length > 0) {
+              renderUsersTable(adminUsers);
+            }
+          }
+          const cachedOrders = localStorage.getItem("cached_admin_orders");
+          if (cachedOrders) {
+            adminOrders = JSON.parse(cachedOrders);
+            if (Array.isArray(adminOrders) && adminOrders.length > 0) {
+              populateMonthOptions();
+              filterOrdersTable();
+            }
+          }
+          updateOverviewStats();
+        } catch(eCache) {}
+
+        // 3. Đồng bộ mới nhất từ VPS ngầm
         loadAdminData();
       } else {
         document.getElementById("admin-login-screen").style.display = "block";
@@ -978,12 +1013,40 @@
 
     function switchAdminTab(tab) {
       activeTab = tab;
+      try { localStorage.setItem("admin_active_tab", tab); } catch(e) {}
       document.getElementById("tab-btn-users").classList.toggle("active", tab === "users");
       document.getElementById("tab-btn-orders").classList.toggle("active", tab === "orders");
       document.getElementById("tab-btn-profiles").classList.toggle("active", tab === "profiles");
       document.getElementById("tab-content-users").style.display = tab === "users" ? "block" : "none";
       document.getElementById("tab-content-orders").style.display = tab === "orders" ? "block" : "none";
       document.getElementById("tab-content-profiles").style.display = tab === "profiles" ? "block" : "none";
+
+      if (tab === "profiles") {
+        if (adminProfiles && adminProfiles.length > 0) {
+          renderProfilesList(adminProfiles);
+        } else {
+          // Thử nạp từ LocalStorage
+          try {
+            const cached = localStorage.getItem("cached_admin_profiles");
+            if (cached) {
+              adminProfiles = JSON.parse(cached);
+              if (Array.isArray(adminProfiles) && adminProfiles.length > 0) {
+                renderProfilesList(adminProfiles);
+                return;
+              }
+            }
+          } catch(e) {}
+
+          const container = document.getElementById("profiles-list-container");
+          if (container) {
+            container.innerHTML = `
+              <div style="text-align: center; color: var(--ink-soft); padding: 40px; background: var(--surface); border-radius: 12px; border: 1px dashed var(--line);">
+                <i class="fa-solid fa-rotate fa-spin" style="font-size: 22px; color: var(--primary);"></i>
+                <div style="margin-top: 12px; font-weight: 700; color: var(--ink);">Đang tải dữ liệu hồ sơ thành viên...</div>
+              </div>`;
+          }
+        }
+      }
     }
 
     async function loadAdminData(btn) {
@@ -995,35 +1058,40 @@
 
       try {
         const timestamp = Date.now();
-        // 1. Tải danh sách Users từ VPS (Chống Cache bằng timestamp)
-        const resUsers = await fetch(`${API_URL}?action=getAdminUsers&t=${timestamp}`);
-        const jsonUsers = await resUsers.json();
-        if (jsonUsers.success && Array.isArray(jsonUsers.data)) {
-          adminUsers = jsonUsers.data;
-          if (jsonUsers.totalProfit !== undefined && jsonUsers.totalProfit !== null) {
-            window.sheetTotalProfit = Number(jsonUsers.totalProfit);
+
+        // Tải song song cả 3 nguồn dữ liệu bằng Promise.allSettled để siêu nhanh và độc lập
+        const [resUsers, resOrders, resProfiles] = await Promise.allSettled([
+          fetch(`${API_URL}?action=getAdminUsers&t=${timestamp}`).then(r => r.json()),
+          fetch(`${API_URL}?action=getAdminOrders&t=${timestamp}`).then(r => r.json()),
+          fetch(`${API_URL}?action=getMemberProfiles&t=${timestamp}`).then(r => r.json())
+        ]);
+
+        // 1. Cập nhật Users & Số dư
+        if (resUsers.status === "fulfilled" && resUsers.value?.success && Array.isArray(resUsers.value.data)) {
+          adminUsers = resUsers.value.data;
+          try { localStorage.setItem("cached_admin_users", JSON.stringify(adminUsers)); } catch(e){}
+          if (resUsers.value.totalProfit !== undefined && resUsers.value.totalProfit !== null) {
+            window.sheetTotalProfit = Number(resUsers.value.totalProfit);
           }
           renderUsersTable(adminUsers);
-          updateOverviewStats();
         }
 
-        // 2. Tải danh sách Đơn hàng từ VPS (Chống Cache bằng timestamp)
-        const resOrders = await fetch(`${API_URL}?action=getAdminOrders&t=${timestamp}`);
-        const jsonOrders = await resOrders.json();
-        if (jsonOrders.success && Array.isArray(jsonOrders.data)) {
-          adminOrders = jsonOrders.data;
+        // 2. Cập nhật Đơn hàng
+        if (resOrders.status === "fulfilled" && resOrders.value?.success && Array.isArray(resOrders.value.data)) {
+          adminOrders = resOrders.value.data;
+          try { localStorage.setItem("cached_admin_orders", JSON.stringify(adminOrders)); } catch(e){}
           populateMonthOptions();
-          updateOverviewStats();
           filterOrdersTable();
         }
 
-        // 3. Tải danh sách Hồ sơ chi tiết thành viên từ VPS
-        const resProfiles = await fetch(`${API_URL}?action=getMemberProfiles&t=${timestamp}`);
-        const jsonProfiles = await resProfiles.json();
-        if (jsonProfiles.success && Array.isArray(jsonProfiles.data)) {
-          adminProfiles = jsonProfiles.data;
+        // 3. Cập nhật Hồ sơ chi tiết thành viên
+        if (resProfiles.status === "fulfilled" && resProfiles.value?.success && Array.isArray(resProfiles.value.data)) {
+          adminProfiles = resProfiles.value.data;
+          try { localStorage.setItem("cached_admin_profiles", JSON.stringify(adminProfiles)); } catch(e){}
           renderProfilesList(adminProfiles);
         }
+
+        updateOverviewStats();
       } catch (e) {
         console.error("Lỗi nạp dữ liệu Admin:", e);
       } finally {
@@ -1210,6 +1278,7 @@
             adminProfiles[idx].email = email;
             adminProfiles[idx].dob = dob;
             adminProfiles[idx].note = note;
+            try { localStorage.setItem("cached_admin_profiles", JSON.stringify(adminProfiles)); } catch(e){}
           }
           filterProfilesList();
           closeEditProfileModal();
@@ -1239,6 +1308,7 @@
           const jsonP = await resProfiles.json();
           if (jsonP.success) {
             adminProfiles = jsonP.data;
+            try { localStorage.setItem("cached_admin_profiles", JSON.stringify(adminProfiles)); } catch(e){}
             filterProfilesList();
           }
         } else {
