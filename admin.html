@@ -397,6 +397,108 @@
       color: var(--ink-soft);
     }
 
+    /* MEMBER PROFILES LIST */
+    .profile-card-item {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+    .profile-card-item:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .profile-left-col {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 240px;
+      flex: 1.2;
+    }
+    .profile-avatar-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid var(--line);
+      background: #f1f5f9;
+      flex-shrink: 0;
+    }
+    .profile-avatar-fallback {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+      font-weight: 700;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1.5px solid var(--line);
+    }
+    .profile-user-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+    .profile-user-sub {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 3px;
+    }
+    .profile-mid-col {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 12.5px;
+      min-width: 200px;
+      flex: 1;
+    }
+    .profile-info-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--ink-soft);
+    }
+    .profile-right-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      text-align: right;
+      min-width: 140px;
+    }
+    .profile-badge-zalo {
+      background: #eff6ff;
+      color: #2563eb;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .profile-badge-web {
+      background: #fff7ed;
+      color: #ea580c;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
     /* GIAO DIỆN RESPONSIVE TRÊN ĐIỆN THOẠI DI ĐỘNG (MOBILE & TABLET) */
     @media (max-width: 768px) {
       body {
@@ -542,6 +644,21 @@
         padding: 16px;
         border-radius: 16px;
       }
+
+      .profile-card-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px;
+      }
+      .profile-right-col {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px dashed var(--line);
+        padding-top: 8px;
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -613,6 +730,9 @@
       <button class="tab-btn" id="tab-btn-orders" onclick="switchAdminTab('orders')">
         <i class="fa-solid fa-boxes-packing"></i> Quản Lý Đơn Hàng Chi Tiết
       </button>
+      <button class="tab-btn" id="tab-btn-profiles" onclick="switchAdminTab('profiles')">
+        <i class="fa-solid fa-id-card"></i> Hồ Sơ Thành Viên
+      </button>
     </div>
 
     <!-- TAB 1: USERS & BALANCES GRID -->
@@ -654,18 +774,19 @@
           <i class="fa-solid fa-magnifying-glass"></i>
           <input type="text" id="search-orders-input" oninput="filterOrdersTable()" onkeyup="filterOrdersTable()" placeholder="Tìm theo Mã đơn, Sản phẩm, Tên Zalo, ID Zalo...">
         </div>
-        <div class="filter-options">
-          <select id="filter-platform" class="select-filter" onchange="filterOrdersTable()">
-            <option value="all">Tất cả sàn</option>
-            <option value="Shopee">Shopee</option>
-            <option value="TikTok">TikTok Shop</option>
-            <option value="Lazada">Lazada</option>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <select id="filter-order-status" onchange="filterOrdersTable()" class="form-control" style="width: auto; padding: 10px 14px; font-size: 13px; font-weight: 600;">
+            <option value="all">📦 Tất cả trạng thái đơn</option>
+            <option value="Pending">🕒 Chờ xử lý (Pending)</option>
+            <option value="Completed">✅ Hoàn thành (Completed)</option>
+            <option value="Approved">💰 Đã duyệt (Approved)</option>
+            <option value="Cancelled">❌ Đã hủy (Cancelled)</option>
+            <option value="Invalid">⚠️ Không hợp lệ (Invalid)</option>
           </select>
-          <select id="filter-status" class="select-filter" onchange="filterOrdersTable()">
-            <option value="all">Tất cả trạng thái</option>
-            <option value="completed">Đã hoàn tất</option>
-            <option value="pending">Đang giao</option>
-            <option value="canceled">Đã hủy</option>
+          <select id="filter-payment-status" onchange="filterOrdersTable()" class="form-control" style="width: auto; padding: 10px 14px; font-size: 13px; font-weight: 600;">
+            <option value="all">💳 Tất cả thanh toán</option>
+            <option value="Chưa TT">⏳ Chưa thanh toán (Chưa TT)</option>
+            <option value="Đã TT">💸 Đã thanh toán (Đã TT)</option>
           </select>
         </div>
       </div>
@@ -690,6 +811,36 @@
             <!-- Render Order rows -->
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: MEMBER PROFILES GRID -->
+    <div class="grid-card" id="tab-content-profiles" style="display: none;">
+      <div class="grid-filter-bar" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;">
+        <div class="search-input-group" style="flex: 1; min-width: 280px;">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-profiles-input" onkeyup="filterProfilesList()" placeholder="Tìm kiếm theo Tên, SĐT, Email, ID Zalo, Ngày sinh...">
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <select id="filter-profile-type" onchange="filterProfilesList()" class="form-control" style="width: auto; padding: 10px 14px; font-size: 13px; font-weight: 600;">
+            <option value="all">🔍 Tất cả thành viên</option>
+            <option value="has_phone">📱 Đã có Số điện thoại</option>
+            <option value="no_phone">⚠️ Chưa có Số điện thoại</option>
+            <option value="has_email">✉️ Đã có Gmail / Email</option>
+            <option value="no_email">⚠️ Chưa có Gmail / Email</option>
+            <option value="has_dob">🎂 Đã có Ngày sinh</option>
+          </select>
+          <button class="btn-action" id="btn-sync-zalo-profiles" onclick="syncZaloProfilesLive(this)" style="background: #2563eb; color: #fff; border: none; font-weight: 600;">
+            <i class="fa-solid fa-rotate"></i> Đồng bộ từ Zalo
+          </button>
+          <button class="btn-action" onclick="exportProfilesToCSV()" style="font-weight: 600;">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel Hồ Sơ
+          </button>
+        </div>
+      </div>
+
+      <div id="profiles-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 16px;">
+        <!-- Render Profile Items like user's screenshot -->
       </div>
     </div>
 
@@ -733,10 +884,51 @@
     </div>
   </div>
 
+  <!-- MODAL EDIT PROFILE -->
+  <div class="modal-overlay" id="edit-profile-modal" style="display: none;">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-user-pen" style="color: var(--primary);"></i> Chỉnh Sửa Hồ Sơ Thành Viên</h3>
+        <span class="close-modal" onclick="closeEditProfileModal()">&times;</span>
+      </div>
+      <form onsubmit="saveProfileChanges(event)">
+        <input type="hidden" id="edit-profile-id">
+        <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line);">
+          <div id="edit-profile-avatar-preview" style="width: 52px; height: 52px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; border: 2px solid var(--line); flex-shrink: 0;"></div>
+          <div>
+            <strong id="edit-profile-name" style="font-size: 16px; color: var(--ink);"></strong>
+            <div id="edit-profile-zalo-id" style="font-size: 12px; color: var(--ink-soft); margin-top: 2px;"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-phone" style="color: #2563EB;"></i> Số điện thoại</label>
+          <input type="text" id="edit-profile-phone" class="form-control" placeholder="Ví dụ: 0912345678">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-envelope" style="color: #EA4335;"></i> Gmail / Email</label>
+          <input type="email" id="edit-profile-email" class="form-control" placeholder="Ví dụ: khachhang@gmail.com">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-cake-candles" style="color: #F59E0B;"></i> Ngày sinh</label>
+          <input type="text" id="edit-profile-dob" class="form-control" placeholder="Ví dụ: 25/10/1995 hoặc 1995-10-25">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-note-sticky" style="color: #10B981;"></i> Ghi chú nhận diện khách</label>
+          <input type="text" id="edit-profile-note" class="form-control" placeholder="Ghi chú nhận diện khách...">
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px;">
+          <button type="button" class="btn-action" onclick="closeEditProfileModal()">Hủy</button>
+          <button type="submit" class="btn-action btn-primary-action" id="btn-save-profile">Lưu Hồ Sơ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     const API_URL = "https://api-vps.hoantienonline.io.vn/api/web";
     let adminUsers = [];
     let adminOrders = [];
+    let adminProfiles = [];
     let activeTab = "users";
 
     function checkAdminAuth() {
@@ -788,8 +980,10 @@
       activeTab = tab;
       document.getElementById("tab-btn-users").classList.toggle("active", tab === "users");
       document.getElementById("tab-btn-orders").classList.toggle("active", tab === "orders");
+      document.getElementById("tab-btn-profiles").classList.toggle("active", tab === "profiles");
       document.getElementById("tab-content-users").style.display = tab === "users" ? "block" : "none";
       document.getElementById("tab-content-orders").style.display = tab === "orders" ? "block" : "none";
+      document.getElementById("tab-content-profiles").style.display = tab === "profiles" ? "block" : "none";
     }
 
     async function loadAdminData(btn) {
@@ -822,6 +1016,14 @@
           updateOverviewStats();
           filterOrdersTable();
         }
+
+        // 3. Tải danh sách Hồ sơ chi tiết thành viên từ VPS
+        const resProfiles = await fetch(`${API_URL}?action=getMemberProfiles&t=${timestamp}`);
+        const jsonProfiles = await resProfiles.json();
+        if (jsonProfiles.success && Array.isArray(jsonProfiles.data)) {
+          adminProfiles = jsonProfiles.data;
+          renderProfilesList(adminProfiles);
+        }
       } catch (e) {
         console.error("Lỗi nạp dữ liệu Admin:", e);
       } finally {
@@ -833,6 +1035,246 @@
           }, 1200);
         }
       }
+    }
+
+    function getInitials(name) {
+      if (!name) return "TV";
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function escapeAttr(str) {
+      if (!str) return "";
+      return String(str).replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    }
+
+    function renderProfilesList(list) {
+      const container = document.getElementById("profiles-list-container");
+      if (!container) return;
+      if (!list || list.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: var(--ink-soft); padding: 40px; background: var(--surface); border-radius: 12px; border: 1px dashed var(--line);">Không tìm thấy hồ sơ thành viên nào phù hợp.</div>`;
+        return;
+      }
+
+      let html = "";
+      list.forEach(p => {
+        const name = p.userName || p.zaloName || "Thành viên";
+        const zaloName = p.zaloName || name;
+        const joinDate = p.joinDate ? `Tham gia: ${p.joinDate}` : "Tham gia: Chưa rõ";
+        
+        // Avatar
+        const avatarHtml = p.avatar ? 
+          `<img src="${p.avatar}" class="profile-avatar-img" onerror="this.onerror=null; this.src='https://hoantienonline.io.vn/assets/hero-illustration-v3.png';">` :
+          `<div class="profile-avatar-fallback">${getInitials(name)}</div>`;
+
+        // Phone
+        const phoneHtml = p.phone ? 
+          `<span style="color: #16A34A; font-weight: 600;"><i class="fa-solid fa-phone" style="font-size: 11px;"></i> ${escapeHtml(p.phone)}</span>` : 
+          `<span style="color: #94a3b8;"><i class="fa-solid fa-phone-slash" style="font-size: 11px;"></i> Chưa có SĐT</span>`;
+
+        // Email
+        const emailHtml = p.email ? 
+          `<span style="color: #2563EB; font-weight: 500;"><i class="fa-solid fa-envelope" style="font-size: 11px;"></i> ${escapeHtml(p.email)}</span>` : 
+          `<span style="color: #94a3b8;"><i class="fa-regular fa-envelope" style="font-size: 11px;"></i> Chưa có Gmail</span>`;
+
+        // Ngày sinh
+        const dobHtml = p.dob ? 
+          `<span style="color: #D97706; font-weight: 500;"><i class="fa-solid fa-cake-candles" style="font-size: 11px;"></i> ${escapeHtml(p.dob)}</span>` : 
+          `<span style="color: #94a3b8;"><i class="fa-regular fa-calendar" style="font-size: 11px;"></i> Chưa có ngày sinh</span>`;
+
+        // Source badge
+        const badgeHtml = (p.source && p.source.toLowerCase() === "web") ? 
+          `<span class="profile-badge-web"><i class="fa-solid fa-globe"></i> Web</span>` :
+          `<span class="profile-badge-zalo"><i class="fa-solid fa-comment-dots"></i> Zalo</span>`;
+
+        const webIdText = p.webId && p.webId !== "0" ? p.webId : "0";
+
+        html += `
+          <div class="profile-card-item">
+            <div class="profile-left-col">
+              ${avatarHtml}
+              <div>
+                <div class="profile-user-name">${escapeHtml(name)}</div>
+                <div class="profile-user-sub">Zalo: ${escapeHtml(zaloName)} · ${joinDate}</div>
+              </div>
+            </div>
+            <div class="profile-mid-col">
+              <div class="profile-info-row">${phoneHtml}</div>
+              <div class="profile-info-row">${emailHtml}</div>
+              <div class="profile-info-row">${dobHtml}</div>
+            </div>
+            <div class="profile-right-col">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span>ID Zalo: <b>${p.userId}</b></span>
+                ${badgeHtml}
+              </div>
+              <div style="color: #94a3b8;">ID Web: ${webIdText}</div>
+              <button class="btn-action" onclick="openEditProfileModal('${p.userId}', '${escapeAttr(name)}', '${escapeAttr(p.phone||'')}', '${escapeAttr(p.email||'')}', '${escapeAttr(p.dob||'')}', '${escapeAttr(p.note||'')}', '${escapeAttr(p.avatar||'')}')" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; margin-top: 4px;">
+                <i class="fa-solid fa-user-pen"></i> Sửa hồ sơ
+              </button>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    function filterProfilesList() {
+      const search = (document.getElementById("search-profiles-input").value || "").trim().toLowerCase();
+      const typeFilter = document.getElementById("filter-profile-type").value;
+
+      let filtered = adminProfiles.filter(p => {
+        const matchSearch = !search || 
+          String(p.userName || "").toLowerCase().includes(search) ||
+          String(p.zaloName || "").toLowerCase().includes(search) ||
+          String(p.userId || "").includes(search) ||
+          String(p.phone || "").includes(search) ||
+          String(p.email || "").toLowerCase().includes(search) ||
+          String(p.dob || "").includes(search) ||
+          String(p.note || "").toLowerCase().includes(search);
+
+        if (!matchSearch) return false;
+
+        if (typeFilter === "has_phone") return Boolean(p.phone && p.phone.trim());
+        if (typeFilter === "no_phone") return !p.phone || !p.phone.trim();
+        if (typeFilter === "has_email") return Boolean(p.email && p.email.trim());
+        if (typeFilter === "no_email") return !p.email || !p.email.trim();
+        if (typeFilter === "has_dob") return Boolean(p.dob && p.dob.trim());
+
+        return true;
+      });
+
+      renderProfilesList(filtered);
+    }
+
+    function openEditProfileModal(userId, name, phone, email, dob, note, avatar) {
+      document.getElementById("edit-profile-id").value = userId;
+      document.getElementById("edit-profile-name").innerText = name;
+      document.getElementById("edit-profile-zalo-id").innerText = `ID Zalo: ${userId}`;
+      document.getElementById("edit-profile-phone").value = phone || "";
+      document.getElementById("edit-profile-email").value = email || "";
+      document.getElementById("edit-profile-dob").value = dob || "";
+      document.getElementById("edit-profile-note").value = note || "";
+
+      const avatarPreview = document.getElementById("edit-profile-avatar-preview");
+      if (avatar) {
+        avatarPreview.innerHTML = `<img src="${avatar}" style="width:100%; height:100%; object-fit:cover;">`;
+      } else {
+        avatarPreview.innerHTML = `<div style="background: linear-gradient(135deg, #6366f1, #a855f7); width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:16px;">${getInitials(name)}</div>`;
+      }
+
+      document.getElementById("edit-profile-modal").style.display = "flex";
+    }
+
+    function closeEditProfileModal() {
+      document.getElementById("edit-profile-modal").style.display = "none";
+    }
+
+    async function saveProfileChanges(e) {
+      if (e) e.preventDefault();
+      const userId = document.getElementById("edit-profile-id").value;
+      const phone = document.getElementById("edit-profile-phone").value.trim();
+      const email = document.getElementById("edit-profile-email").value.trim();
+      const dob = document.getElementById("edit-profile-dob").value.trim();
+      const note = document.getElementById("edit-profile-note").value.trim();
+
+      const btnSave = document.getElementById("btn-save-profile");
+      btnSave.disabled = true;
+      btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+
+      try {
+        const res = await fetch(`${API_URL}?action=updateMemberProfile`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId, phone, email, dob, note })
+        });
+        const json = await res.json();
+        if (json.success) {
+          // Cập nhật local data
+          const idx = adminProfiles.findIndex(p => p.userId === userId);
+          if (idx !== -1) {
+            adminProfiles[idx].phone = phone;
+            adminProfiles[idx].email = email;
+            adminProfiles[idx].dob = dob;
+            adminProfiles[idx].note = note;
+          }
+          filterProfilesList();
+          closeEditProfileModal();
+        } else {
+          alert("Lỗi lưu hồ sơ: " + (json.error || "Không rõ"));
+        }
+      } catch(err) {
+        alert("Lỗi kết nối VPS: " + err.message);
+      } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = "Lưu Hồ Sơ";
+      }
+    }
+
+    async function syncZaloProfilesLive(btn) {
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang đồng bộ...';
+      }
+      try {
+        const res = await fetch(`${API_URL}?action=syncZaloProfiles`);
+        const json = await res.json();
+        if (json.success) {
+          alert(`✅ ${json.message || 'Đồng bộ Zalo thành công!'}`);
+          // Nạp lại dữ liệu
+          const resProfiles = await fetch(`${API_URL}?action=getMemberProfiles&t=${Date.now()}`);
+          const jsonP = await resProfiles.json();
+          if (jsonP.success) {
+            adminProfiles = jsonP.data;
+            filterProfilesList();
+          }
+        } else {
+          alert("⚠️ " + (json.error || "Đồng bộ thất bại!"));
+        }
+      } catch(e) {
+        alert("Lỗi kết nối VPS: " + e.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Đồng bộ từ Zalo';
+        }
+      }
+    }
+
+    function exportProfilesToCSV() {
+      if (!adminProfiles || adminProfiles.length === 0) {
+        alert("Chưa có dữ liệu hồ sơ để xuất!");
+        return;
+      }
+      let csv = "\uFEFFSTT,ID Zalo,Tên hiển thị,Tên Zalo,Số điện thoại,Gmail/Email,Ngày sinh,Giới tính,Ngày tham gia,Nguồn,Ghi chú\n";
+      adminProfiles.forEach((p, idx) => {
+        const row = [
+          idx + 1,
+          `"${p.userId || ''}"`,
+          `"${(p.userName || '').replace(/"/g, '""')}"`,
+          `"${(p.zaloName || '').replace(/"/g, '""')}"`,
+          `"${p.phone || ''}"`,
+          `"${p.email || ''}"`,
+          `"${p.dob || ''}"`,
+          `"${p.gender || ''}"`,
+          `"${p.joinDate || ''}"`,
+          `"${p.source || 'Zalo'}"`,
+          `"${(p.note || '').replace(/"/g, '""')}"`
+        ];
+        csv += row.join(",") + "\n";
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Danh_Sach_Ho_So_Thanh_Vien_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function populateMonthOptions() {
