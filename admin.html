@@ -831,7 +831,7 @@
             <option value="has_dob">🎂 Đã có Ngày sinh</option>
           </select>
           <button class="btn-action" id="btn-sync-zalo-profiles" onclick="syncZaloProfilesLive(this)" style="background: #2563eb; color: #fff; border: none; font-weight: 600;">
-            <i class="fa-solid fa-rotate"></i> Đồng bộ từ Zalo
+            <i class="fa-solid fa-rotate"></i> Đồng bộ Zalo & Gmail
           </button>
           <button class="btn-action" onclick="exportProfilesToCSV()" style="font-weight: 600;">
             <i class="fa-solid fa-file-excel"></i> Xuất Excel Hồ Sơ
@@ -1321,7 +1321,7 @@
       } finally {
         if (btn) {
           btn.disabled = false;
-          btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Đồng bộ từ Zalo';
+          btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Đồng bộ Zalo & Gmail';
         }
       }
     }
