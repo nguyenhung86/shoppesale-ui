@@ -1079,8 +1079,9 @@
           `<div class="profile-avatar-fallback">${getInitials(name)}</div>`;
 
         // Phone
-        const phoneHtml = p.phone ? 
-          `<span style="color: #16A34A; font-weight: 600;"><i class="fa-solid fa-phone" style="font-size: 11px;"></i> ${escapeHtml(p.phone)}</span>` : 
+        const displayPhone = p.phone ? String(p.phone).replace(/^\+?84/, '0') : '';
+        const phoneHtml = displayPhone ? 
+          `<span style="color: #16A34A; font-weight: 600;"><i class="fa-solid fa-phone" style="font-size: 11px;"></i> ${escapeHtml(displayPhone)}</span>` : 
           `<span style="color: #94a3b8;"><i class="fa-solid fa-phone-slash" style="font-size: 11px;"></i> Chưa có SĐT</span>`;
 
         // Email
