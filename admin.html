@@ -1169,6 +1169,16 @@
           `<span class="profile-badge-web"><i class="fa-solid fa-globe"></i> Web</span>` :
           `<span class="profile-badge-zalo"><i class="fa-solid fa-comment-dots"></i> Zalo</span>`;
 
+        const isBlocked = (p.note && (p.note.includes("Blacklist") || p.note.includes("chặn"))) || (p.joinDate === "blocked");
+        const blockBadge = isBlocked ? 
+          `<span style="background: #fee2e2; color: #dc2626; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><i class="fa-solid fa-ban"></i> Đã Chặn</span>` : "";
+
+        const blockBtnHtml = isBlocked ?
+          `<span style="font-size: 11px; color: #dc2626; font-weight: 600; padding: 4px 6px;"><i class="fa-solid fa-shield-halved"></i> Trong DS Đen</span>` :
+          `<button class="btn-action" onclick="blockMemberProfile('${p.userId}', '${escapeAttr(name)}')" style="padding: 4px 8px; font-size: 11.5px; border-radius: 6px; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5;">
+            <i class="fa-solid fa-ban"></i> Chặn
+          </button>`;
+
         const webIdText = p.webId && p.webId !== "0" ? p.webId : "0";
 
         html += `
@@ -1186,20 +1196,47 @@
               <div class="profile-info-row">${dobHtml}</div>
             </div>
             <div class="profile-right-col">
-              <div style="display: flex; align-items: center; gap: 6px;">
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                 <span>ID Zalo: <b>${p.userId}</b></span>
                 ${badgeHtml}
+                ${blockBadge}
               </div>
               <div style="color: #94a3b8;">ID Web: ${webIdText}</div>
-              <button class="btn-action" onclick="openEditProfileModal('${p.userId}', '${escapeAttr(name)}', '${escapeAttr(p.phone||'')}', '${escapeAttr(p.email||'')}', '${escapeAttr(p.dob||'')}', '${escapeAttr(p.note||'')}', '${escapeAttr(p.avatar||'')}')" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px; margin-top: 4px;">
-                <i class="fa-solid fa-user-pen"></i> Sửa hồ sơ
-              </button>
+              <div style="display: flex; gap: 6px; align-items: center; margin-top: 4px;">
+                <button class="btn-action" onclick="openEditProfileModal('${p.userId}', '${escapeAttr(name)}', '${escapeAttr(p.phone||'')}', '${escapeAttr(p.email||'')}', '${escapeAttr(p.dob||'')}', '${escapeAttr(p.note||'')}', '${escapeAttr(p.avatar||'')}')" style="padding: 4px 10px; font-size: 11.5px; border-radius: 6px;">
+                  <i class="fa-solid fa-user-pen"></i> Sửa hồ sơ
+                </button>
+                ${blockBtnHtml}
+              </div>
             </div>
           </div>
         `;
       });
 
       container.innerHTML = html;
+    }
+
+    async function blockMemberProfile(userId, userName) {
+      if (!confirm(`Bạn có chắc chắn muốn đưa "${userName}" (UID: ${userId}) vào DANH SÁCH ĐEN và chặn vĩnh viễn khỏi nhóm Zalo?`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}?action=blockUser&userId=${userId}`);
+        const json = await res.json();
+        if (json.success) {
+          alert(`⛔ ${json.message}`);
+          const idx = adminProfiles.findIndex(p => p.userId === userId);
+          if (idx !== -1) {
+            adminProfiles[idx].note = "Đã bị chặn (Blacklist)";
+            try { localStorage.setItem("cached_admin_profiles", JSON.stringify(adminProfiles)); } catch(e){}
+            filterProfilesList();
+          }
+        } else {
+          alert("Lỗi: " + (json.error || "Không rõ"));
+        }
+      } catch(e) {
+        alert("Lỗi kết nối: " + e.message);
+      }
     }
 
     function filterProfilesList() {
