@@ -201,6 +201,17 @@
     .btn-primary-action:hover {
       background: var(--primary-dark);
     }
+    .btn-shopee-action {
+      background: #FFF5F2;
+      color: #EE4D2D;
+      border: 1px solid rgba(238, 77, 45, 0.35);
+      font-weight: 600;
+    }
+    .btn-shopee-action:hover {
+      background: #FFE8E2;
+      border-color: #EE4D2D;
+      color: #D73211;
+    }
     
     /* OVERVIEW CARDS */
     .stats-row {
@@ -698,7 +709,7 @@
         </select>
         <button class="btn-action" onclick="exportToCSV()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
         <button class="btn-action" id="btn-refresh-data" onclick="loadAdminData(this)"><i class="fa-solid fa-rotate"></i> Làm mới</button>
-        <button class="btn-action" id="btn-sync-shopee-top" onclick="triggerSyncShopeeOrders(this)" style="background: linear-gradient(135deg, #ee4d2d, #ff6433); color: #fff; border: none; font-weight: 700; box-shadow: 0 2px 6px rgba(238, 77, 45, 0.35);"><i class="fa-solid fa-bolt"></i> Quét & Đồng bộ đơn Shopee</button>
+        <button class="btn-action btn-shopee-action" id="btn-sync-shopee-top" onclick="triggerSyncShopeeOrders(this)" title="Quét & Đồng bộ đơn Shopee từ 2 tài khoản (30 ngày)"><i class="fa-solid fa-bolt"></i> Đồng bộ Shopee</button>
         <button class="btn-action btn-primary-action" onclick="handleAdminLogout()"><i class="fa-solid fa-power-off"></i> Đăng xuất</button>
       </div>
     </header>
@@ -789,8 +800,8 @@
             <option value="Chưa TT">⏳ Chưa thanh toán (Chưa TT)</option>
             <option value="Đã TT">💸 Đã thanh toán (Đã TT)</option>
           </select>
-          <button class="btn-action" id="btn-sync-shopee-orders" onclick="triggerSyncShopeeOrders(this)" style="background: linear-gradient(135deg, #ee4d2d, #ff6433); color: #fff; border: none; font-weight: 600; padding: 10px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(238, 77, 45, 0.3);">
-            <i class="fa-solid fa-bolt"></i> Quét & Đồng bộ đơn Shopee
+          <button class="btn-action btn-shopee-action" id="btn-sync-shopee-orders" onclick="triggerSyncShopeeOrders(this)" title="Quét & Đồng bộ đơn Shopee từ 2 tài khoản (30 ngày)">
+            <i class="fa-solid fa-bolt"></i> Đồng bộ Shopee
           </button>
         </div>
       </div>
@@ -1373,7 +1384,7 @@
       [topBtn, tabBtn].forEach(b => {
         if (b) {
           b.disabled = true;
-          b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang quét 2 tài khoản (30 ngày)...';
+          b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang quét...';
         }
       });
       try {
@@ -1393,7 +1404,7 @@
         [topBtn, tabBtn].forEach(b => {
           if (b) {
             b.disabled = false;
-            b.innerHTML = '<i class="fa-solid fa-bolt"></i> Quét & Đồng bộ đơn Shopee';
+            b.innerHTML = '<i class="fa-solid fa-bolt"></i> Đồng bộ Shopee';
           }
         });
       }
