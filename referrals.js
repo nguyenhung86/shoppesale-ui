@@ -1,5 +1,5 @@
 function referrals() {
-  const referralLink = 'https://zalo.me/g/0u5xwlj4npkvl4bomy1o';
+  const referralLink = 'https://zalo.me/g/b8lixpggmg0kmacdeeii';
 
   return `
     <div class="referrals-view">
@@ -71,7 +71,7 @@ function referrals() {
 }
 
 function referralProgram() {
-  const referralLink = 'https://zalo.me/g/0u5xwlj4npkvl4bomy1o';
+  const referralLink = 'https://zalo.me/g/b8lixpggmg0kmacdeeii';
   const tiers = [
     ['Mốc 5', '5 bạn mới tích cực', '+5%', 'mint'],
     ['Mốc 10', '10 bạn mới tích cực', '+10%', 'amber'],
