@@ -1425,30 +1425,79 @@
 
       const topBtn = document.getElementById("btn-push-sheet-top");
       const tabBtn = document.getElementById("btn-push-sheet-orders");
-      [topBtn, tabBtn].forEach(b => {
-        if (b) {
-          b.disabled = true;
-          b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang đẩy đơn...';
-        }
-      });
-
-      try {
-        const res = await fetch(`${API_URL}?action=pushVpsOrdersToSheet&days=${days}`);
-        const json = await res.json();
-        if (json.success) {
-          alert(`✅ Đã đẩy thành công ${json.pushedOrdersCount || 0} đơn hàng từ VPS lên Google Sheets!\n\n- Khoảng thời gian: ${days === 0 ? "Toàn bộ cache" : days + " ngày gần nhất"}\n- Thời gian xử lý: ${json.durationSeconds || 0} giây.`);
-        } else {
-          alert("⚠️ Lỗi đẩy đơn: " + (json.error || json.message || "Không thể đẩy đơn"));
-        }
-      } catch (e) {
-        alert("Lỗi kết nối VPS: " + e.message);
-      } finally {
+      const setBtnLoading = (text) => {
+        [topBtn, tabBtn].forEach(b => {
+          if (b) {
+            b.disabled = true;
+            b.innerHTML = `<i class="fa-solid fa-rotate fa-spin"></i> ${text}`;
+          }
+        });
+      };
+      const resetBtn = () => {
         [topBtn, tabBtn].forEach(b => {
           if (b) {
             b.disabled = false;
             b.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Đẩy đơn lên Sheet';
           }
         });
+      };
+
+      setBtnLoading("Đang khởi tạo...");
+
+      try {
+        const res = await fetch(`${API_URL}?action=pushVpsOrdersToSheet&days=${days}`);
+        const json = await res.json();
+        
+        if (!json.success && !json.inProgress) {
+          alert("⚠️ Lỗi: " + (json.error || json.message || "Không thể đẩy đơn"));
+          resetBtn();
+          return;
+        }
+
+        if (json.totalOrders === 0) {
+          alert("ℹ️ " + (json.message || "Không có đơn hàng nào trong khoảng thời gian này."));
+          resetBtn();
+          return;
+        }
+
+        const total = json.totalOrders || 0;
+        setBtnLoading(`Đang đẩy 0/${total} đơn...`);
+
+        let pollCount = 0;
+        const timer = setInterval(async () => {
+          pollCount++;
+          try {
+            const stRes = await fetch(`${API_URL}?action=getPushVpsOrdersStatus&t=${Date.now()}`);
+            const stJson = await stRes.json();
+            const st = stJson.status;
+            if (!st) return;
+
+            if (st.inProgress) {
+              const current = st.pushedOrdersCount || 0;
+              const batch = st.batchNum || 0;
+              const totalB = st.totalBatches || 0;
+              setBtnLoading(`Đang đẩy: ${current}/${st.totalOrders || total} (Batch ${batch}/${totalB})...`);
+            } else {
+              clearInterval(timer);
+              resetBtn();
+              if (st.error) {
+                alert(`❌ Lỗi khi đẩy đơn: ${st.error}`);
+              } else {
+                alert(`✅ Hoàn tất đẩy ${st.pushedOrdersCount || total} đơn hàng lên Google Sheets thành công!\n\n- Khoảng thời gian: ${days === 0 ? "Toàn bộ cache" : days + " ngày gần nhất"}\n- Thời gian xử lý: ${st.durationSeconds || 0} giây.`);
+              }
+            }
+          } catch (errPoll) {
+            console.warn("Poll status warn:", errPoll.message);
+            if (pollCount > 90) {
+              clearInterval(timer);
+              resetBtn();
+            }
+          }
+        }, 2000);
+
+      } catch (e) {
+        alert("Lỗi kết nối VPS: " + e.message);
+        resetBtn();
       }
     }
 
