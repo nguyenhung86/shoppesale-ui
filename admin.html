@@ -710,6 +710,7 @@
         <button class="btn-action" onclick="exportToCSV()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
         <button class="btn-action" id="btn-refresh-data" onclick="loadAdminData(this)"><i class="fa-solid fa-rotate"></i> Làm mới</button>
         <button class="btn-action btn-shopee-action" id="btn-sync-shopee-top" onclick="triggerSyncShopeeOrders(this)" title="Quét & Đồng bộ đơn Shopee từ 2 tài khoản (30 ngày)"><i class="fa-solid fa-bolt"></i> Đồng bộ Shopee</button>
+        <button class="btn-action" id="btn-push-sheet-top" onclick="triggerPushVpsOrdersToSheet(this)" style="background: #10B981; color: white; border-color: #059669; font-weight: 700;" title="Đẩy đơn hàng từ cache VPS lên Google Sheet (bù các đơn bị thiếu/lỗi)"><i class="fa-solid fa-cloud-arrow-up"></i> Đẩy đơn lên Sheet</button>
         <button class="btn-action btn-primary-action" onclick="handleAdminLogout()"><i class="fa-solid fa-power-off"></i> Đăng xuất</button>
       </div>
     </header>
@@ -802,6 +803,9 @@
           </select>
           <button class="btn-action btn-shopee-action" id="btn-sync-shopee-orders" onclick="triggerSyncShopeeOrders(this)" title="Quét & Đồng bộ đơn Shopee từ 2 tài khoản (30 ngày)">
             <i class="fa-solid fa-bolt"></i> Đồng bộ Shopee
+          </button>
+          <button class="btn-action" id="btn-push-sheet-orders" onclick="triggerPushVpsOrdersToSheet(this)" style="background: #10B981; color: white; border-color: #059669; font-weight: 700;" title="Đẩy đơn hàng từ cache VPS lên Google Sheet (bù các đơn bị thiếu/lỗi)">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Đẩy đơn lên Sheet
           </button>
         </div>
       </div>
@@ -1405,6 +1409,44 @@
           if (b) {
             b.disabled = false;
             b.innerHTML = '<i class="fa-solid fa-bolt"></i> Đồng bộ Shopee';
+          }
+        });
+      }
+    }
+
+    async function triggerPushVpsOrdersToSheet(btn) {
+      const daysStr = prompt("Nhập số ngày gần nhất muốn đẩy đơn từ VPS lên Google Sheet:\n(Mặc định: 30 ngày. Nhập 0 để đẩy toàn bộ cache)", "30");
+      if (daysStr === null) return;
+      const days = parseInt(daysStr, 10);
+      if (isNaN(days) || days < 0) {
+        alert("Vui lòng nhập số ngày hợp lệ!");
+        return;
+      }
+
+      const topBtn = document.getElementById("btn-push-sheet-top");
+      const tabBtn = document.getElementById("btn-push-sheet-orders");
+      [topBtn, tabBtn].forEach(b => {
+        if (b) {
+          b.disabled = true;
+          b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang đẩy đơn...';
+        }
+      });
+
+      try {
+        const res = await fetch(`${API_URL}?action=pushVpsOrdersToSheet&days=${days}`);
+        const json = await res.json();
+        if (json.success) {
+          alert(`✅ Đã đẩy thành công ${json.pushedOrdersCount || 0} đơn hàng từ VPS lên Google Sheets!\n\n- Khoảng thời gian: ${days === 0 ? "Toàn bộ cache" : days + " ngày gần nhất"}\n- Thời gian xử lý: ${json.durationSeconds || 0} giây.`);
+        } else {
+          alert("⚠️ Lỗi đẩy đơn: " + (json.error || json.message || "Không thể đẩy đơn"));
+        }
+      } catch (e) {
+        alert("Lỗi kết nối VPS: " + e.message);
+      } finally {
+        [topBtn, tabBtn].forEach(b => {
+          if (b) {
+            b.disabled = false;
+            b.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Đẩy đơn lên Sheet';
           }
         });
       }
