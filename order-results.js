@@ -253,6 +253,12 @@ function renderDashboard(response, query, formatVND) {
         <div style="font-size: 40px; margin-bottom: 15px;">📦</div>
         <h2 style="font-size: 20px; font-weight: 800; color: #15233a; margin-bottom: 8px;">Chưa có đơn hàng nào</h2>
         <p style="color: #7787a0; font-size: 14px; margin-bottom: 20px; line-height: 1.5;">Tài khoản Zalo của bạn chưa phát sinh đơn hàng hoàn tiền nào.</p>
+        <aside class="order-fast-tip" style="margin: 0 auto 20px; max-width: 520px; background: #fffbeb; border: 1.5px dashed #fde68a; border-radius: 14px; padding: 12px 16px; display: flex !important; align-items: center; gap: 10px; font-size: 13px; line-height: 1.5; color: #b45309; text-align: left;">
+          <span style="font-size: 18px; line-height: 1; flex-shrink: 0;">💡</span>
+          <div style="flex: 1;">
+            <strong style="color: #92400e; font-weight: 700;">Mẹo duyệt tiền nhanh:</strong> Khi nhận được đồ, hãy bấm <strong style="color: #92400e; font-weight: 700;">"Đã nhận hàng"</strong> trên app để đơn sớm được duyệt hoa hồng nhé!
+          </div>
+        </aside>
         <a href="#convert" style="display: inline-block; padding: 12px 24px; background: #ff5722; color: #fff; border-radius: 12px; font-weight: bold; text-decoration: none; font-size: 14px;">Chuyển link mua ngay</a>
       </div>
     `;
@@ -304,6 +310,12 @@ function renderDashboard(response, query, formatVND) {
           <span class="done" style="display: block; padding: 13px 15px; border: 1px solid #d3eee0; border-radius: 14px; background: #f2fbf6; box-shadow: inset 0 3px 0 #21b565, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ HOÀN THÀNH</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #18a45b; letter-spacing: -0.4px;">${formatVND(totalCompleted)}</b></span>
           <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ NHẬN</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">${formatVND(totalReceived)}</b></span>
         </div>
+        <aside class="order-fast-tip" style="margin-top: 16px; background: #fffbeb; border: 1.5px dashed #fde68a; border-radius: 14px; padding: 12px 16px; display: flex !important; align-items: center; gap: 10px; font-size: 13.5px; line-height: 1.5; color: #b45309;">
+          <span style="font-size: 18px; line-height: 1; flex-shrink: 0;">💡</span>
+          <div style="flex: 1;">
+            <strong style="color: #92400e; font-weight: 700;">Mẹo duyệt tiền nhanh:</strong> Khi nhận được đồ, hãy bấm <strong style="color: #92400e; font-weight: 700;">"Đã nhận hàng"</strong> trên app để đơn sớm được duyệt hoa hồng nhé!
+          </div>
+        </aside>
       </article>
       
       <h2 class="order-list-title" style="margin: 24px 0 11px; font-size: 18px; font-weight: 800; color: #172033; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-left: 4px solid #ff5d1d; letter-spacing: -0.2px;">Danh sách đơn hàng của bạn</h2>
