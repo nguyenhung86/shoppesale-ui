@@ -79,24 +79,24 @@ function renderOrders(filteredOrders, formatVND) {
     const category = getOrderCategory(o.status || o.orderStatus, o.paymentStatus);
     
     let borderLeftColor = '#18ad60'; // completed
-    let statusText = 'ĐÃ HOÀN TẤT';
+    let statusText = 'Đã hoàn tất';
     let badgeStyle = 'border: 1px solid #bfead0; background: #eafaf1; color: #19a45c;';
     
     if (category === 'pending') {
-      borderLeftColor = '#e89616';
-      statusText = 'ĐANG GIAO';
-      badgeStyle = 'border: 1px solid #f6e1a1; background: #fffdf3; color: #e89616;';
+      borderLeftColor = '#2563eb';
+      statusText = 'Đang giao';
+      badgeStyle = 'border: 1px solid #bfdbfe; background: #ebf5ff; color: #1d4ed8;';
     } else if (category === 'cancelled') {
       borderLeftColor = '#d93838';
-      statusText = 'ĐÃ HỦY';
+      statusText = 'Đã hủy';
       badgeStyle = 'border: 1px solid #f8d7da; background: #fdf3f4; color: #d93838;';
     }
     
-    let platformStyle = 'border: 1px solid #ffd5c8; background: #fff3ef; color: #f45a25;'; // Shopee
+    let platformStyle = 'border: 1px solid #ffd5c8; background: #fff3ef; color: #f45a25; margin-left: auto;'; // Shopee
     if (platform === 'Lazada') {
-      platformStyle = 'border: 1px solid #d6e2ff; background: #f3f7ff; color: #2864de;';
+      platformStyle = 'border: 1px solid #d6e2ff; background: #f3f7ff; color: #2864de; margin-left: auto;';
     } else if (platform === 'TikTok') {
-      platformStyle = 'border: 1px solid #e1e3e8; background: #f4f5f8; color: #111111;';
+      platformStyle = 'border: 1px solid #e1e3e8; background: #f4f5f8; color: #111111; margin-left: auto;';
     }
     
     const cashbackAmount = formatVND(o.commission);
@@ -110,7 +110,7 @@ function renderOrders(filteredOrders, formatVND) {
           const yyyy = d.getFullYear();
           const mm = String(d.getMonth() + 1).padStart(2, '0');
           const dd = String(d.getDate()).padStart(2, '0');
-          dateStr = `${yyyy}-${mm}-${dd}`;
+          dateStr = `${dd}/${mm}/${yyyy}`;
         } else {
           dateStr = str;
         }
@@ -121,21 +121,31 @@ function renderOrders(filteredOrders, formatVND) {
       }
     }
     const itemName = o.itemName || 'Sản phẩm hoàn tiền';
-    const payStatusText = o.paymentStatus === 'Đã TT' ? '✓ Đã thanh toán' : '⏳ Chờ thanh toán';
+    const payStatusText = o.paymentStatus === 'Đã TT' ? '✓ Đã thanh toán' : '⏳ Chưa thanh toán';
     
+    const tipHtml = (category !== 'cancelled') ? `
+      <div class="order-fast-tip" style="margin-top: 13px; background: #fffdf0; border: 1.5px dashed #fcd34d; border-radius: 12px; padding: 10px 14px; display: flex !important; align-items: center; gap: 8px; font-size: 13px; line-height: 1.45; color: #92400e; text-align: left;">
+        <span style="font-size: 16px; line-height: 1; flex-shrink: 0;">💡</span>
+        <div style="flex: 1;">
+          <strong style="color: #92400e; font-weight: 700;">Mẹo duyệt tiền nhanh:</strong> Khi nhận được đồ, hãy bấm <strong style="color: #92400e; font-weight: 700;">"Đã nhận hàng"</strong><br style="display: block; content: '';"/>trên app để đơn sớm được duyệt hoa hồng nhé!
+        </div>
+      </div>
+    ` : '';
+
     return `
       <article style="border-left: 4px solid ${borderLeftColor}; padding: 16px 18px; border-top: 1px solid #e7e9ee; border-right: 1px solid #e7e9ee; border-bottom: 1px solid #e7e9ee; border-radius: 16px; background: #fff; box-shadow: 0 3px 8px rgba(23,32,51,0.04); margin-bottom: 12px;">
-        <div class="order-badges" style="display: flex; gap: 7px;">
+        <div class="order-badges" style="display: flex; align-items: center; gap: 7px;">
           <span style="${badgeStyle} padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; font-style: normal;">${statusText}</span>
           <em style="${platformStyle} padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; font-style: normal;">${platform}</em>
         </div>
         <h3 style="margin: 12px 0 6px; font-size: 14px; line-height: 1.45; font-weight: 600; color: #243149;">${itemName}</h3>
-        <p style="margin: 0; color: #8490a3; font-size: 11px;">Mã đơn: ${o.orderId}</p>
+        <p style="margin: 0; color: #8490a3; font-size: 11px; display: flex; align-items: center; gap: 4px;">Mã đơn: <b style="color: #334155; font-weight: 700;">${o.orderId}</b> <span style="cursor: pointer; font-size: 13px;" title="Sao chép mã đơn" onclick="navigator.clipboard && navigator.clipboard.writeText('${o.orderId}')">📋</span></p>
         <footer style="display: flex; align-items: center; gap: 15px; margin-top: 13px; padding-top: 12px; border-top: 1px solid #e8ebf0; color: #6e7e94; font-size: 12px;">
-          <span>▣　${dateStr}</span>
-          <b style="margin-left: auto; color: ${category === 'cancelled' ? '#8490a3' : '#18ad60'}; font-size: 15px; font-weight: 700;">+${cashbackAmount}</b>
-          <em style="padding: 4px 8px; border-radius: 12px; font-size: 10px; font-style: normal; font-weight: 600; background: ${o.paymentStatus === 'Đã TT' ? '#e9faef' : '#fff3e0'}; color: ${o.paymentStatus === 'Đã TT' ? '#159b51' : '#ef6c00'};">${payStatusText}</em>
+          <span>🗓️　${dateStr}</span>
+          <b style="margin-left: auto; color: ${category === 'cancelled' ? '#8490a3' : '#f24f25'}; font-size: 15px; font-weight: 700;">+${cashbackAmount}</b>
+          <em style="padding: 4px 8px; border-radius: 12px; font-size: 10px; font-style: normal; font-weight: 600; background: ${o.paymentStatus === 'Đã TT' ? '#e9faef' : '#fff9e6'}; color: ${o.paymentStatus === 'Đã TT' ? '#159b51' : '#b45309'}; border: 1px solid ${o.paymentStatus === 'Đã TT' ? '#bfead0' : '#fef08a'};">${payStatusText}</em>
         </footer>
+        ${tipHtml}
       </article>
     `;
   }).join('');
@@ -310,12 +320,6 @@ function renderDashboard(response, query, formatVND) {
           <span class="done" style="display: block; padding: 13px 15px; border: 1px solid #d3eee0; border-radius: 14px; background: #f2fbf6; box-shadow: inset 0 3px 0 #21b565, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ HOÀN THÀNH</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #18a45b; letter-spacing: -0.4px;">${formatVND(totalCompleted)}</b></span>
           <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ NHẬN</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">${formatVND(totalReceived)}</b></span>
         </div>
-        <aside class="order-fast-tip" style="margin-top: 16px; background: #fffbeb; border: 1.5px dashed #fde68a; border-radius: 14px; padding: 12px 16px; display: flex !important; align-items: center; gap: 10px; font-size: 13.5px; line-height: 1.5; color: #b45309;">
-          <span style="font-size: 18px; line-height: 1; flex-shrink: 0;">💡</span>
-          <div style="flex: 1;">
-            <strong style="color: #92400e; font-weight: 700;">Mẹo duyệt tiền nhanh:</strong> Khi nhận được đồ, hãy bấm <strong style="color: #92400e; font-weight: 700;">"Đã nhận hàng"</strong> trên app để đơn sớm được duyệt hoa hồng nhé!
-          </div>
-        </aside>
       </article>
       
       <h2 class="order-list-title" style="margin: 24px 0 11px; font-size: 18px; font-weight: 800; color: #172033; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-left: 4px solid #ff5d1d; letter-spacing: -0.2px;">Danh sách đơn hàng của bạn</h2>
