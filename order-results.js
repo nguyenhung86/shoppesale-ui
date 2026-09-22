@@ -104,7 +104,18 @@ function renderOrders(filteredOrders, formatVND) {
     let dateStr = 'Không rõ ngày';
     if (rawDate) {
       let str = String(rawDate).trim();
-      if (str.includes('GMT') || str.includes('T00:') || str.includes('Jan') || str.includes('Feb') || str.includes('Mar') || str.includes('Apr') || str.includes('May') || str.includes('Jun') || str.includes('Jul') || str.includes('Aug') || str.includes('Sep') || str.includes('Oct') || str.includes('Nov') || str.includes('Dec')) {
+      if (str.includes('T')) str = str.split('T')[0];
+      if (str.includes(' ')) str = str.split(' ')[0];
+      if (str.includes('-')) {
+        const parts = str.split('-');
+        if (parts.length === 3 && parts[0].length === 4) {
+          dateStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
+        } else {
+          dateStr = str;
+        }
+      } else if (str.includes('/')) {
+        dateStr = str;
+      } else {
         const d = new Date(str);
         if (!isNaN(d.getTime())) {
           const yyyy = d.getFullYear();
@@ -114,20 +125,16 @@ function renderOrders(filteredOrders, formatVND) {
         } else {
           dateStr = str;
         }
-      } else {
-        if (str.includes('T')) str = str.split('T')[0];
-        if (str.includes(' ')) str = str.split(' ')[0];
-        dateStr = str;
       }
     }
     const itemName = o.itemName || 'Sản phẩm hoàn tiền';
     const payStatusText = o.paymentStatus === 'Đã TT' ? '✓ Đã thanh toán' : '⏳ Chưa thanh toán';
     
     const tipHtml = (category !== 'cancelled') ? `
-      <div class="order-fast-tip" style="margin-top: 13px; background: #fffdf0; border: 1.5px dashed #fcd34d; border-radius: 12px; padding: 10px 14px; display: flex !important; align-items: center; gap: 8px; font-size: 13px; line-height: 1.45; color: #92400e; text-align: left;">
+      <div class="order-fast-tip" style="margin-top: 11px; background: linear-gradient(135deg, #fffdf2 0%, #fff9e6 100%); border: 1.5px dashed #f6cf7a; border-radius: 12px; padding: 9px 15px; display: flex !important; align-items: center; gap: 9px; font-size: 13px; line-height: 1.5; color: #854d0e; text-align: left; box-sizing: border-box;">
         <span style="font-size: 16px; line-height: 1; flex-shrink: 0;">💡</span>
-        <div style="flex: 1;">
-          <strong style="color: #92400e; font-weight: 700;">Mẹo duyệt tiền nhanh:</strong> Khi nhận được đồ, hãy bấm <strong style="color: #92400e; font-weight: 700;">"Đã nhận hàng"</strong><br style="display: block; content: '';"/>trên app để đơn sớm được duyệt hoa hồng nhé!
+        <div style="flex: 1; min-width: 0;">
+          <strong style="color: #713f12; font-weight: 700;">Mẹo duyệt tiền nhanh:</strong> Khi nhận được đồ, hãy bấm <strong style="color: #713f12; font-weight: 700;">"Đã nhận hàng"</strong> trên app để đơn sớm được duyệt hoa hồng nhé!
         </div>
       </div>
     ` : '';
@@ -139,7 +146,7 @@ function renderOrders(filteredOrders, formatVND) {
           <em style="${platformStyle} padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; font-style: normal;">${platform}</em>
         </div>
         <h3 style="margin: 12px 0 6px; font-size: 14px; line-height: 1.45; font-weight: 600; color: #243149;">${itemName}</h3>
-        <p style="margin: 0; color: #8490a3; font-size: 11px; display: flex; align-items: center; gap: 4px;">Mã đơn: <b style="color: #334155; font-weight: 700;">${o.orderId}</b> <span style="cursor: pointer; font-size: 13px;" title="Sao chép mã đơn" onclick="navigator.clipboard && navigator.clipboard.writeText('${o.orderId}')">📋</span></p>
+        <p style="margin: 0; color: #8490a3; font-size: 11px; display: flex; align-items: center; gap: 4px;">Mã đơn: <b style="color: #334155; font-weight: 700;">${o.orderId}</b> <span style="cursor: pointer; font-size: 13px;" title="Sao chép mã đơn" onclick="if(navigator.clipboard){navigator.clipboard.writeText('${o.orderId}');const el=this;el.textContent='✅';setTimeout(()=>el.textContent='📋',1200);}">📋</span></p>
         <footer style="display: flex; align-items: center; gap: 15px; margin-top: 13px; padding-top: 12px; border-top: 1px solid #e8ebf0; color: #6e7e94; font-size: 12px;">
           <span>🗓️　${dateStr}</span>
           <b style="margin-left: auto; color: ${category === 'cancelled' ? '#8490a3' : '#f24f25'}; font-size: 15px; font-weight: 700;">+${cashbackAmount}</b>
