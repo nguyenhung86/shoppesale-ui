@@ -130,7 +130,8 @@ function renderOrders(filteredOrders, formatVND) {
     const itemName = o.itemName || 'Sản phẩm hoàn tiền';
     const payStatusText = o.paymentStatus === 'Đã TT' ? '✓ Đã thanh toán' : '⏳ Chưa thanh toán';
     
-    const tipHtml = (category !== 'cancelled') ? `
+    const isShopee = platform === 'Shopee';
+    const tipHtml = (isShopee && category !== 'cancelled') ? `
       <div class="order-fast-tip" style="margin-top: 11px; background: linear-gradient(135deg, #fffdf2 0%, #fff9e6 100%); border: 1.5px dashed #f6cf7a; border-radius: 12px; padding: 9px 15px; display: flex !important; align-items: center; gap: 9px; font-size: 13px; line-height: 1.5; color: #854d0e; text-align: left; box-sizing: border-box;">
         <span style="font-size: 16px; line-height: 1; flex-shrink: 0;">💡</span>
         <div style="flex: 1; min-width: 0;">
