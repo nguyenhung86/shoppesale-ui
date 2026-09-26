@@ -866,13 +866,13 @@
       </div>
     </div>
 
-    <!-- TAB 4: WEB CONVERSION STATS GRID -->
+    <!-- TAB 4: WEB CONVERSION STATS GRID (THỐNG KÊ SỐ LẦN CHUYỂN LINK SHOPEE CỦA TỪNG USER THEO NGÀY) -->
     <div class="grid-card" id="tab-content-conversions" style="display: none;">
       <!-- FILTER & TOOLBAR -->
       <div class="grid-filter-bar" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;">
         <div class="search-input-group" style="flex: 1; min-width: 260px;">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="search-conversions-input" onkeyup="filterConversionsTable()" placeholder="Tìm theo Tên thành viên, Zalo ID, Tên sản phẩm...">
+          <input type="text" id="search-conversions-input" onkeyup="filterConversionsTable()" placeholder="Tìm theo Tên thành viên, Zalo ID...">
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
           <!-- Chọn ngày -->
@@ -885,14 +885,6 @@
             <input type="date" id="filter-conversion-custom-date" onchange="onConversionCustomDateChange()" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 12px; font-weight: 600; outline: none; cursor: pointer;">
           </div>
 
-          <select id="filter-conversion-platform" onchange="filterConversionsTable()" class="form-control" style="width: auto; padding: 9px 12px; font-size: 13px; font-weight: 600;">
-            <option value="all">🌐 Tất cả các sàn</option>
-            <option value="Shopee">🟠 Shopee</option>
-            <option value="TikTok">⚫ TikTok Shop</option>
-            <option value="Lazada">🔵 Lazada</option>
-            <option value="ShopeeFood">🔴 ShopeeFood</option>
-          </select>
-
           <button class="btn-action" id="btn-refresh-conversions" onclick="loadWebConversions(this)" style="font-weight: 600;">
             <i class="fa-solid fa-rotate"></i> Làm mới
           </button>
@@ -902,33 +894,31 @@
         </div>
       </div>
 
-      <!-- STATS OVERVIEW CARDS CHO CHUYỂN LINK -->
+      <!-- STATS OVERVIEW CARDS -->
       <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0;">
         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
           <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> LƯỢT CHUYỂN TRONG NGÀY
+            <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> TỔNG LƯỢT CHUYỂN SHOPEE
           </div>
           <strong id="stat-conv-total" style="font-size: 22px; font-weight: 800; color: var(--primary); display: block; margin-top: 4px;">0</strong>
         </div>
         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
           <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-users" style="color: #2563EB;"></i> SỐ USER CHUYỂN LINK
+            <i class="fa-solid fa-users" style="color: #2563EB;"></i> SỐ USER ĐÃ CHUYỂN
           </div>
           <strong id="stat-conv-users" style="font-size: 22px; font-weight: 800; color: #2563EB; display: block; margin-top: 4px;">0</strong>
         </div>
         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
           <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-coins" style="color: var(--success);"></i> HOA HỒNG ƯỚC TÍNH
+            <i class="fa-solid fa-trophy" style="color: #F59E0B;"></i> CHUYỂN NHIỀU NHẤT
           </div>
-          <strong id="stat-conv-commission" style="font-size: 22px; font-weight: 800; color: var(--success); display: block; margin-top: 4px;">0đ</strong>
+          <strong id="stat-conv-top-user" style="font-size: 16px; font-weight: 800; color: #D97706; display: block; margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">-</strong>
         </div>
         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
           <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
-            <i class="fa-solid fa-chart-pie" style="color: #8b5cf6;"></i> THEO SÀN
+            <i class="fa-solid fa-triangle-exclamation" style="color: #DC2626;"></i> TẦN SUẤT CAO (≥ 6 LINK)
           </div>
-          <div id="stat-conv-platforms" style="font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
-            <span>-</span>
-          </div>
+          <strong id="stat-conv-high-volume" style="font-size: 22px; font-weight: 800; color: #DC2626; display: block; margin-top: 4px;">0</strong>
         </div>
       </div>
 
@@ -938,18 +928,16 @@
           <thead>
             <tr>
               <th style="width: 50px;">STT</th>
-              <th style="width: 95px;">Giờ</th>
-              <th style="width: 105px;">Ngày</th>
               <th>Thành Viên (Zalo / Web)</th>
-              <th style="width: 110px;">Sàn</th>
-              <th>Sản Phẩm</th>
-              <th style="width: 120px;">Giá Đơn</th>
-              <th style="width: 130px;">Hoa Hồng Ước Tính</th>
-              <th style="width: 130px; text-align: center;">Hành Động</th>
+              <th style="width: 190px; text-align: center;">Số Lần Chuyển Shopee</th>
+              <th style="width: 170px; text-align: center;">Đánh Giá Tần Suất</th>
+              <th style="width: 130px;">Lần Gần Nhất</th>
+              <th style="width: 110px;">Ngày</th>
+              <th style="width: 150px; text-align: center;">Chi Tiết Link</th>
             </tr>
           </thead>
           <tbody id="conversions-tbody">
-            <!-- Render Conversions rows -->
+            <!-- Render User Conversions rows -->
           </tbody>
         </table>
       </div>
@@ -957,7 +945,7 @@
       <!-- TỔNG KẾT THEO CÁC NGÀY -->
       <div style="margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px;">
         <h4 style="font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-calendar-check" style="color: var(--primary);"></i> Lịch sử lượt chuyển link các ngày gần đây (Bấm để xem):
+          <i class="fa-solid fa-calendar-check" style="color: var(--primary);"></i> Lịch sử các ngày gần đây (Bấm để xem số lần chuyển Shopee của từng ngày):
         </h4>
         <div id="conversions-daily-summary-container" style="display: flex; gap: 8px; flex-wrap: wrap;">
           <!-- Render mini day badges / cards -->
@@ -965,6 +953,19 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- MODAL XEM CHI TIẾT LINK SHOPEE CỦA USER -->
+  <div class="modal-overlay" id="user-links-modal" style="display: none;">
+    <div class="modal-box" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 id="user-links-modal-title"><i class="fa-solid fa-cart-shopping" style="color: #ea580c;"></i> Danh Sách Link Shopee Đã Chuyển</h3>
+        <span class="close-modal" onclick="closeUserLinksModal()">&times;</span>
+      </div>
+      <div id="user-links-list" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
+        <!-- Links rendered here -->
+      </div>
+    </div>
   </div>
 
   <!-- MODAL EDIT BALANCE -->
@@ -2009,7 +2010,7 @@
     }
 
     // ============================================================
-    // CÁC HÀM XỬ LÝ THỐNG KÊ CHUYỂN LINK WEB THEO NGÀY
+    // CÁC HÀM XỬ LÝ THỐNG KÊ SỐ LẦN CHUYỂN LINK SHOPEE CỦA TỪNG USER
     // ============================================================
     async function loadWebConversions(btn) {
       if (btn) {
@@ -2021,9 +2022,9 @@
       if (tbody && adminConversions.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" style="text-align: center; padding: 36px; color: var(--ink-soft);">
+            <td colspan="7" style="text-align: center; padding: 36px; color: var(--ink-soft);">
               <i class="fa-solid fa-spinner fa-spin" style="font-size: 20px; color: var(--primary);"></i>
-              <div style="margin-top: 10px; font-weight: 600;">Đang tải lịch sử chuyển link...</div>
+              <div style="margin-top: 10px; font-weight: 600;">Đang tải danh sách thành viên chuyển link Shopee...</div>
             </td>
           </tr>
         `;
@@ -2035,27 +2036,21 @@
         const json = await res.json();
 
         if (json && json.success) {
-          adminConversions = Array.isArray(json.data) ? json.data : [];
+          adminConversions = Array.isArray(json.users) ? json.users : [];
 
           // Cập nhật bộ chọn ngày
           populateConversionDateOptions(json.availableDates, json.todayDate, json.targetDate);
 
           // Cập nhật Thẻ thống kê
-          document.getElementById("stat-conv-total").innerText = (json.total || 0).toLocaleString('vi-VN');
-          document.getElementById("stat-conv-users").innerText = (json.uniqueUsers || 0).toLocaleString('vi-VN');
-          document.getElementById("stat-conv-commission").innerText = (json.totalCommission || 0).toLocaleString('vi-VN') + 'đ';
+          document.getElementById("stat-conv-total").innerText = (json.totalShopee || 0).toLocaleString('vi-VN');
+          document.getElementById("stat-conv-users").innerText = (json.totalUsers || 0).toLocaleString('vi-VN');
           
-          // Thống kê sàn
-          const pf = json.platformCounts || {};
-          const pfContainer = document.getElementById("stat-conv-platforms");
-          if (pfContainer) {
-            pfContainer.innerHTML = `
-              <span class="badge-tag badge-shopee">Shopee: ${pf["Shopee"] || 0}</span>
-              <span class="badge-tag badge-tiktok">TikTok: ${pf["TikTok Shop"] || 0}</span>
-              <span class="badge-tag badge-lazada">Lazada: ${pf["Lazada"] || 0}</span>
-              ${pf["ShopeeFood"] ? `<span class="badge-tag" style="background:#fee2e2;color:#dc2626;">Food: ${pf["ShopeeFood"]}</span>` : ''}
-            `;
-          }
+          // User chuyển nhiều nhất
+          const topUser = (adminConversions.length > 0) ? `${adminConversions[0].userName} (${adminConversions[0].shopeeCount} lần)` : '-';
+          document.getElementById("stat-conv-top-user").innerText = topUser;
+
+          // Số user chuyển >= 6 link
+          document.getElementById("stat-conv-high-volume").innerText = (json.highVolumeUsers || 0).toLocaleString('vi-VN');
 
           // Cập nhật bảng dữ liệu
           filterConversionsTable();
@@ -2064,13 +2059,13 @@
           renderDailySummaryChips(json.availableDates, json.targetDate);
         } else {
           if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: var(--danger);">Không thể lấy dữ liệu: ${json.error || 'Lỗi chưa xác định'}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--danger);">Không thể lấy dữ liệu: ${json.error || 'Lỗi chưa xác định'}</td></tr>`;
           }
         }
       } catch (err) {
-        console.error("Lỗi nạp chuyển link:", err);
+        console.error("Lỗi nạp chuyển link Shopee:", err);
         if (tbody) {
-          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: var(--danger);">Lỗi kết nối VPS: ${err.message}</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 24px; color: var(--danger);">Lỗi kết nối VPS: ${err.message}</td></tr>`;
         }
       } finally {
         if (btn) {
@@ -2107,7 +2102,7 @@
       if (!container) return;
 
       if (!dates || dates.length === 0) {
-        container.innerHTML = `<span style="font-size: 13px; color: var(--ink-soft);">Chưa có dữ liệu chuyển link ngày nào được ghi nhận.</span>`;
+        container.innerHTML = `<span style="font-size: 13px; color: var(--ink-soft);">Chưa có dữ liệu chuyển link Shopee ngày nào được ghi nhận.</span>`;
         return;
       }
 
@@ -2130,7 +2125,7 @@
             transition: all 0.2s;
           ">
             <span>📅 ${formatDisplayDate(item.date)}:</span>
-            <span style="background: ${isCurrent ? 'rgba(255,255,255,0.25)' : '#fff7ed'}; color: ${isCurrent ? '#ffffff' : '#ea580c'}; padding: 1px 6px; border-radius: 10px; font-size: 11px;">${item.count} lượt</span>
+            <span style="background: ${isCurrent ? 'rgba(255,255,255,0.25)' : '#fff7ed'}; color: ${isCurrent ? '#ffffff' : '#ea580c'}; padding: 1px 6px; border-radius: 10px; font-size: 11px;">${item.count} lượt Shopee</span>
             <span style="opacity: 0.85; font-size: 11px;">(${item.uniqueUsers} user)</span>
           </button>
         `;
@@ -2166,20 +2161,13 @@
 
     function filterConversionsTable() {
       const q = (document.getElementById("search-conversions-input")?.value || "").toLowerCase().trim();
-      const pf = (document.getElementById("filter-conversion-platform")?.value || "all").toLowerCase();
 
       let items = adminConversions;
 
-      if (pf !== "all") {
-        items = items.filter(c => (c.platform || "").toLowerCase().includes(pf));
-      }
-
       if (q) {
-        items = items.filter(c => 
-          (c.userName && c.userName.toLowerCase().includes(q)) ||
-          (c.userId && c.userId.toLowerCase().includes(q)) ||
-          (c.productName && c.productName.toLowerCase().includes(q)) ||
-          (c.originalUrl && c.originalUrl.toLowerCase().includes(q))
+        items = items.filter(u => 
+          (u.userName && u.userName.toLowerCase().includes(q)) ||
+          (u.userId && u.userId.toLowerCase().includes(q))
         );
       }
 
@@ -2193,123 +2181,132 @@
       if (!items || items.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="9" style="text-align: center; padding: 48px 16px; color: var(--ink-soft);">
-              <i class="fa-solid fa-link-slash" style="font-size: 32px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
-              <strong style="color: var(--ink); font-size: 15px;">Chưa có lượt chuyển link nào trong thời gian này</strong>
-              <div style="font-size: 13px; margin-top: 4px; color: #94a3b8;">Khi thành viên dán link Shopee / TikTok / Lazada trên web https://hoantienonline.io.vn/convert, dữ liệu sẽ tự động xuất hiện tại đây ngay lập tức.</div>
+            <td colspan="7" style="text-align: center; padding: 48px 16px; color: var(--ink-soft);">
+              <i class="fa-solid fa-cart-shopping" style="font-size: 32px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
+              <strong style="color: var(--ink); font-size: 15px;">Chưa có thành viên nào chuyển link Shopee trong thời gian này</strong>
+              <div style="font-size: 13px; margin-top: 4px; color: #94a3b8;">Khi thành viên dán link Shopee trên web https://hoantienonline.io.vn/convert, hệ thống sẽ đếm chính xác số lần của từng người tại đây.</div>
             </td>
           </tr>
         `;
         return;
       }
 
-      tbody.innerHTML = items.map((item, idx) => {
-        const timeStr = item.time || "";
-        const dateStr = formatDisplayDate(item.date);
-        
-        let pfBadge = '<span class="badge-tag badge-shopee">Shopee</span>';
-        const pLower = (item.platform || "").toLowerCase();
-        if (pLower.includes("tiktok")) pfBadge = '<span class="badge-tag badge-tiktok">TikTok Shop</span>';
-        else if (pLower.includes("lazada")) pfBadge = '<span class="badge-tag badge-lazada">Lazada</span>';
-        else if (pLower.includes("food")) pfBadge = '<span class="badge-tag" style="background:#fee2e2;color:#dc2626;">ShopeeFood</span>';
+      tbody.innerHTML = items.map((u, idx) => {
+        const timeStr = u.lastTime || "";
+        const dateStr = formatDisplayDate(u.date);
 
-        const uAvatar = item.userAvatar ? 
-          `<img src="${item.userAvatar}" class="profile-avatar-img" style="width: 36px; height: 36px; border-radius: 50%;" onerror="this.onerror=null; this.src='https://hoantienonline.io.vn/assets/hero-illustration-v3.png';">` :
-          `<div class="profile-avatar-fallback" style="width: 36px; height: 36px; font-size: 13px;">${getInitials(item.userName)}</div>`;
+        const uAvatar = u.userAvatar ? 
+          `<img src="${u.userAvatar}" class="profile-avatar-img" style="width: 38px; height: 38px; border-radius: 50%;" onerror="this.onerror=null; this.src='https://hoantienonline.io.vn/assets/hero-illustration-v3.png';">` :
+          `<div class="profile-avatar-fallback" style="width: 38px; height: 38px; font-size: 13px;">${getInitials(u.userName)}</div>`;
 
-        const priceDisplay = item.price > 0 ? (item.price.toLocaleString('vi-VN') + 'đ') : '-';
-        const commDisplay = item.commissionAmount > 0 ? 
-          `<span style="color: var(--success); font-weight: 700;">+${item.commissionAmount.toLocaleString('vi-VN')}đ</span> ${item.commissionRate > 0 ? `<span style="font-size: 11px; color: var(--ink-soft);">(${item.commissionRate}%)</span>` : ''}` :
-          (item.commissionRate > 0 ? `<span style="color: var(--primary); font-weight: 700;">${item.commissionRate}%</span>` : '<span style="color: #94a3b8;">-</span>');
-
-        const shortLink = item.convertedUrl || "";
-        const origLink = item.originalUrl || "";
+        const isHighVolume = u.shopeeCount >= 6;
+        const statusBadge = isHighVolume ?
+          `<span class="badge-tag badge-canceled" style="font-weight: 700; padding: 4px 8px;"><i class="fa-solid fa-triangle-exclamation"></i> Cao (≥ 6 link)</span>` :
+          `<span class="badge-tag badge-success" style="font-weight: 600; padding: 4px 8px;"><i class="fa-solid fa-check"></i> Bình thường</span>`;
 
         return `
           <tr>
             <td style="font-weight: 700; color: var(--ink-soft);">${idx + 1}</td>
-            <td style="font-weight: 700; color: var(--ink); white-space: nowrap;">
-              <i class="fa-regular fa-clock" style="color: #94a3b8; font-size: 11px; margin-right: 2px;"></i> ${timeStr}
-            </td>
-            <td style="color: var(--ink-soft); font-size: 12px; white-space: nowrap;">${dateStr}</td>
             <td>
               <div style="display: flex; align-items: center; gap: 10px;">
                 ${uAvatar}
                 <div>
-                  <div style="font-weight: 800; color: var(--ink); font-size: 13.5px;">${escapeHtml(item.userName || "Khách vãng lai")}</div>
-                  <div style="font-size: 11px; color: var(--ink-soft); font-family: monospace; display: flex; align-items: center; gap: 4px;">
-                    <i class="fa-solid fa-id-card" style="font-size: 10px; color: #94a3b8;"></i> ${item.userId || 'guest'}
+                  <div style="font-weight: 800; color: var(--ink); font-size: 14px;">${escapeHtml(u.userName || "Khách vãng lai")}</div>
+                  <div style="font-size: 11px; color: var(--ink-soft); font-family: monospace; display: flex; align-items: center; gap: 4px; margin-top: 2px;">
+                    <i class="fa-solid fa-id-card" style="font-size: 10px; color: #94a3b8;"></i> ${u.userId || 'guest'}
                   </div>
                 </div>
               </div>
             </td>
-            <td>${pfBadge}</td>
-            <td>
-              <div style="max-width: 320px; font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${escapeHtml(item.productName || '')}">
-                ${escapeHtml(item.productName || 'Sản phẩm mua sắm')}
-              </div>
+            <td style="text-align: center;">
+              <span style="display: inline-flex; align-items: center; gap: 4px; background: #fff7ed; border: 1.5px solid #ffedd5; color: #ea580c; padding: 5px 14px; border-radius: 999px; font-size: 14px; font-weight: 800;">
+                <i class="fa-solid fa-cart-shopping" style="font-size: 12px;"></i> ${u.shopeeCount} lần
+              </span>
             </td>
-            <td style="font-weight: 700; color: #475569; white-space: nowrap;">${priceDisplay}</td>
-            <td style="white-space: nowrap;">${commDisplay}</td>
+            <td style="text-align: center;">${statusBadge}</td>
+            <td style="color: var(--ink); font-weight: 600; white-space: nowrap;">
+              <i class="fa-regular fa-clock" style="color: #94a3b8; font-size: 11px; margin-right: 2px;"></i> ${timeStr}
+            </td>
+            <td style="color: var(--ink-soft); font-size: 12px; white-space: nowrap;">${dateStr}</td>
             <td style="text-align: center; white-space: nowrap;">
-              <div style="display: inline-flex; gap: 6px; align-items: center;">
-                ${shortLink ? `
-                  <a href="${shortLink}" target="_blank" rel="noopener noreferrer" class="btn-sm" style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Mở link đã chuyển">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở link
-                  </a>
-                ` : ''}
-                ${origLink ? `
-                  <a href="${origLink}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-edit-sm" title="Mở link gốc sản phẩm" style="text-decoration: none;">
-                    <i class="fa-solid fa-link"></i>
-                  </a>
-                ` : ''}
-                <button onclick="deleteConversionItem('${item.id}')" class="btn-sm" style="background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2;" title="Xóa bản ghi này">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
+              <button onclick="openUserLinksModal(${idx})" class="btn-sm" style="background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; font-weight: 700; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px;" title="Xem các link Shopee thành viên này đã chuyển">
+                <i class="fa-solid fa-eye"></i> Xem link (${u.links ? u.links.length : u.shopeeCount})
+              </button>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    async function deleteConversionItem(id) {
-      if (!id || !confirm("Sếp có chắc chắn muốn xóa bản ghi chuyển link này không?")) return;
-      try {
-        const res = await fetch(`${API_URL}?action=deleteWebConversion&id=${encodeURIComponent(id)}`);
-        const json = await res.json();
-        if (json.success) {
-          adminConversions = adminConversions.filter(c => c.id !== id);
-          filterConversionsTable();
-        }
-      } catch(e) {
-        alert("Lỗi khi xóa: " + e.message);
+    function openUserLinksModal(idx) {
+      const u = adminConversions[idx];
+      if (!u) return;
+
+      const modal = document.getElementById("user-links-modal");
+      const titleEl = document.getElementById("user-links-modal-title");
+      const listEl = document.getElementById("user-links-list");
+
+      titleEl.innerHTML = `<i class="fa-solid fa-cart-shopping" style="color: #ea580c;"></i> Link Shopee của: <strong>${escapeHtml(u.userName)}</strong> (${u.shopeeCount} lần)`;
+
+      if (!u.links || u.links.length === 0) {
+        listEl.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--ink-soft);">Chưa có chi tiết link.</div>`;
+      } else {
+        listEl.innerHTML = u.links.map((link, i) => `
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 12.5px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <strong style="color: var(--ink);">#${i + 1} - Giờ chuyển: <span style="color: #ea580c;">${link.time || ''}</span></strong>
+              <span style="font-size: 11px; color: #94a3b8;">${formatDisplayDate(link.date || u.date)}</span>
+            </div>
+            <div style="margin-bottom: 4px; word-break: break-all; color: #64748b; font-size: 11.5px;">
+              <strong>Link gốc:</strong> <a href="${link.originalUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">${link.originalUrl}</a>
+            </div>
+            ${link.convertedUrl ? `
+            <div style="word-break: break-all; color: #16a34a; font-size: 11.5px;">
+              <strong>Link rút gọn:</strong> <a href="${link.convertedUrl}" target="_blank" rel="noopener noreferrer" style="color: #16a34a; font-weight: 700; text-decoration: underline;">${link.convertedUrl}</a>
+            </div>
+            ` : ''}
+          </div>
+        `).join('');
       }
+
+      modal.style.display = "flex";
+    }
+
+    function closeUserLinksModal() {
+      const modal = document.getElementById("user-links-modal");
+      if (modal) modal.style.display = "none";
     }
 
     function exportConversionsToCSV() {
       if (!adminConversions || adminConversions.length === 0) {
-        alert("Không có dữ liệu chuyển link để xuất!");
+        alert("Không có dữ liệu chuyển link Shopee để xuất!");
         return;
       }
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-      csvContent += "STT,Gio,Ngay,Thanh Vien,ID Zalo SubId,San,Ten San Pham,Gia Don,Tien Hoa Hong,Ti Le Hoa Hong,Link Chuyen,Link Goc\n";
+      csvContent += "STT,Thanh Vien,ID Zalo SubId,So Lan Chuyen Shopee,Danh Gia Tan Suat,Lan Gan Nhat,Ngay\n";
 
-      adminConversions.forEach((c, idx) => {
-        const pName = (c.productName || "").replace(/"/g, '""');
-        const uName = (c.userName || "").replace(/"/g, '""');
-        const shortL = (c.convertedUrl || "").replace(/"/g, '""');
-        const origL = (c.originalUrl || "").replace(/"/g, '""');
-        csvContent += `"${idx + 1}","${c.time || ''}","${c.date || ''}","${uName}","${c.userId || ''}","${c.platform || ''}","${pName}","${c.price || 0}","${c.commissionAmount || 0}","${c.commissionRate || 0}%","${shortL}","${origL}"\n`;
+      adminConversions.forEach((u, idx) => {
+        const uName = (u.userName || "").replace(/"/g, '""');
+        const freq = (u.shopeeCount >= 6) ? "Cao (>= 6 link)" : "Binh thuong";
+        csvContent += `"${idx + 1}","${uName}","${u.userId || ''}","${u.shopeeCount || 0}","${freq}","${u.lastTime || ''}","${u.date || ''}"\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Thong_Ke_Chuyen_Link_${selectedConversionDate}_${Date.now()}.csv`);
+      link.setAttribute("download", `Thong_Ke_So_Lan_Chuyen_Shopee_${selectedConversionDate}_${Date.now()}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    function formatDisplayDate(dateStr) {
+      if (!dateStr) return "";
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateStr;
     }
 
     function formatDisplayDate(dateStr) {
