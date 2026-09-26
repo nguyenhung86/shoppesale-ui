@@ -58,6 +58,15 @@ function setupConvertSelection() {
     });
   }
 
+  // Tự động điền link nếu có tham số ?url= hoặc ?link= trên thanh địa chỉ
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const prefillUrl = urlParams.get('url') || urlParams.get('link');
+    if (prefillUrl && input && !input.value) {
+      input.value = decodeURIComponent(prefillUrl);
+    }
+  } catch (ePrefill) {}
+
   // Khôi phục hiển thị lịch sử chuyển link
   renderConvertHistory();
 }
@@ -472,10 +481,6 @@ function handleConvert() {
             
             <!-- Secondary Action Buttons -->
             <div style="display: flex; gap: 12px;">
-              <button id="copy-converted-link" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;">
-                <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
-                Sao chép
-              </button>
               <button id="show-qr-code" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;">
                 <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1v-1h-1zM11 12a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm3 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm5-11a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V5zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm-4 0a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm2 5a1 1 0 00-1 1v1a1 1 0 001 1h1a1 1 0 001-1v-1a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>
                 QR Code
@@ -492,29 +497,6 @@ function handleConvert() {
           // Chèn kết quả vào sau form chuyển đổi
           const convertSection = document.querySelector('#product-link').closest('.section');
           convertSection.appendChild(resultCard);
-          
-          // Gắn sự kiện sao chép
-          const copyBtn = resultCard.querySelector('#copy-converted-link');
-          copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(shortLink).then(() => {
-              copyBtn.innerHTML = `
-                <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                Đã chép!
-              `;
-              copyBtn.style.color = "#22c55e";
-              copyBtn.style.borderColor = "#22c55e";
-              setTimeout(() => {
-                copyBtn.innerHTML = `
-                  <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
-                  Sao chép
-                `;
-                copyBtn.style.color = "#334155";
-                copyBtn.style.borderColor = "#cbd5e1";
-              }, 2000);
-            }).catch(err => {
-              console.error("Lỗi sao chép:", err);
-            });
-          });
           
           // Gắn sự kiện hiện QR Code
           const qrBtn = resultCard.querySelector('#show-qr-code');
