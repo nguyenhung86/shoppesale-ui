@@ -567,6 +567,39 @@ function handleConvert() {
     localStorage.setItem('shoppesale_convert_history', JSON.stringify(history));
     
     renderConvertHistory();
+
+    // Đồng bộ ghi nhận thống kê chuyển link lên VPS Admin Panels
+    try {
+      let uId = localStorage.getItem('shoppesale_zalo_id') || "";
+      let uName = "";
+      let uAvatar = "";
+      try {
+        const uObj = JSON.parse(localStorage.getItem('shoppesale_user') || '{}');
+        if (!uId) uId = uObj.zaloId || uObj.email || uObj.id || "";
+        uName = uObj.name || "";
+        uAvatar = uObj.picture || "";
+      } catch(eU) {}
+      if (!uId) uId = "guest_user";
+
+      const logApiUrl = (typeof CONFIG !== 'undefined' && CONFIG.API_URL) ? CONFIG.API_URL : "https://api-vps.hoantienonline.io.vn/api/web";
+      fetch(logApiUrl + "?action=logWebConversion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: uId,
+          userName: uName,
+          userAvatar: uAvatar,
+          platform: platform,
+          productName: productName,
+          originalUrl: originalUrl,
+          convertedUrl: convertedUrl,
+          price: price,
+          commissionRate: commissionRate,
+          commissionAmount: commissionAmount,
+          source: "web_ui"
+        })
+      }).catch(() => {});
+    } catch(eSync) {}
   }
 
   function timeAgo(timestamp) {
