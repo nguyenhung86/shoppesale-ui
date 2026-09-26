@@ -640,14 +640,10 @@ function handleConvert() {
           
           <!-- Thanh thao tác chính -->
           <div class="convert-history-actions">
-            <button class="history-copy-btn" data-url="${item.convertedUrl}" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: background 0.2s;">
-              <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
-              Sao chép
-            </button>
-            <a href="${item.convertedUrl}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px 16px; background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; border-radius: 8px; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap;">
-              Mở lại <svg style="width: 12px; height: 12px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
+            <a href="${item.convertedUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; border-radius: 8px; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: all 0.2s;">
+              Mở link mua lại <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
             </a>
-            <button class="history-delete-btn" data-index="${idx}" style="display: flex; align-items: center; justify-content: center; padding: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; color: #94a3b8; cursor: pointer; transition: background 0.2s;">
+            <button class="history-delete-btn" data-index="${idx}" title="Xóa khỏi lịch sử" style="display: flex; align-items: center; justify-content: center; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; color: #94a3b8; cursor: pointer; transition: background 0.2s;">
               <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
             </button>
           </div>
@@ -708,25 +704,6 @@ function handleConvert() {
         chevron.style.transform = 'rotate(180deg)';
         localStorage.setItem('shoppesale_history_collapsed', 'true');
       }
-    });
-    
-    // Gắn sự kiện sao chép cho lịch sử
-    historySection.querySelectorAll('.history-copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const url = btn.getAttribute('data-url');
-        navigator.clipboard.writeText(url).then(() => {
-          btn.innerHTML = `<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg> Đã chép!`;
-          btn.style.background = "#eafaf1";
-          btn.style.color = "#19a45c";
-          btn.style.borderColor = "#a7f3d0";
-          setTimeout(() => {
-            btn.innerHTML = `<svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg> Sao chép`;
-            btn.style.background = "#ffffff";
-            btn.style.color = "#475569";
-            btn.style.borderColor = "#e2e8f0";
-          }, 1500);
-        });
-      });
     });
     
     // Gắn sự kiện xóa lịch sử
