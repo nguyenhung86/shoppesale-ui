@@ -35,8 +35,18 @@
     panel.querySelector('button')?.addEventListener('click', async event => {
       event.preventDefault();
       const input = panel.querySelector('input');
-      const zaloId = input ? input.value.trim() : '';
+      let zaloId = input ? input.value.trim() : '';
       if (!zaloId) {
+        input?.focus();
+        return;
+      }
+      
+      // Tự động làm sạch nếu người dùng gõ nhầm dấu / ở đầu
+      zaloId = zaloId.replace(/^\/+/, '').trim();
+
+      // Kiểm tra hợp lệ: ID Zalo bắt buộc phải là dãy số từ 8 đến 25 ký tự
+      if (!/^\d{8,25}$/.test(zaloId)) {
+        alert("⚠️ ID Zalo không hợp lệ! Vui lòng chỉ nhập dãy số (từ 8 đến 25 chữ số), không chứa dấu / hoặc chữ cái.");
         input?.focus();
         return;
       }
