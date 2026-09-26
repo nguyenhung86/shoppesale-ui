@@ -746,6 +746,9 @@
       <button class="tab-btn" id="tab-btn-profiles" onclick="switchAdminTab('profiles')">
         <i class="fa-solid fa-id-card"></i> Hồ Sơ Thành Viên
       </button>
+      <button class="tab-btn" id="tab-btn-conversions" onclick="switchAdminTab('conversions')">
+        <i class="fa-solid fa-link"></i> Thống Kê Chuyển Link Web
+      </button>
     </div>
 
     <!-- TAB 1: USERS & BALANCES GRID -->
@@ -863,6 +866,105 @@
       </div>
     </div>
 
+    <!-- TAB 4: WEB CONVERSION STATS GRID -->
+    <div class="grid-card" id="tab-content-conversions" style="display: none;">
+      <!-- FILTER & TOOLBAR -->
+      <div class="grid-filter-bar" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;">
+        <div class="search-input-group" style="flex: 1; min-width: 260px;">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-conversions-input" onkeyup="filterConversionsTable()" placeholder="Tìm theo Tên thành viên, Zalo ID, Tên sản phẩm...">
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <!-- Chọn ngày -->
+          <div style="display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1.5px solid var(--line); border-radius: 10px; padding: 4px 10px;">
+            <i class="fa-regular fa-calendar-days" style="color: var(--primary);"></i>
+            <select id="filter-conversion-date" onchange="onConversionDateFilterChange()" style="border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--ink); outline: none; cursor: pointer;">
+              <option value="today">📅 Hôm nay</option>
+              <option value="all">📅 Tất cả các ngày</option>
+            </select>
+            <input type="date" id="filter-conversion-custom-date" onchange="onConversionCustomDateChange()" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 12px; font-weight: 600; outline: none; cursor: pointer;">
+          </div>
+
+          <select id="filter-conversion-platform" onchange="filterConversionsTable()" class="form-control" style="width: auto; padding: 9px 12px; font-size: 13px; font-weight: 600;">
+            <option value="all">🌐 Tất cả các sàn</option>
+            <option value="Shopee">🟠 Shopee</option>
+            <option value="TikTok">⚫ TikTok Shop</option>
+            <option value="Lazada">🔵 Lazada</option>
+            <option value="ShopeeFood">🔴 ShopeeFood</option>
+          </select>
+
+          <button class="btn-action" id="btn-refresh-conversions" onclick="loadWebConversions(this)" style="font-weight: 600;">
+            <i class="fa-solid fa-rotate"></i> Làm mới
+          </button>
+          <button class="btn-action" onclick="exportConversionsToCSV()" style="font-weight: 600; background: #059669; color: white; border-color: #047857;">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- STATS OVERVIEW CARDS CHO CHUYỂN LINK -->
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 16px 0;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-bolt" style="color: var(--primary);"></i> LƯỢT CHUYỂN TRONG NGÀY
+          </div>
+          <strong id="stat-conv-total" style="font-size: 22px; font-weight: 800; color: var(--primary); display: block; margin-top: 4px;">0</strong>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-users" style="color: #2563EB;"></i> SỐ USER CHUYỂN LINK
+          </div>
+          <strong id="stat-conv-users" style="font-size: 22px; font-weight: 800; color: #2563EB; display: block; margin-top: 4px;">0</strong>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-coins" style="color: var(--success);"></i> HOA HỒNG ƯỚC TÍNH
+          </div>
+          <strong id="stat-conv-commission" style="font-size: 22px; font-weight: 800; color: var(--success); display: block; margin-top: 4px;">0đ</strong>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-chart-pie" style="color: #8b5cf6;"></i> THEO SÀN
+          </div>
+          <div id="stat-conv-platforms" style="font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap;">
+            <span>-</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN TABLE -->
+      <div class="table-responsive">
+        <table class="data-grid" id="conversions-table">
+          <thead>
+            <tr>
+              <th style="width: 50px;">STT</th>
+              <th style="width: 95px;">Giờ</th>
+              <th style="width: 105px;">Ngày</th>
+              <th>Thành Viên (Zalo / Web)</th>
+              <th style="width: 110px;">Sàn</th>
+              <th>Sản Phẩm</th>
+              <th style="width: 120px;">Giá Đơn</th>
+              <th style="width: 130px;">Hoa Hồng Ước Tính</th>
+              <th style="width: 130px; text-align: center;">Hành Động</th>
+            </tr>
+          </thead>
+          <tbody id="conversions-tbody">
+            <!-- Render Conversions rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TỔNG KẾT THEO CÁC NGÀY -->
+      <div style="margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px;">
+        <h4 style="font-size: 14px; font-weight: 800; color: var(--ink); margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-calendar-check" style="color: var(--primary);"></i> Lịch sử lượt chuyển link các ngày gần đây (Bấm để xem):
+        </h4>
+        <div id="conversions-daily-summary-container" style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <!-- Render mini day badges / cards -->
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- MODAL EDIT BALANCE -->
@@ -948,6 +1050,8 @@
     let adminUsers = [];
     let adminOrders = [];
     let adminProfiles = [];
+    let adminConversions = [];
+    let selectedConversionDate = "today";
     let activeTab = "users";
 
     function checkAdminAuth() {
@@ -958,7 +1062,7 @@
 
         // 1. Phục hồi tab đang xem trước đó khi F5 (mặc định 'users')
         const savedTab = localStorage.getItem("admin_active_tab") || "users";
-        if (["users", "orders", "profiles"].includes(savedTab)) {
+        if (["users", "orders", "profiles", "conversions"].includes(savedTab)) {
           switchAdminTab(savedTab);
         }
 
@@ -1036,9 +1140,15 @@
       document.getElementById("tab-btn-users").classList.toggle("active", tab === "users");
       document.getElementById("tab-btn-orders").classList.toggle("active", tab === "orders");
       document.getElementById("tab-btn-profiles").classList.toggle("active", tab === "profiles");
+      document.getElementById("tab-btn-conversions").classList.toggle("active", tab === "conversions");
       document.getElementById("tab-content-users").style.display = tab === "users" ? "block" : "none";
       document.getElementById("tab-content-orders").style.display = tab === "orders" ? "block" : "none";
       document.getElementById("tab-content-profiles").style.display = tab === "profiles" ? "block" : "none";
+      document.getElementById("tab-content-conversions").style.display = tab === "conversions" ? "block" : "none";
+
+      if (tab === "conversions") {
+        loadWebConversions();
+      }
 
       if (tab === "profiles") {
         if (adminProfiles && adminProfiles.length > 0) {
@@ -1873,6 +1983,10 @@
     }
 
     function exportToCSV() {
+      if (activeTab === "conversions") {
+        exportConversionsToCSV();
+        return;
+      }
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       if (activeTab === "users") {
         csvContent += "STT,ID Zalo,Ten Hien Thi,So Tien Chua Rut,Da Thanh Toan,Bank BIN,So TK,Ghi Chu\n";
@@ -1892,6 +2006,319 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    // ============================================================
+    // CÁC HÀM XỬ LÝ THỐNG KÊ CHUYỂN LINK WEB THEO NGÀY
+    // ============================================================
+    async function loadWebConversions(btn) {
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang tải...';
+        btn.disabled = true;
+      }
+
+      const tbody = document.getElementById("conversions-tbody");
+      if (tbody && adminConversions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 36px; color: var(--ink-soft);">
+              <i class="fa-solid fa-spinner fa-spin" style="font-size: 20px; color: var(--primary);"></i>
+              <div style="margin-top: 10px; font-weight: 600;">Đang tải lịch sử chuyển link...</div>
+            </td>
+          </tr>
+        `;
+      }
+
+      try {
+        const queryDate = selectedConversionDate;
+        const res = await fetch(`${API_URL}?action=getWebConversionStats&date=${encodeURIComponent(queryDate)}&t=${Date.now()}`);
+        const json = await res.json();
+
+        if (json && json.success) {
+          adminConversions = Array.isArray(json.data) ? json.data : [];
+
+          // Cập nhật bộ chọn ngày
+          populateConversionDateOptions(json.availableDates, json.todayDate, json.targetDate);
+
+          // Cập nhật Thẻ thống kê
+          document.getElementById("stat-conv-total").innerText = (json.total || 0).toLocaleString('vi-VN');
+          document.getElementById("stat-conv-users").innerText = (json.uniqueUsers || 0).toLocaleString('vi-VN');
+          document.getElementById("stat-conv-commission").innerText = (json.totalCommission || 0).toLocaleString('vi-VN') + 'đ';
+          
+          // Thống kê sàn
+          const pf = json.platformCounts || {};
+          const pfContainer = document.getElementById("stat-conv-platforms");
+          if (pfContainer) {
+            pfContainer.innerHTML = `
+              <span class="badge-tag badge-shopee">Shopee: ${pf["Shopee"] || 0}</span>
+              <span class="badge-tag badge-tiktok">TikTok: ${pf["TikTok Shop"] || 0}</span>
+              <span class="badge-tag badge-lazada">Lazada: ${pf["Lazada"] || 0}</span>
+              ${pf["ShopeeFood"] ? `<span class="badge-tag" style="background:#fee2e2;color:#dc2626;">Food: ${pf["ShopeeFood"]}</span>` : ''}
+            `;
+          }
+
+          // Cập nhật bảng dữ liệu
+          filterConversionsTable();
+
+          // Render các chip tóm tắt ngày
+          renderDailySummaryChips(json.availableDates, json.targetDate);
+        } else {
+          if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: var(--danger);">Không thể lấy dữ liệu: ${json.error || 'Lỗi chưa xác định'}</td></tr>`;
+          }
+        }
+      } catch (err) {
+        console.error("Lỗi nạp chuyển link:", err);
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 24px; color: var(--danger);">Lỗi kết nối VPS: ${err.message}</td></tr>`;
+        }
+      } finally {
+        if (btn) {
+          btn.innerHTML = '<i class="fa-solid fa-check" style="color: var(--success);"></i> Đã nạp xong';
+          setTimeout(() => {
+            btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Làm mới';
+            btn.disabled = false;
+          }, 1200);
+        }
+      }
+    }
+
+    function populateConversionDateOptions(dates = [], todayDate = "", selectedDate = "") {
+      const select = document.getElementById("filter-conversion-date");
+      if (!select) return;
+
+      const currentVal = selectedDate || select.value || "today";
+      let html = `<option value="today" ${currentVal === 'today' || currentVal === todayDate ? 'selected' : ''}>📅 Hôm nay (${formatDisplayDate(todayDate)})</option>`;
+      html += `<option value="all" ${currentVal === 'all' ? 'selected' : ''}>📅 Tất cả các ngày</option>`;
+
+      if (Array.isArray(dates)) {
+        dates.forEach(item => {
+          if (item.date !== todayDate) {
+            const isSel = (currentVal === item.date) ? 'selected' : '';
+            html += `<option value="${item.date}" ${isSel}>📅 ${formatDisplayDate(item.date)} (${item.count} lượt, ${item.uniqueUsers} user)</option>`;
+          }
+        });
+      }
+      select.innerHTML = html;
+    }
+
+    function renderDailySummaryChips(dates = [], currentTargetDate = "") {
+      const container = document.getElementById("conversions-daily-summary-container");
+      if (!container) return;
+
+      if (!dates || dates.length === 0) {
+        container.innerHTML = `<span style="font-size: 13px; color: var(--ink-soft);">Chưa có dữ liệu chuyển link ngày nào được ghi nhận.</span>`;
+        return;
+      }
+
+      container.innerHTML = dates.slice(0, 15).map(item => {
+        const isCurrent = (currentTargetDate === item.date) || (currentTargetDate === "today" && item.date === new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" }));
+        return `
+          <button onclick="selectConversionDate('${item.date}')" style="
+            background: ${isCurrent ? '#ea580c' : '#ffffff'};
+            color: ${isCurrent ? '#ffffff' : '#334155'};
+            border: 1.5px solid ${isCurrent ? '#ea580c' : '#cbd5e1'};
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+          ">
+            <span>📅 ${formatDisplayDate(item.date)}:</span>
+            <span style="background: ${isCurrent ? 'rgba(255,255,255,0.25)' : '#fff7ed'}; color: ${isCurrent ? '#ffffff' : '#ea580c'}; padding: 1px 6px; border-radius: 10px; font-size: 11px;">${item.count} lượt</span>
+            <span style="opacity: 0.85; font-size: 11px;">(${item.uniqueUsers} user)</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectConversionDate(dateStr) {
+      selectedConversionDate = dateStr;
+      const select = document.getElementById("filter-conversion-date");
+      if (select) select.value = dateStr;
+      const customInput = document.getElementById("filter-conversion-custom-date");
+      if (customInput) customInput.value = (dateStr !== "all" && dateStr !== "today") ? dateStr : "";
+      loadWebConversions();
+    }
+
+    function onConversionDateFilterChange() {
+      const select = document.getElementById("filter-conversion-date");
+      if (!select) return;
+      selectedConversionDate = select.value;
+      const customInput = document.getElementById("filter-conversion-custom-date");
+      if (customInput && (select.value === "today" || select.value === "all")) {
+        customInput.value = "";
+      }
+      loadWebConversions();
+    }
+
+    function onConversionCustomDateChange() {
+      const customInput = document.getElementById("filter-conversion-custom-date");
+      if (!customInput || !customInput.value) return;
+      selectedConversionDate = customInput.value;
+      loadWebConversions();
+    }
+
+    function filterConversionsTable() {
+      const q = (document.getElementById("search-conversions-input")?.value || "").toLowerCase().trim();
+      const pf = (document.getElementById("filter-conversion-platform")?.value || "all").toLowerCase();
+
+      let items = adminConversions;
+
+      if (pf !== "all") {
+        items = items.filter(c => (c.platform || "").toLowerCase().includes(pf));
+      }
+
+      if (q) {
+        items = items.filter(c => 
+          (c.userName && c.userName.toLowerCase().includes(q)) ||
+          (c.userId && c.userId.toLowerCase().includes(q)) ||
+          (c.productName && c.productName.toLowerCase().includes(q)) ||
+          (c.originalUrl && c.originalUrl.toLowerCase().includes(q))
+        );
+      }
+
+      renderConversionsTable(items);
+    }
+
+    function renderConversionsTable(items = []) {
+      const tbody = document.getElementById("conversions-tbody");
+      if (!tbody) return;
+
+      if (!items || items.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" style="text-align: center; padding: 48px 16px; color: var(--ink-soft);">
+              <i class="fa-solid fa-link-slash" style="font-size: 32px; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
+              <strong style="color: var(--ink); font-size: 15px;">Chưa có lượt chuyển link nào trong thời gian này</strong>
+              <div style="font-size: 13px; margin-top: 4px; color: #94a3b8;">Khi thành viên dán link Shopee / TikTok / Lazada trên web https://hoantienonline.io.vn/convert, dữ liệu sẽ tự động xuất hiện tại đây ngay lập tức.</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = items.map((item, idx) => {
+        const timeStr = item.time || "";
+        const dateStr = formatDisplayDate(item.date);
+        
+        let pfBadge = '<span class="badge-tag badge-shopee">Shopee</span>';
+        const pLower = (item.platform || "").toLowerCase();
+        if (pLower.includes("tiktok")) pfBadge = '<span class="badge-tag badge-tiktok">TikTok Shop</span>';
+        else if (pLower.includes("lazada")) pfBadge = '<span class="badge-tag badge-lazada">Lazada</span>';
+        else if (pLower.includes("food")) pfBadge = '<span class="badge-tag" style="background:#fee2e2;color:#dc2626;">ShopeeFood</span>';
+
+        const uAvatar = item.userAvatar ? 
+          `<img src="${item.userAvatar}" class="profile-avatar-img" style="width: 36px; height: 36px; border-radius: 50%;" onerror="this.onerror=null; this.src='https://hoantienonline.io.vn/assets/hero-illustration-v3.png';">` :
+          `<div class="profile-avatar-fallback" style="width: 36px; height: 36px; font-size: 13px;">${getInitials(item.userName)}</div>`;
+
+        const priceDisplay = item.price > 0 ? (item.price.toLocaleString('vi-VN') + 'đ') : '-';
+        const commDisplay = item.commissionAmount > 0 ? 
+          `<span style="color: var(--success); font-weight: 700;">+${item.commissionAmount.toLocaleString('vi-VN')}đ</span> ${item.commissionRate > 0 ? `<span style="font-size: 11px; color: var(--ink-soft);">(${item.commissionRate}%)</span>` : ''}` :
+          (item.commissionRate > 0 ? `<span style="color: var(--primary); font-weight: 700;">${item.commissionRate}%</span>` : '<span style="color: #94a3b8;">-</span>');
+
+        const shortLink = item.convertedUrl || "";
+        const origLink = item.originalUrl || "";
+
+        return `
+          <tr>
+            <td style="font-weight: 700; color: var(--ink-soft);">${idx + 1}</td>
+            <td style="font-weight: 700; color: var(--ink); white-space: nowrap;">
+              <i class="fa-regular fa-clock" style="color: #94a3b8; font-size: 11px; margin-right: 2px;"></i> ${timeStr}
+            </td>
+            <td style="color: var(--ink-soft); font-size: 12px; white-space: nowrap;">${dateStr}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                ${uAvatar}
+                <div>
+                  <div style="font-weight: 800; color: var(--ink); font-size: 13.5px;">${escapeHtml(item.userName || "Khách vãng lai")}</div>
+                  <div style="font-size: 11px; color: var(--ink-soft); font-family: monospace; display: flex; align-items: center; gap: 4px;">
+                    <i class="fa-solid fa-id-card" style="font-size: 10px; color: #94a3b8;"></i> ${item.userId || 'guest'}
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>${pfBadge}</td>
+            <td>
+              <div style="max-width: 320px; font-size: 13px; font-weight: 600; color: var(--ink); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;" title="${escapeHtml(item.productName || '')}">
+                ${escapeHtml(item.productName || 'Sản phẩm mua sắm')}
+              </div>
+            </td>
+            <td style="font-weight: 700; color: #475569; white-space: nowrap;">${priceDisplay}</td>
+            <td style="white-space: nowrap;">${commDisplay}</td>
+            <td style="text-align: center; white-space: nowrap;">
+              <div style="display: inline-flex; gap: 6px; align-items: center;">
+                ${shortLink ? `
+                  <a href="${shortLink}" target="_blank" rel="noopener noreferrer" class="btn-sm" style="background: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;" title="Mở link đã chuyển">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Mở link
+                  </a>
+                ` : ''}
+                ${origLink ? `
+                  <a href="${origLink}" target="_blank" rel="noopener noreferrer" class="btn-sm btn-edit-sm" title="Mở link gốc sản phẩm" style="text-decoration: none;">
+                    <i class="fa-solid fa-link"></i>
+                  </a>
+                ` : ''}
+                <button onclick="deleteConversionItem('${item.id}')" class="btn-sm" style="background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2;" title="Xóa bản ghi này">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function deleteConversionItem(id) {
+      if (!id || !confirm("Sếp có chắc chắn muốn xóa bản ghi chuyển link này không?")) return;
+      try {
+        const res = await fetch(`${API_URL}?action=deleteWebConversion&id=${encodeURIComponent(id)}`);
+        const json = await res.json();
+        if (json.success) {
+          adminConversions = adminConversions.filter(c => c.id !== id);
+          filterConversionsTable();
+        }
+      } catch(e) {
+        alert("Lỗi khi xóa: " + e.message);
+      }
+    }
+
+    function exportConversionsToCSV() {
+      if (!adminConversions || adminConversions.length === 0) {
+        alert("Không có dữ liệu chuyển link để xuất!");
+        return;
+      }
+      let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+      csvContent += "STT,Gio,Ngay,Thanh Vien,ID Zalo SubId,San,Ten San Pham,Gia Don,Tien Hoa Hong,Ti Le Hoa Hong,Link Chuyen,Link Goc\n";
+
+      adminConversions.forEach((c, idx) => {
+        const pName = (c.productName || "").replace(/"/g, '""');
+        const uName = (c.userName || "").replace(/"/g, '""');
+        const shortL = (c.convertedUrl || "").replace(/"/g, '""');
+        const origL = (c.originalUrl || "").replace(/"/g, '""');
+        csvContent += `"${idx + 1}","${c.time || ''}","${c.date || ''}","${uName}","${c.userId || ''}","${c.platform || ''}","${pName}","${c.price || 0}","${c.commissionAmount || 0}","${c.commissionRate || 0}%","${shortL}","${origL}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Thong_Ke_Chuyen_Link_${selectedConversionDate}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function formatDisplayDate(dateStr) {
+      if (!dateStr) return "";
+      const parts = dateStr.split("-");
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateStr;
     }
 
     window.onload = checkAdminAuth;
