@@ -1,2 +1,3 @@
-/bill_* https://api-vps.hoantienonline.io.vn/bill_:splat 302
-/* /index.html 200
+/shop/*  https://api-vps.hoantienonline.io.vn/shop/:splat  302
+/r/*     https://api-vps.hoantienonline.io.vn/r/:splat     302
+/*       /index.html                                       200
