@@ -210,38 +210,6 @@
   color: #dc2626 !important;
 }
 
-.imp-tag {
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  padding: 3px 9px !important;
-  border-radius: 6px !important;
-  white-space: nowrap !important;
-}
-
-.imp-tag-green {
-  background: #ecfdf5 !important;
-  color: #059669 !important;
-  border: 1px solid #a7f3d0 !important;
-}
-
-.imp-tag-red {
-  background: #fef2f2 !important;
-  color: #dc2626 !important;
-  border: 1px solid #fecaca !important;
-}
-
-.imp-tag-blue {
-  background: #eff6ff !important;
-  color: #2563eb !important;
-  border: 1px solid #bfdbfe !important;
-}
-
-.imp-tag-slate {
-  background: #f8fafc !important;
-  color: #475569 !important;
-  border: 1px solid #cbd5e1 !important;
-}
-
 .imp-card-body {
   font-size: 13.5px !important;
   color: #334155 !important;
@@ -253,6 +221,28 @@
   color: #334155 !important;
   font-size: 13.5px !important;
   line-height: 1.55 !important;
+}
+
+/* Quote box (Card 1) */
+.imp-quote-box {
+  background: #f8fafc !important;
+  border-left: 3.5px solid #f97316 !important;
+  border-radius: 8px !important;
+  padding: 10px 14px !important;
+  margin-bottom: 12px !important;
+}
+
+.imp-quote-box p {
+  margin: 0 !important;
+  font-size: 13px !important;
+  color: #475569 !important;
+  line-height: 1.5 !important;
+}
+
+.imp-quote-box .imp-quote-alert {
+  margin-top: 6px !important;
+  color: #ea580c !important;
+  font-size: 13px !important;
 }
 
 /* FLOW STEPS (Card 1) */
@@ -289,29 +279,6 @@
   font-size: 13px !important;
   color: #334155 !important;
   line-height: 1.48 !important;
-}
-
-.imp-tip-box {
-  display: flex !important;
-  align-items: flex-start !important;
-  gap: 10px !important;
-  margin-top: 12px !important;
-  padding: 11px 14px !important;
-  background: #f0fdf4 !important;
-  border: 1px solid #bbf7d0 !important;
-  border-radius: 11px !important;
-}
-
-.imp-tip-icon {
-  font-size: 17px !important;
-  line-height: 1 !important;
-  flex: 0 0 auto !important;
-}
-
-.imp-tip-text {
-  font-size: 12.5px !important;
-  color: #166534 !important;
-  line-height: 1.5 !important;
 }
 
 /* WARNING CARD (Card 2) */
@@ -356,6 +323,13 @@
   margin-bottom: 10px !important;
 }
 
+.imp-crumb-label {
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  color: #ea580c !important;
+  margin-right: 2px !important;
+}
+
 .imp-crumb {
   background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
@@ -395,34 +369,21 @@
   font-size: 14px !important;
 }
 
-/* RISK STATS (Card 4) */
-.imp-risk-stats {
+/* RISK STATS 2 COLUMNS (Card 4) */
+.imp-risk-stats-2col {
   display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 10px !important;
-  margin-bottom: 10px !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  margin-bottom: 12px !important;
 }
 
 .imp-stat-card {
-  padding: 12px 14px !important;
+  padding: 14px 16px !important;
   border-radius: 12px !important;
   border: 1px solid #e2e8f0 !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 4px !important;
-}
-
-.imp-stat-card.stat-success {
-  background: #f0fdf4 !important;
-  border-color: #bbf7d0 !important;
-}
-
-.imp-stat-card.stat-success .imp-stat-num {
-  color: #15803d !important;
-}
-
-.imp-stat-card.stat-success .imp-stat-label {
-  color: #166534 !important;
 }
 
 .imp-stat-card.stat-warning {
@@ -434,10 +395,6 @@
   color: #b45309 !important;
 }
 
-.imp-stat-card.stat-warning .imp-stat-label {
-  color: #92400e !important;
-}
-
 .imp-stat-card.stat-danger {
   background: #fef2f2 !important;
   border-color: #fecaca !important;
@@ -447,33 +404,25 @@
   color: #b91c1c !important;
 }
 
-.imp-stat-card.stat-danger .imp-stat-label {
-  color: #991b1b !important;
-}
-
 .imp-stat-num {
-  font-size: 20px !important;
+  font-size: 22px !important;
   font-weight: 800 !important;
   line-height: 1.1 !important;
 }
 
-.imp-stat-label {
-  font-size: 12.5px !important;
-  font-weight: 700 !important;
-}
-
-.imp-stat-desc {
-  font-size: 11px !important;
-  color: #64748b !important;
-  line-height: 1.4 !important;
-  margin-top: 2px !important;
+.imp-stat-desc-pure {
+  font-size: 13px !important;
+  color: #1e293b !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+  margin-top: 4px !important;
 }
 
 .imp-forgive-note {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  font-size: 12.5px !important;
+  font-size: 13px !important;
   color: #475569 !important;
   background: #f8fafc !important;
   border: 1px dashed #cbd5e1 !important;
@@ -482,11 +431,11 @@
 }
 
 .imp-forgive-icon {
-  font-size: 18px !important;
+  font-size: 19px !important;
   flex: 0 0 auto !important;
 }
 
-/* RECAP BANNER (Cheat Sheet) */
+/* RECAP BANNER (Tóm lại) */
 .imp-recap-banner {
   background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fff7ed 100%) !important;
   border: 1.5px solid #fdba74 !important;
@@ -516,7 +465,7 @@
 }
 
 .imp-recap-title {
-  font-size: 13.5px !important;
+  font-size: 14px !important;
   font-weight: 800 !important;
   color: #9a3412 !important;
   letter-spacing: 0.02em !important;
@@ -530,7 +479,7 @@
 
 .imp-recap-card {
   display: flex !important;
-  align-items: flex-start !important;
+  align-items: center !important;
   gap: 10px !important;
   background: #ffffff !important;
   border: 1px solid #fed7aa !important;
@@ -552,7 +501,6 @@
   font-weight: 800 !important;
   display: grid !important;
   place-items: center !important;
-  margin-top: 1px !important;
 }
 
 .imp-recap-info {
@@ -567,17 +515,18 @@
   font-size: 13px !important;
   font-weight: 700 !important;
   color: #1e293b !important;
-  line-height: 1.35 !important;
+  line-height: 1.4 !important;
   white-space: normal !important;
   word-break: break-word !important;
 }
 
-.imp-recap-step-sub {
-  font-size: 11.5px !important;
-  color: #64748b !important;
-  line-height: 1.4 !important;
-  white-space: normal !important;
-  word-break: break-word !important;
+.imp-recap-footer {
+  margin-top: 14px !important;
+  padding-top: 10px !important;
+  border-top: 1px dashed #fdba74 !important;
+  text-align: center !important;
+  font-size: 13.5px !important;
+  color: #c2410c !important;
 }
 
 /* RESPONSIVE DESIGN */
@@ -607,7 +556,7 @@
   .imp-heading h4 {
     font-size: 14px !important;
   }
-  .imp-risk-stats {
+  .imp-risk-stats-2col {
     grid-template-columns: 1fr !important;
     gap: 8px !important;
   }

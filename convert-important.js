@@ -19,10 +19,10 @@ function addImportantPanel() {
       </div>
       <div class="important-titles">
         <div class="important-title-row">
-          <span class="important-title-main">Quy Trình Mua Hàng Chuẩn Để Nhận Hoàn Tiền 100%</span>
+          <span class="important-title-main">Lưu Ý Quan Trọng Khi Mua Hàng Hoàn Tiền</span>
           <span class="important-badge-req">BẮT BUỘC ĐỌC</span>
         </div>
-        <div class="important-title-sub">Làm đúng các bước dưới đây để Shopee tự động khớp đơn & nhận tiền hoàn vào ví</div>
+        <div class="important-title-sub">Đọc kỹ để đảm bảo đơn hàng được sàn ghi nhận hoa hồng 100%</div>
       </div>
     </div>
     <div class="important-arrow-wrap">
@@ -34,158 +34,142 @@ function addImportantPanel() {
 
   <div class="important-content">
 
-    <!-- 1. THAO TÁC MUA SẮM TỰ NHIÊN -->
+    <!-- 1. THAO TÁC "NHƯ NGƯỜI MUA THẬT" -->
     <div class="imp-card imp-card-natural">
       <div class="imp-card-header">
         <div class="imp-badge imp-badge-orange">01</div>
         <div class="imp-heading">
-          <h4>Thao tác mua sắm tự nhiên</h4>
-          <span class="imp-tag imp-tag-green">Quy trình chuẩn</span>
+          <h4>1. Thao tác "NHƯ NGƯỜI MUA THẬT"</h4>
         </div>
       </div>
       <div class="imp-card-body">
+        <div class="imp-quote-box">
+          <p><i>"Hệ thống AI Shopee rất thông minh, có thể phát hiện ra hành vi bất thường"</i></p>
+          <p class="imp-quote-alert"><b>Người mua hàng bình thường không ai click link tiếp thị rồi thanh toán ngay cả!!!</b></p>
+        </div>
         <div class="imp-flow-steps">
           <div class="imp-flow-item">
-            <span class="imp-step-pill">Bước 1</span>
-            <div class="imp-step-text"><b>Thoát hẳn ứng dụng Shopee</b> đang chạy ngầm trên điện thoại trước khi mở link.</div>
+            <span class="imp-step-pill">Nên làm</span>
+            <div class="imp-step-text"><b>Thoát hẳn app Shopee</b> trước khi click vào nút <b>"Mở link mua hàng"</b>.</div>
           </div>
           <div class="imp-flow-item">
-            <span class="imp-step-pill">Bước 2</span>
-            <div class="imp-step-text">Bấm nút <b>"Mở link mua hàng"</b> ở trên ➔ Dành <b>15 – 30 giây</b> lướt xem ảnh, mô tả và đánh giá sản phẩm.</div>
+            <span class="imp-step-pill">Quy trình chuẩn</span>
+            <div class="imp-step-text">Bấm vào link ➔ Lướt xem sản phẩm: <b>Ảnh, mô tả, đánh giá sản phẩm</b> ➔ Thêm vào giỏ và tiến hành thanh toán.</div>
           </div>
-          <div class="imp-flow-item">
-            <span class="imp-step-pill">Bước 3</span>
-            <div class="imp-step-text">Bấm <b>Thêm vào giỏ</b> và tiến hành đặt hàng / thanh toán như bình thường.</div>
-          </div>
-        </div>
-        <div class="imp-tip-box">
-          <span class="imp-tip-icon">💡</span>
-          <div class="imp-tip-text"><b>Mẹo nhận diện:</b> Việc lướt xem tự nhiên giúp hệ thống của sàn nhận diện bạn là khách hàng thực tế (tránh bị nghi ngờ là tool), đảm bảo đơn hàng được ghi nhận hoàn tiền tối đa.</div>
         </div>
       </div>
     </div>
 
-    <!-- 2. TUYỆT ĐỐI KHÔNG MUA QUA LIVE HOẶC VIDEO -->
+    <!-- 2. TUYỆT ĐỐI KHÔNG MUA HÀNG TỪ LIVE HOẶC VIDEO -->
     <div class="imp-card imp-card-warning">
       <div class="imp-card-header">
         <div class="imp-badge imp-badge-red">02</div>
         <div class="imp-heading">
-          <h4 class="text-danger">Tuyệt đối KHÔNG mua qua Livestream hoặc Video</h4>
-          <span class="imp-tag imp-tag-red">Lưu ý số 1</span>
+          <h4 class="text-danger">2. Tuyệt đối KHÔNG mua hàng từ Live hoặc Video</h4>
         </div>
       </div>
       <div class="imp-card-body">
-        <p class="imp-lead-text">Theo cơ chế của sàn (đặc biệt là Shopee), hoa hồng sẽ được <b>ưu tiên tuyệt đối cho người phát Livestream hoặc Video</b> nếu bạn chọn mua tại đó.</p>
         <div class="imp-rule-box">
-          <div class="imp-rule-badge">👉 ĐỂ CHẮC CHẮN ĐƯỢC HOÀN TIỀN:</div>
-          <div class="imp-rule-desc">Bạn vui lòng đặt mua trực tiếp tại <b>trang sản phẩm thông thường</b> (không mở Live/Video và không bấm vào biểu tượng Live/Video trước khi bấm mua).</div>
+          <div class="imp-rule-badge">LÝ DO:</div>
+          <div class="imp-rule-desc">Shopee ưu tiên tính hoa hồng cho người Livestream/Video. Nếu bạn mua tại đó, hệ thống sẽ không tính hoa hồng cho link của mình, dẫn đến việc không có tiền để hoàn lại cho bạn.</div>
         </div>
       </div>
     </div>
 
-    <!-- 3. MẸO LÀM SẠCH GIỎ HÀNG -->
+    <!-- 3. MẸO "LÀM SẠCH" GIỎ HÀNG (TRÁNH DÍNH MÃ NGẦM) -->
     <div class="imp-card imp-card-clean">
       <div class="imp-card-header">
         <div class="imp-badge imp-badge-amber">03</div>
         <div class="imp-heading">
-          <h4>Mẹo "Làm sạch" giỏ hàng (Tránh dính mã cũ)</h4>
-          <span class="imp-tag imp-tag-blue">Bí quyết</span>
+          <h4>3. Mẹo "Làm sạch" giỏ hàng (Tránh dính mã ngầm)</h4>
         </div>
       </div>
       <div class="imp-card-body">
-        <p class="imp-lead-text">Nếu bạn đặt nhiều đơn trong ngày hoặc tài khoản thường xuyên rớt đơn, hãy xóa bộ nhớ đệm để làm mới phiên liên kết:</p>
+        <p class="imp-lead-text">Nếu bạn đặt nhiều đơn trong 1 ngày hoặc tài khoản thường xuyên rớt đơn.<br/>Hãy tiến hành <b>XÓA BỘ NHỚ ĐỆM</b> sau mỗi đơn hàng:</p>
         
         <div class="imp-crumbs-container">
-          <div class="imp-crumb">Shopee</div>
+          <span class="imp-crumb-label">Cách xử lý:</span>
+          <div class="imp-crumb">Vào Shopee</div>
           <div class="imp-crumb-sep">➔</div>
           <div class="imp-crumb">Tôi</div>
           <div class="imp-crumb-sep">➔</div>
-          <div class="imp-crumb">Cài đặt ⚙️</div>
+          <div class="imp-crumb">Cài đặt (⚙️)</div>
           <div class="imp-crumb-sep">➔</div>
           <div class="imp-crumb">Giới thiệu</div>
           <div class="imp-crumb-sep">➔</div>
-          <div class="imp-crumb imp-crumb-action">Xóa bộ nhớ đệm (2-3 lần)</div>
+          <div class="imp-crumb imp-crumb-action">Bấm Xóa bộ nhớ đệm (2-3 lần)</div>
         </div>
 
         <div class="imp-sub-note">
           <span class="imp-sub-dot">✓</span>
-          <span><b>Mục đích:</b> Reset cookie rác và xóa sạch các liên kết ngầm từ các phiên duyệt trước đó.</span>
+          <span><b>Mục đích:</b> Thao tác này giúp "reset" lại Cookie và xóa sạch dấu vết của Live/Video trước đó.</span>
         </div>
       </div>
     </div>
 
-    <!-- 4. TỈ LỆ RỦI RO NGOÀI Ý MUỐN -->
+    <!-- 4. TÌ LỆ RỦI RO NGOÀI Ý MUỐN -->
     <div class="imp-card imp-card-risk">
       <div class="imp-card-header">
         <div class="imp-badge imp-badge-slate">04</div>
         <div class="imp-heading">
-          <h4>Tỉ lệ rủi ro ngoài ý muốn & Cơ chế sàn</h4>
-          <span class="imp-tag imp-tag-slate">Minh bạch</span>
+          <h4>4. Tì lệ rủi ro ngoài ý muốn</h4>
         </div>
       </div>
       <div class="imp-card-body">
-        <p class="imp-lead-text">Dù làm đúng các bước, trong thực tế vẫn có khoảng 10% đơn bị rớt do các yếu tố kỹ thuật ngoài tầm kiểm soát:</p>
+        <p class="imp-lead-text">Dù làm đúng các bước, vẫn có khoảng 10% đơn bị rớt do:</p>
         
-        <div class="imp-risk-stats">
-          <div class="imp-stat-card stat-success">
-            <div class="imp-stat-num">~90%</div>
-            <div class="imp-stat-label">Khớp đơn thành công</div>
-            <div class="imp-stat-desc">Thao tác chuẩn, tiền hoa hồng nhảy vào tài khoản sau 15–60 phút.</div>
-          </div>
+        <div class="imp-risk-stats-2col">
           <div class="imp-stat-card stat-warning">
             <div class="imp-stat-num">9%</div>
-            <div class="imp-stat-label">App bị giật lag</div>
-            <div class="imp-stat-desc">Mạng lag hoặc app Shopee chậm, không kịp nhảy cookie tiếp thị.</div>
+            <div class="imp-stat-desc-pure">App bị lag, không kịp nhảy mã tiếp thị.</div>
           </div>
           <div class="imp-stat-card stat-danger">
             <div class="imp-stat-num">1%</div>
-            <div class="imp-stat-label">Shopee "nuốt đơn"</div>
-            <div class="imp-stat-desc">Lỗi hy hữu do hệ thống server sàn quá tải giờ cao điểm.</div>
+            <div class="imp-stat-desc-pure">Shopee "nuốt đơn" ngẫu nhiên (lỗi hệ thống).</div>
           </div>
         </div>
 
         <div class="imp-forgive-note">
           <span class="imp-forgive-icon">🥰</span>
-          <span>Trường hợp 10% rủi ro ngoài ý muốn này, chúng ta cùng <b>"hoan hỉ" bỏ qua cho anh Pee</b> nhé!</span>
+          <span>Trường hợp này chúng ta cùng <b>"hoan hỉ" bỏ qua cho anh Pee nhé!</b></span>
         </div>
       </div>
     </div>
 
-    <!-- KHỐI TÓM TẮT 4 BƯỚC NỔI BẬT -->
+    <!-- KHỐI TÓM LẠI -->
     <div class="imp-recap-banner">
       <div class="imp-recap-header">
-        <div class="imp-recap-icon">⚡</div>
-        <div class="imp-recap-title">TÓM TẮT NHANH 4 BƯỚC ĐỂ ĐƯỢC HOÀN TIỀN</div>
+        <div class="imp-recap-icon">💡</div>
+        <div class="imp-recap-title">TÓM LẠI:</div>
       </div>
       <div class="imp-recap-grid">
         <div class="imp-recap-card">
           <div class="imp-recap-num">1</div>
           <div class="imp-recap-info">
-            <div class="imp-recap-step-title">Tắt app Shopee ngầm</div>
-            <div class="imp-recap-step-sub">Đóng hẳn ứng dụng đang mở trước khi bấm link</div>
+            <div class="imp-recap-step-title">Dọn sạch giỏ hàng + Tắt app chạy ngầm</div>
           </div>
         </div>
         <div class="imp-recap-card">
           <div class="imp-recap-num">2</div>
           <div class="imp-recap-info">
-            <div class="imp-recap-step-title">Bấm "Mở link mua hàng"</div>
-            <div class="imp-recap-step-sub">Mở link mua hàng trực tiếp ở nút bấm phía trên</div>
+            <div class="imp-recap-step-title">Click link Mở link mua hàng</div>
           </div>
         </div>
         <div class="imp-recap-card">
           <div class="imp-recap-num">3</div>
           <div class="imp-recap-info">
-            <div class="imp-recap-step-title">Lướt 20s & Thanh toán thường</div>
-            <div class="imp-recap-step-sub">Xem ảnh, đánh giá rồi mua (Tuyệt đối không mua Live/Video)</div>
+            <div class="imp-recap-step-title">Lướt xem ảnh, đọc mô tả, đọc đánh giá sản phẩm</div>
           </div>
         </div>
         <div class="imp-recap-card">
           <div class="imp-recap-num">4</div>
           <div class="imp-recap-info">
-            <div class="imp-recap-step-title">Nhận tiền hoàn tự động</div>
-            <div class="imp-recap-step-sub">Hệ thống tự động thông báo ghi nhận hoàn tiền vào tài khoản!</div>
+            <div class="imp-recap-step-title">Đặt hàng thường (không Live/Video)</div>
           </div>
         </div>
+      </div>
+      <div class="imp-recap-footer">
+        🎉 <b>Chúc bạn săn sale thành công!</b>
       </div>
     </div>
 
