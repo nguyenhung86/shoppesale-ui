@@ -582,6 +582,10 @@
 
 /* RESPONSIVE DESIGN */
 @media (max-width: 768px) {
+  .important-panel,
+  .main:has(#product-link) .important-panel {
+    margin-bottom: 48px !important;
+  }
   .important-summary,
   .main:has(#product-link) .important-panel summary {
     padding: 14px 16px !important;
