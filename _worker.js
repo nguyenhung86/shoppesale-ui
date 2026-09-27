@@ -39,10 +39,17 @@ export default {
       }
     }
 
-    // 2. Xử lý khi bấm vào Link 8 ký tự rút gọn cũ (VD: /Ta3qA6xk)
-    if (path && path.length <= 12 && !path.includes('.') && !path.includes('/')) {
+    // 2. Xử lý khi bấm vào Link rút gọn root (VD: /RQgBxYSVu hoặc mã cũ)
+    const reservedPaths = new Set(['payout', 'admin', 'bills', 'api', 'dashboard', 'convert', 'assets', 'create-link-secure-api', 'index', 'shop', 'r']);
+    const isSlug = path && /^[a-zA-Z0-9_-]{5,16}$/.test(path) && !reservedPaths.has(path.toLowerCase()) && !path.includes('.');
+
+    if (isSlug) {
       let targetUrl = null;
-      if (env.SHORT_LINKS) targetUrl = await env.SHORT_LINKS.get(path);
+      if (env.SHORT_LINKS) {
+        try {
+          targetUrl = await env.SHORT_LINKS.get(path);
+        } catch (e) {}
+      }
 
       if (targetUrl) {
         const userAgent = request.headers.get('user-agent') || '';
@@ -93,6 +100,22 @@ export default {
 </body>
 </html>`;
         return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+      }
+
+      // Chuyển tiếp sang VPS để xử lý trang sản phẩm rút gọn root (/:slug)
+      try {
+        const vpsUrl = new URL(`/${path}${url.search}`, 'https://api-vps.hoantienonline.io.vn');
+        const vpsRequest = new Request(vpsUrl.toString(), {
+          method: request.method,
+          headers: request.headers,
+          redirect: 'manual'
+        });
+        const vpsRes = await fetch(vpsRequest);
+        if (vpsRes.status === 200 || vpsRes.headers.get('content-type')?.includes('text/html')) {
+          return vpsRes;
+        }
+      } catch (errVps) {
+        console.error('Lỗi kết nối VPS slug:', errVps);
       }
     }
 
