@@ -1,3 +1,8 @@
-/shop/*  https://api-vps.hoantienonline.io.vn/shop/:splat  302
-/r/*     https://api-vps.hoantienonline.io.vn/r/:splat     302
-/*       /index.html                                       200
+/shop/*     https://api-vps.hoantienonline.io.vn/shop/:splat     302
+/r/*        https://api-vps.hoantienonline.io.vn/r/:splat        302
+/bills/*    https://api-vps.hoantienonline.io.vn/bills/:splat    302
+/bill_*     https://api-vps.hoantienonline.io.vn/bill_:splat     302
+/qrcodes/*  https://api-vps.hoantienonline.io.vn/qrcodes/:splat  302
+/qr_*       https://api-vps.hoantienonline.io.vn/qr_:splat       302
+/*          /index.html                                          200
+

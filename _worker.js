@@ -2,8 +2,15 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 0. Chuyển tiếp toàn bộ yêu cầu trang sản phẩm /shop/* và link đệm /r/* sang máy chủ VPS
-    if (url.pathname.startsWith('/shop/') || url.pathname.startsWith('/r/')) {
+    // 0. Chuyển tiếp toàn bộ yêu cầu trang sản phẩm /shop/*, link đệm /r/*, ảnh bill /bill_*, /bills/*, mã QR /qr_*, /qrcodes/* sang máy chủ VPS
+    if (
+      url.pathname.startsWith('/shop/') ||
+      url.pathname.startsWith('/r/') ||
+      url.pathname.startsWith('/bill_') ||
+      url.pathname.startsWith('/bills/') ||
+      url.pathname.startsWith('/qr_') ||
+      url.pathname.startsWith('/qrcodes/')
+    ) {
       const vpsUrl = new URL(url.pathname + url.search, 'https://api-vps.hoantienonline.io.vn');
       const vpsRequest = new Request(vpsUrl.toString(), {
         method: request.method,
