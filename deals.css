@@ -147,14 +147,27 @@
 
 .deals-cat-tabs {
   display: flex;
-  gap: 8px;
-  overflow-x: auto;
+  gap: 8px 10px;
+  flex-wrap: wrap;
   padding-bottom: 6px;
-  scrollbar-width: none;
 }
 
-.deals-cat-tabs::-webkit-scrollbar {
-  display: none;
+@media (max-width: 640px) {
+  .deals-cat-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+  .deals-cat-tabs::-webkit-scrollbar {
+    display: block;
+    height: 4px;
+  }
+  .deals-cat-tabs::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
 }
 
 .deals-cat-tab {
