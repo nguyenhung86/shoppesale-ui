@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Poster Deal Hoa Hồng Cao</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 800px;
+      margin: 0;
+      padding: 0;
+      background: #fffdfa;
+      font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+    }
+    .poster-container {
+      width: 800px;
+      background: linear-gradient(135deg, #fffdfa 0%, #fff7ef 45%, #ffeedd 100%);
+      padding: 32px 28px 26px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid #f2dfd0;
+    }
+    /* Header */
+    .poster-header {
+      text-align: center;
+      margin-bottom: 22px;
+      position: relative;
+      z-index: 2;
+    }
+    .poster-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #fff3e6 0%, #ffe8d1 100%);
+      border: 1.5px solid #ffcc99;
+      color: #ea580c;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      padding: 6px 18px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.1);
+    }
+    .poster-title {
+      font-size: 28px;
+      font-weight: 900;
+      color: #0f172a;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .poster-title span {
+      background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .poster-subtitle {
+      font-size: 13.5px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .poster-subtitle b {
+      color: #ea580c;
+    }
+
+    /* Product Grid */
+    .poster-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+    }
+    .product-card {
+      background: #ffffff;
+      border: 1.5px solid #f2e2d5;
+      border-radius: 18px;
+      padding: 12px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      box-shadow: 0 4px 14px rgba(55, 39, 25, 0.05);
+      position: relative;
+    }
+    .product-img-wrap {
+      width: 105px;
+      height: 105px;
+      min-width: 105px;
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+    }
+    .product-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .product-tag {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      background: linear-gradient(135deg, #ff4500 0%, #ee4d2d 100%);
+      color: #ffffff;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(238, 77, 45, 0.4);
+    }
+    .product-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .product-category {
+      font-size: 11px;
+      font-weight: 700;
+      color: #ea580c;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .product-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.35;
+      margin-bottom: 6px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      height: 35px;
+    }
+    .product-price-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+    .product-price {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: #ee4d2d;
+    }
+    .product-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      color: #64748b;
+    }
+    .product-rating {
+      color: #f59e0b;
+      font-weight: 700;
+    }
+    .product-sold {
+      color: #64748b;
+    }
+
+    /* Footer */
+    .poster-footer {
+      background: linear-gradient(135deg, #ffffff 0%, #fff8f2 100%);
+      border: 1.5px solid #fed7aa;
+      border-radius: 18px;
+      padding: 13px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.06);
+      position: relative;
+      z-index: 2;
+    }
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 21px;
+      color: #fff;
+      box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
+    }
+    .footer-text strong {
+      display: block;
+      font-size: 13.5px;
+      color: #0f172a;
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+    .footer-text span {
+      font-size: 11.5px;
+      color: #64748b;
+    }
+    .footer-link-btn {
+      background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 10px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    /* Decorative background shapes */
+    .bg-circle-1 {
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(255, 144, 47, 0.1) 0%, transparent 70%);
+      top: -60px;
+      right: -60px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+    .bg-circle-2 {
+      position: absolute;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(255, 87, 34, 0.08) 0%, transparent 70%);
+      bottom: -70px;
+      left: -70px;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="poster-container">
+    <div class="bg-circle-1"></div>
+    <div class="bg-circle-2"></div>
+
+    <!-- Header -->
+    <div class="poster-header">
+      <div class="poster-badge">👑 ĐẶC QUYỀN SHOPEE CASHBACK</div>
+      <h1 class="poster-title">BẢNG VÀNG <span>HOA HỒNG CAO</span></h1>
+      <p class="poster-subtitle">Tổng hợp các sản phẩm chiết khấu cao nhất • Hoàn tiền lên đến <b>80% hoa hồng về ví</b></p>
+    </div>
+
+    <!-- 6 Products Grid -->
+    <div class="poster-grid">
+
+      <!-- Item 1: Khuyên tai bạc -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://cf.shopee.vn/file/vn-11134207-7r98o-lzfl8kxx40nh33" alt="">
+          <span class="product-tag">⚡ HH 27%</span>
+        </div>
+        <div class="product-info">
+          <span class="product-category">Trang sức bạc</span>
+          <h2 class="product-name">Khuyên tai đính nụ đá bạc 925 đẹp cho nữ De Merci</h2>
+          <div class="product-price-row">
+            <span class="product-price">15.000₫</span>
+          </div>
+          <div class="product-meta-row">
+            <span class="product-rating">★ 4.8</span>
+            <span class="product-sold">Đã bán 1.6k</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 2: Kem dưỡng da tay -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://cf.shopee.vn/file/vn-11134207-7ras8-mcrkxl0fib6qc7" alt="">
+          <span class="product-tag">⚡ HH 23.5%</span>
+        </div>
+        <div class="product-info">
+          <span class="product-category">Mỹ phẩm & Skincare</span>
+          <h2 class="product-name">Kem Dưỡng Da Tay Philosoft Moist Cấp Ẩm Cho Da Khô</h2>
+          <div class="product-price-row">
+            <span class="product-price">175.000₫</span>
+          </div>
+          <div class="product-meta-row">
+            <span class="product-rating">★ 5.0</span>
+            <span class="product-sold">Đã bán 1.1k</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 3: Trà Trinh Nữ Hoàng Cung -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://cf.shopee.vn/file/vn-11134207-81ztc-mst8rj72vea257" alt="">
+          <span class="product-tag">⚡ HH 22.5%</span>
+        </div>
+        <div class="product-info">
+          <span class="product-category">Sức khỏe phụ nữ</span>
+          <h2 class="product-name">Trà tiêu u giảm hạch Trinh Nữ Hoàng Cung Calen</h2>
+          <div class="product-price-row">
+            <span class="product-price">150.920₫</span>
+          </div>
+          <div class="product-meta-row">
+            <span class="product-rating">★ 4.9</span>
+            <span class="product-sold">Đã bán 1.9k</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 4: Thẻ học cho bé -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://cf.shopee.vn/file/vn-11134207-7r98o-lvivu5upa6q5eb" alt="">
+          <span class="product-tag">⚡ HH 22.5%</span>
+        </div>
+        <div class="product-info">
+          <span class="product-category">Mẹ & Bé • Đồ chơi</span>
+          <h2 class="product-name">Combo 3 Bộ thẻ phát triển trí não cho bé 3-7 tuổi</h2>
+          <div class="product-price-row">
+            <span class="product-price">265.000₫</span>
+          </div>
+          <div class="product-meta-row">
+            <span class="product-rating">★ 5.0</span>
+            <span class="product-sold">Chính hãng</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 5: Balo thời trang -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://cf.shopee.vn/file/vn-11134207-7ras8-mbb36klgujebf6" alt="">
+          <span class="product-tag">⚡ HH 22%</span>
+        </div>
+        <div class="product-info">
+          <span class="product-category">Túi ví & Balo</span>
+          <h2 class="product-name">Balo Da Pu DG Thời Trang Cao Cấp Chống Nước</h2>
+          <div class="product-price-row">
+            <span class="product-price">189.000₫</span>
+          </div>
+          <div class="product-meta-row">
+            <span class="product-rating">★ 4.9</span>
+            <span class="product-sold">Đã bán 1.9k</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Item 6: Đồ bộ bé bán chạy 200k -->
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="https://cf.shopee.vn/file/sg-11134201-824gn-mpu39eafqqks75" alt="">
+          <span class="product-tag">⚡ HH 20%</span>
+        </div>
+        <div class="product-info">
+          <span class="product-category">Thời trang Mẹ & Bé</span>
+          <h2 class="product-name">Bộ Thun Lạnh Cộc Tay Cho Bé Trai Bé Gái Chuchoe</h2>
+          <div class="product-price-row">
+            <span class="product-price">62.245₫</span>
+          </div>
+          <div class="product-meta-row">
+            <span class="product-rating">★ 4.9</span>
+            <span class="product-sold">Đã bán 200.000</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="poster-footer">
+      <div class="footer-left">
+        <div class="footer-icon">🛍️</div>
+        <div class="footer-text">
+          <strong>Xem thêm 1.000+ sản phẩm & nhận hoàn tiền tại:</strong>
+          <span>hoantienonline.io.vn/deals • Tự động hoàn tiền vào ví sau khi mua</span>
+        </div>
+      </div>
+      <div class="footer-link-btn">
+        SĂN DEAL NGAY ›
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

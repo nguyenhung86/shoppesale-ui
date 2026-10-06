@@ -825,3 +825,110 @@
     font-size: 11.5px;
   }
 }
+
+/* Phân trang danh sách deal (Pagination) - Thiết kế chuẩn theo ảnh mẫu */
+.deals-pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 36px 0 28px;
+  width: 100%;
+}
+
+.deals-pagination-bar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.deals-page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.deals-page-btn:hover:not(:disabled):not(.active) {
+  border-color: #ee4d2d;
+  color: #ee4d2d;
+  background: #fff8f6;
+}
+
+.deals-page-btn.active {
+  background: #ee4d2d;
+  border-color: #ee4d2d;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(238, 77, 45, 0.38);
+  cursor: default;
+}
+
+.deals-page-btn.nav-btn {
+  padding: 0 15px;
+  color: #0284c7;
+  font-weight: 500;
+}
+
+.deals-page-btn:disabled,
+.deals-page-btn.disabled {
+  background: #fafafa;
+  border-color: #f1f5f9;
+  color: #cbd5e1;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.deals-page-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 40px;
+  color: #94a3b8;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .deals-pagination-container {
+    margin: 24px 0 16px;
+  }
+
+  .deals-pagination-bar {
+    gap: 6px;
+  }
+
+  .deals-page-btn {
+    min-width: 35px;
+    height: 35px;
+    font-size: 13px;
+    padding: 0 6px;
+    border-radius: 7px;
+  }
+
+  .deals-page-btn.nav-btn {
+    padding: 0 10px;
+    font-size: 12.5px;
+  }
+
+  .deals-page-ellipsis {
+    min-width: 20px;
+    height: 35px;
+    font-size: 12px;
+  }
+}
+

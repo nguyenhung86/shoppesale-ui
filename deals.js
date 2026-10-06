@@ -4,6 +4,8 @@
   let currentCategory = 'all';
   let searchKeyword = '';
   let isLoading = false;
+  let currentPage = 1;
+  const ITEMS_PER_PAGE = 20;
 
   // Lấy API URL từ cấu hình
   function getApiBase() {
@@ -54,7 +56,10 @@
   }
 
   // Tải danh sách sản phẩm từ backend VPS
-  async function loadDealsData(category = 'all', keyword = '') {
+  async function loadDealsData(category = 'all', keyword = '', resetPage = true) {
+    if (resetPage) {
+      currentPage = 1;
+    }
     isLoading = true;
     renderDealsGrid();
 
@@ -175,6 +180,7 @@
   // Chọn danh mục
   window.selectDealCategory = function (catId) {
     currentCategory = catId;
+    currentPage = 1;
     document.querySelectorAll('.deals-cat-tab').forEach(tab => {
       const isActive = tab.dataset.cat === catId;
       tab.classList.toggle('active', isActive);
@@ -182,7 +188,7 @@
         tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
       }
     });
-    loadDealsData(currentCategory, searchKeyword);
+    loadDealsData(currentCategory, searchKeyword, true);
     setTimeout(updateDealsTabArrows, 200);
   };
 
@@ -213,18 +219,21 @@
   // Tìm kiếm
   window.handleDealSearch = function (e) {
     searchKeyword = e.target.value.trim();
+    currentPage = 1;
     clearTimeout(window._dealSearchTimer);
     window._dealSearchTimer = setTimeout(() => {
-      loadDealsData(currentCategory, searchKeyword);
+      loadDealsData(currentCategory, searchKeyword, true);
     }, 350);
   };
 
   // Vẽ lưới sản phẩm
   function renderDealsGrid() {
     const gridEl = document.querySelector('#deals-product-grid');
+    const paginationEl = document.querySelector('#deals-pagination');
     if (!gridEl) return;
 
     if (isLoading && (!dealsCache || !dealsCache.products || dealsCache.products.length === 0)) {
+      if (paginationEl) paginationEl.innerHTML = '';
       gridEl.innerHTML = `
         <div style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; color: #64748b;">
           <div style="display: inline-block; width: 36px; height: 36px; border: 3px solid #f1f5f9; border-top-color: #ee4d2d; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
@@ -234,8 +243,9 @@
       return;
     }
 
-    const products = dealsCache?.products || [];
-    if (products.length === 0) {
+    const allProducts = dealsCache?.products || [];
+    if (allProducts.length === 0) {
+      if (paginationEl) paginationEl.innerHTML = '';
       gridEl.innerHTML = `
         <div style="grid-column: 1 / -1; padding: 60px 20px; text-align: center; color: #94a3b8;">
           <div style="font-size: 40px; margin-bottom: 12px;">🛍️</div>
@@ -246,7 +256,16 @@
       return;
     }
 
-    gridEl.innerHTML = products.map(p => {
+    const totalItems = allProducts.length;
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+    const pageProducts = allProducts.slice(startIndex, endIndex);
+
+    gridEl.innerHTML = pageProducts.map(p => {
       const priceText = `${new Intl.NumberFormat('vi-VN').format(p.price)}₫`;
       const commRate = p.commissionPercent ? `${p.commissionPercent}%` : `${(p.commissionRate * 100).toFixed(1)}%`;
       const safeTitle = (p.productName || 'Sản phẩm Shopee').replace(/"/g, '&quot;');
@@ -293,7 +312,124 @@
         </div>
       `;
     }).join('');
+
+    renderDealsPagination(totalPages);
   }
+
+  // Tính toán dãy số trang thông minh
+  function getPaginationRange(current, total) {
+    if (total <= 1) return [];
+
+    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 480;
+    if (isSmallScreen) {
+      if (total <= 5) {
+        return Array.from({ length: total }, (_, i) => i + 1);
+      }
+      if (current <= 3) {
+        return [1, 2, 3, '...', total];
+      }
+      if (current >= total - 2) {
+        return [1, '...', total - 2, total - 1, total];
+      }
+      return [1, '...', current, '...', total];
+    }
+
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+    if (current <= 4) {
+      return [1, 2, 3, 4, 5, '...', total];
+    }
+    if (current >= total - 3) {
+      return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    }
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  }
+
+  // Render các nút phân trang chuẩn theo thiết kế
+  function renderDealsPagination(totalPages) {
+    const paginationEl = document.querySelector('#deals-pagination');
+    if (!paginationEl) return;
+
+    if (totalPages <= 1) {
+      paginationEl.innerHTML = '';
+      return;
+    }
+
+    const pages = getPaginationRange(currentPage, totalPages);
+    const isFirstPage = currentPage === 1;
+    const isLastPage = currentPage === totalPages;
+
+    let html = `
+      <div class="deals-pagination-bar" role="navigation" aria-label="Phân trang danh sách deal">
+        <button 
+          type="button"
+          class="deals-page-btn nav-btn ${isFirstPage ? 'disabled' : ''}" 
+          ${isFirstPage ? 'disabled' : ''} 
+          onclick="goToDealPage(${currentPage - 1})"
+          aria-label="Trang trước"
+        >
+          « Trước
+        </button>
+    `;
+
+    pages.forEach(p => {
+      if (p === '...') {
+        html += `<span class="deals-page-ellipsis" aria-hidden="true">...</span>`;
+      } else {
+        const isActive = p === currentPage;
+        html += `
+          <button 
+            type="button"
+            class="deals-page-btn ${isActive ? 'active' : ''}" 
+            ${isActive ? 'disabled aria-current="page"' : ''} 
+            onclick="goToDealPage(${p})"
+            aria-label="Trang ${p}"
+          >
+            ${p}
+          </button>
+        `;
+      }
+    });
+
+    html += `
+        <button 
+          type="button"
+          class="deals-page-btn nav-btn ${isLastPage ? 'disabled' : ''}" 
+          ${isLastPage ? 'disabled' : ''} 
+          onclick="goToDealPage(${currentPage + 1})"
+          aria-label="Trang sau"
+        >
+          Sau »
+        </button>
+      </div>
+    `;
+
+    paginationEl.innerHTML = html;
+  }
+
+  // Chuyển trang và cuộn nhẹ lên đầu danh sách sản phẩm
+  window.goToDealPage = function (page) {
+    if (page === '...' || typeof page !== 'number') return;
+    const allProducts = dealsCache?.products || [];
+    const totalPages = Math.ceil(allProducts.length / ITEMS_PER_PAGE) || 1;
+    if (page < 1 || page > totalPages || page === currentPage) return;
+
+    currentPage = page;
+    renderDealsGrid();
+
+    // Cuộn mượt mà lên đầu lưới sản phẩm
+    const anchor = document.querySelector('#deals-product-grid') || document.querySelector('.deals-controls');
+    if (anchor) {
+      const headerOffset = 90;
+      const elementPosition = anchor.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: Math.max(0, offsetPosition),
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Hàm render view chính của trang deals
   window.deals = function () {
@@ -407,6 +543,11 @@
         <!-- Lưới sản phẩm -->
         <div id="deals-product-grid" class="deals-grid">
           <!-- Render động từ API -->
+        </div>
+
+        <!-- Phân trang sản phẩm -->
+        <div id="deals-pagination" class="deals-pagination-container">
+          <!-- Render động từ JavaScript -->
         </div>
       </div>
     `;
