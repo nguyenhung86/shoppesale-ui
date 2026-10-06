@@ -211,7 +211,7 @@
               ${soldHtml}
             </div>
             <div class="deal-actions">
-              <button class="btn-copy-deal" onclick="copyCleanDealUrl('${safeCleanUrl}')" title="Sao chép link Shopee gốc không kèm id bên thứ 3">
+              <button class="btn-copy-deal" onclick="copyCleanDealUrl('${safeCleanUrl}')" title="Sao chép link sản phẩm Shopee">
                 📋 Chép link
               </button>
               <button class="btn-convert-deal" onclick="redirectToConvertWithDeal('${safeCleanUrl}')" title="Chuyển link nhận hoàn tiền ngay">
@@ -250,38 +250,47 @@
 
     return `
       <div class="deals-container">
-        <!-- Banner Hero & Hướng dẫn nhận hoa hồng -->
+        <!-- Banner Hero & Hướng dẫn nhận hoa hồng (Thiết kế phong cách Ảnh 1) -->
         <div class="deals-hero-banner">
-          <div class="deals-hero-header">
-            <span class="deals-badge">💎 HOA HỒNG CAO TỚI 33%</span>
-            <span style="font-size: 13px; font-weight: 600; opacity: 0.9;">Tự động cập nhật từ Shopee</span>
+          <div class="deals-hero-main">
+            <div class="deals-hero-copy">
+              <span class="deals-badge">CHƯƠNG TRÌNH ĐẶC QUYỀN</span>
+              <h1 class="deals-hero-title">Săn sản phẩm hot,<br><em>nhận hoa hồng tới 33%</em></h1>
+              <p class="deals-hero-desc">
+                Tổng hợp các sản phẩm chiết khấu cao nhất trên sàn Shopee. Chuyển link ngay để nhận hoàn tiền lên đến <b>80% hoa hồng</b>!
+              </p>
+              <span class="deals-hero-date">⚡ Tự động cập nhật liên tục từ Shopee</span>
+            </div>
+            <div class="deals-hero-art" aria-hidden="true">
+              <span class="deals-orbit orbit-one"></span>
+              <span class="deals-orbit orbit-two"></span>
+              <img src="assets/commission-gift-v2.png" alt="" onerror="this.src='assets/hero-illustration-v3.png'">
+              <span class="deals-coin coin-one">₫</span>
+              <span class="deals-coin coin-two">₫</span>
+            </div>
           </div>
-          <h1 class="deals-hero-title">Săn Sản Phẩm Hoa Hồng Khủng</h1>
-          <p class="deals-hero-desc">
-            Danh sách các sản phẩm đang có mức chiết khấu hoa hồng cao nhất trên Shopee. Hãy sao chép link sạch hoặc chuyển đổi ngay để nhận hoàn tiền <b>lên đến 80% hoa hồng</b>!
-          </p>
 
-          <!-- 3 Bước nhận hoàn tiền -->
+          <!-- 3 Bước nhận hoàn tiền (Viết lại ngắn gọn, trực quan, bỏ chữ link sạch) -->
           <div class="deals-steps">
             <div class="deals-step-item">
               <span class="deals-step-num">1</span>
               <div class="deals-step-text">
-                <strong>Chọn sản phẩm & Lấy link</strong>
-                <span>Bấm <b>"Chép link"</b> hoặc <b>"Nhận tiền"</b> để lấy link Shopee gốc sạch 100%.</span>
+                <strong>Chọn sản phẩm</strong>
+                <span>Bấm "Nhận tiền" hoặc "Chép link" món hàng muốn mua.</span>
               </div>
             </div>
             <div class="deals-step-item">
               <span class="deals-step-num">2</span>
               <div class="deals-step-text">
-                <strong>Chuyển đổi nhận hoàn tiền</strong>
-                <span>Dán vào ô <b>Chuyển link</b> trên web hoặc gửi trực tiếp vào <b>Bot Zalo</b>.</span>
+                <strong>Chuyển đổi link</strong>
+                <span>Dán link vào ô Chuyển link hoặc gửi cho Bot Zalo.</span>
               </div>
             </div>
             <div class="deals-step-item">
               <span class="deals-step-num">3</span>
               <div class="deals-step-text">
-                <strong>Mua hàng & Nhận tiền về ví</strong>
-                <span>Đặt hàng trên Shopee qua link vừa tạo, tiền hoàn sẽ được tự động cộng vào ví!</span>
+                <strong>Mua & Nhận tiền</strong>
+                <span>Đặt mua trên Shopee, tiền hoàn tự động cộng vào ví!</span>
               </div>
             </div>
           </div>

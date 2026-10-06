@@ -16,95 +16,244 @@
   margin: 0 auto;
 }
 
-/* Banner hướng dẫn nhận hoa hồng */
+/* Banner hướng dẫn nhận hoa hồng - Redesign chuẩn màu sắc phong cách Ảnh 1 */
 .deals-hero-banner {
-  background: linear-gradient(135deg, #ff6b35 0%, #ee4d2d 100%);
-  border-radius: 20px;
-  padding: 24px;
-  color: #ffffff;
+  position: relative;
+  background: linear-gradient(115deg, #fffdfb 0%, #fff7f0 61%, #ffeddc 100%);
+  border: 1px solid #f0dfd2;
+  border-radius: 24px;
+  padding: 30px 32px 24px;
   margin-bottom: 24px;
-  box-shadow: 0 10px 25px -5px rgba(238, 77, 45, 0.25);
+  box-shadow: 0 9px 24px rgba(55, 39, 25, 0.07);
+  overflow: hidden;
 }
 
-.deals-hero-header {
-  display: flex;
+.deals-hero-banner::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 45%;
+  height: 5px;
+  content: "";
+  background: linear-gradient(90deg, #ff7321, #ffbd63);
+  border-radius: 0 24px 0 0;
+}
+
+.deals-hero-main {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 20px;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-  gap: 10px;
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.deals-hero-copy {
+  position: relative;
+  z-index: 2;
 }
 
 .deals-badge {
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(8px);
-  padding: 6px 14px;
+  display: inline-block;
+  color: #e9560b;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 6px 12px;
+  border: 1px solid #ffd5b3;
   border-radius: 999px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  background: #fff5eb;
+  margin-bottom: 10px;
 }
 
 .deals-hero-title {
-  font-size: 24px;
+  color: #0f172a;
+  font-size: clamp(26px, 3vw, 36px);
   font-weight: 800;
-  margin-bottom: 6px;
-  line-height: 1.3;
+  line-height: 1.15;
+  letter-spacing: -0.8px;
+  margin: 0 0 10px;
+}
+
+.deals-hero-title em {
+  color: #f45711;
+  font-style: normal;
 }
 
 .deals-hero-desc {
-  font-size: 14px;
-  opacity: 0.95;
-  line-height: 1.5;
-  margin-bottom: 20px;
-  max-width: 750px;
+  max-width: 580px;
+  color: #65748c;
+  font-size: 14.5px;
+  line-height: 1.6;
+  margin: 0 0 14px;
 }
 
-/* Hướng dẫn 3 bước */
+.deals-hero-desc b {
+  color: #ee4d2d;
+  font-weight: 700;
+}
+
+.deals-hero-date {
+  display: inline-block;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(73, 45, 25, 0.06);
+  border: 1px solid #fce8db;
+  color: #53647d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Artwork chiếc hộp quà và đồng xu phong cách Ảnh 1 */
+.deals-hero-art {
+  position: relative;
+  height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deals-hero-art img {
+  position: relative;
+  z-index: 3;
+  width: 180px;
+  height: 170px;
+  object-fit: contain;
+  filter: drop-shadow(0 15px 12px rgba(147, 67, 5, 0.18));
+  transform: rotate(-2deg);
+}
+
+.deals-orbit {
+  position: absolute;
+  border: 1px solid rgba(255, 122, 29, 0.15);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.deals-orbit.orbit-one {
+  width: 160px;
+  height: 160px;
+  top: 10px;
+  right: 35px;
+  box-shadow: 0 0 0 18px rgba(255, 144, 47, 0.04);
+}
+
+.deals-orbit.orbit-two {
+  width: 230px;
+  height: 230px;
+  top: -25px;
+  right: 5px;
+}
+
+.deals-coin {
+  position: absolute;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  border-radius: 50%;
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.25);
+  background: linear-gradient(135deg, #ffd700 0%, #ff9800 100%);
+  color: #78350f;
+  border: 2px solid #fff;
+}
+
+.deals-coin.coin-one {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  top: 20px;
+  right: 20px;
+}
+
+.deals-coin.coin-two {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  bottom: 20px;
+  left: 20px;
+}
+
+/* 3 Bước nhận hoàn tiền: Thẻ con trắng thanh lịch */
 .deals-steps {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 12px;
-  background: rgba(0, 0, 0, 0.12);
-  border-radius: 16px;
-  padding: 16px;
+  background: transparent;
+  padding: 0;
 }
 
 .deals-step-item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  background: #ffffff;
+  border: 1px solid #f2e3d8;
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 3px 10px rgba(55, 39, 25, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.deals-step-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(55, 39, 25, 0.08);
 }
 
 .deals-step-num {
-  width: 28px;
-  height: 28px;
-  background: #ffffff;
-  color: #ee4d2d;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(135deg, #ff7321 0%, #f45711 100%);
+  color: #ffffff;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 14px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(244, 87, 17, 0.3);
 }
 
 .deals-step-text strong {
   display: block;
   font-size: 13.5px;
   font-weight: 700;
+  color: #0f172a;
   margin-bottom: 2px;
 }
 
 .deals-step-text span {
-  font-size: 12px;
-  opacity: 0.9;
-  line-height: 1.4;
+  font-size: 12.5px;
+  color: #64748b;
+  line-height: 1.45;
+}
+
+/* Responsive cho banner */
+@media (max-width: 768px) {
+  .deals-hero-banner {
+    padding: 20px 16px 16px;
+    border-radius: 20px;
+  }
+  .deals-hero-main {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .deals-hero-art {
+    display: none;
+  }
+  .deals-hero-title {
+    font-size: 23px;
+  }
+  .deals-hero-desc {
+    font-size: 13.5px;
+  }
+  .deals-steps {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 }
 
 /* Thanh tìm kiếm và bộ lọc danh mục */
