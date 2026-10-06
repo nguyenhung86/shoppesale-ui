@@ -35,21 +35,37 @@
     }
   }
 
-  // Sao chép link sạch Shopee và thông báo
+  // Sao chép link Shopee và thông báo
   window.copyCleanDealUrl = function (cleanUrl) {
     if (!cleanUrl) return;
-    navigator.clipboard.writeText(cleanUrl).then(() => {
-      showDealToast('✅ Đã sao chép link Shopee sạch! Hãy dán vào ô "Chuyển link" hoặc gửi Bot Zalo để nhận hoàn tiền nhé!');
-    }).catch(() => {
-      const tempInput = document.createElement('input');
-      tempInput.value = cleanUrl;
-      document.body.appendChild(tempInput);
-      tempInput.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempInput);
-      showDealToast('✅ Đã sao chép link Shopee sạch! Hãy dán vào ô "Chuyển link" hoặc gửi Bot Zalo để nhận hoàn tiền nhé!');
-    });
+    const safeCleanUrl = cleanUrl.replace(/'/g, "\\'");
+    const onDone = () => {
+      showDealToast(
+        'Đã sao chép link Shopee!',
+        'Dán vào ô Chuyển link hoặc gửi Bot Zalo để nhận hoàn tiền',
+        safeCleanUrl
+      );
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(cleanUrl).then(onDone).catch(() => {
+        fallbackCopy(cleanUrl);
+        onDone();
+      });
+    } else {
+      fallbackCopy(cleanUrl);
+      onDone();
+    }
   };
+
+  function fallbackCopy(text) {
+    const tempInput = document.createElement('input');
+    tempInput.value = text;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+  }
 
   // Điều hướng sang trang /convert và tự động điền link
   window.redirectToConvertWithDeal = function (cleanUrl) {
@@ -77,7 +93,7 @@
         inputEl.value = cleanUrl;
         inputEl.focus();
         inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        showDealToast('✨ Đã điền link sản phẩm! Đang tiến hành chuyển đổi...');
+        showDealToast('✨ Đã điền link sản phẩm!', 'Đang tiến hành chuyển đổi hoàn tiền...');
         if (typeof handleConvert === 'function') {
           handleConvert();
         }
@@ -85,15 +101,28 @@
     }, 300);
   };
 
-  // Hiển thị Toast thông báo
-  function showDealToast(msg) {
+  // Hiển thị Toast thông báo hiện đại, nổi bật
+  function showDealToast(titleText, descText = '', targetUrl = '') {
     let toast = document.querySelector('.deal-toast');
     if (!toast) {
       toast = document.createElement('div');
       toast.className = 'deal-toast';
       document.body.appendChild(toast);
     }
-    toast.textContent = msg;
+
+    const hasBtn = Boolean(targetUrl);
+    const iconChar = titleText.includes('✨') ? '✨' : '✓';
+    const cleanTitle = titleText.replace(/^[✨✅]\s*/, '');
+
+    toast.innerHTML = `
+      <div class="deal-toast-icon">${iconChar}</div>
+      <div class="deal-toast-content">
+        <div class="deal-toast-title">${cleanTitle}</div>
+        ${descText ? `<div class="deal-toast-desc">${descText}</div>` : ''}
+      </div>
+      ${hasBtn ? `<button class="deal-toast-btn" onclick="redirectToConvertWithDeal('${targetUrl}')">⚡ Chuyển ngay</button>` : ''}
+    `;
+
     toast.classList.add('show');
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => {
