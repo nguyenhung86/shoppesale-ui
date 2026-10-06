@@ -862,34 +862,36 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
-.deals-page-btn:hover:not(:disabled):not(.active) {
+.deals-page-btn:hover:not(.active):not(.disabled) {
   border-color: #ee4d2d;
   color: #ee4d2d;
   background: #fff8f6;
 }
 
 .deals-page-btn.active {
-  background: #ee4d2d;
-  border-color: #ee4d2d;
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 4px 14px rgba(238, 77, 45, 0.38);
+  background: #ee4d2d !important;
+  border-color: #ee4d2d !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(238, 77, 45, 0.4) !important;
   cursor: default;
+  pointer-events: none;
 }
 
 .deals-page-btn.nav-btn {
-  padding: 0 15px;
+  padding: 0 14px;
   color: #0284c7;
   font-weight: 500;
 }
 
-.deals-page-btn:disabled,
-.deals-page-btn.disabled {
-  background: #fafafa;
-  border-color: #f1f5f9;
-  color: #cbd5e1;
-  cursor: not-allowed;
-  box-shadow: none;
+.deals-page-btn.disabled,
+.deals-page-btn:disabled {
+  background: #fafafa !important;
+  border-color: #f1f5f9 !important;
+  color: #cbd5e1 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  pointer-events: none;
 }
 
 .deals-page-ellipsis {

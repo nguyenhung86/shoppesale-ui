@@ -317,33 +317,21 @@
   }
 
   // Tính toán dãy số trang thông minh
+  // Tính toán dãy số trang thông minh (khung trượt 5 trang chuẩn như ảnh mẫu)
   function getPaginationRange(current, total) {
     if (total <= 1) return [];
-
-    const isSmallScreen = typeof window !== 'undefined' && window.innerWidth < 480;
-    if (isSmallScreen) {
-      if (total <= 5) {
-        return Array.from({ length: total }, (_, i) => i + 1);
-      }
-      if (current <= 3) {
-        return [1, 2, 3, '...', total];
-      }
-      if (current >= total - 2) {
-        return [1, '...', total - 2, total - 1, total];
-      }
-      return [1, '...', current, '...', total];
+    const maxButtons = 5;
+    let start = Math.max(1, current - Math.floor(maxButtons / 2));
+    let end = start + maxButtons - 1;
+    if (end > total) {
+      end = total;
+      start = Math.max(1, end - maxButtons + 1);
     }
-
-    if (total <= 7) {
-      return Array.from({ length: total }, (_, i) => i + 1);
+    const pages = [];
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
     }
-    if (current <= 4) {
-      return [1, 2, 3, 4, 5, '...', total];
-    }
-    if (current >= total - 3) {
-      return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
-    }
-    return [1, '...', current - 1, current, current + 1, '...', total];
+    return pages;
   }
 
   // Render các nút phân trang chuẩn theo thiết kế
@@ -366,7 +354,7 @@
           type="button"
           class="deals-page-btn nav-btn ${isFirstPage ? 'disabled' : ''}" 
           ${isFirstPage ? 'disabled' : ''} 
-          onclick="goToDealPage(${currentPage - 1})"
+          onclick="${isFirstPage ? 'return false;' : `goToDealPage(${currentPage - 1})`}"
           aria-label="Trang trước"
         >
           « Trước
@@ -374,22 +362,17 @@
     `;
 
     pages.forEach(p => {
-      if (p === '...') {
-        html += `<span class="deals-page-ellipsis" aria-hidden="true">...</span>`;
-      } else {
-        const isActive = p === currentPage;
-        html += `
-          <button 
-            type="button"
-            class="deals-page-btn ${isActive ? 'active' : ''}" 
-            ${isActive ? 'disabled aria-current="page"' : ''} 
-            onclick="goToDealPage(${p})"
-            aria-label="Trang ${p}"
-          >
-            ${p}
-          </button>
-        `;
-      }
+      const isActive = p === currentPage;
+      html += `
+        <button 
+          type="button"
+          class="deals-page-btn ${isActive ? 'active' : ''}" 
+          ${isActive ? 'aria-current="page"' : `onclick="goToDealPage(${p})"`} 
+          aria-label="Trang ${p}"
+        >
+          ${p}
+        </button>
+      `;
     });
 
     html += `
@@ -397,7 +380,7 @@
           type="button"
           class="deals-page-btn nav-btn ${isLastPage ? 'disabled' : ''}" 
           ${isLastPage ? 'disabled' : ''} 
-          onclick="goToDealPage(${currentPage + 1})"
+          onclick="${isLastPage ? 'return false;' : `goToDealPage(${currentPage + 1})`}"
           aria-label="Trang sau"
         >
           Sau »
