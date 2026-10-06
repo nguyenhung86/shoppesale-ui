@@ -207,7 +207,7 @@
         <!-- Banner Hero & Hướng dẫn nhận hoa hồng -->
         <div class="deals-hero-banner">
           <div class="deals-hero-header">
-            <span class="deals-badge">💎 HOA HỒNG CAO TỚI 25%</span>
+            <span class="deals-badge">💎 HOA HỒNG CAO TỚI 33%</span>
             <span style="font-size: 13px; font-weight: 600; opacity: 0.9;">Tự động cập nhật từ Shopee</span>
           </div>
           <h1 class="deals-hero-title">Săn Sản Phẩm Hoa Hồng Khủng</h1>
