@@ -205,11 +205,10 @@
             <h3 class="deal-title" title="${safeTitle}">${p.productName}</h3>
             <div class="deal-price-row">
               <span class="deal-price">${priceText}</span>
-              ${soldHtml}
             </div>
             <div class="deal-sub-row">
               <span class="deal-rating">★ ${p.ratingStar || 5}</span>
-              <span class="deal-shop" title="${p.shopName || ''}">🏬 ${p.shopName || 'Shopee Shop'}</span>
+              ${soldHtml}
             </div>
             <div class="deal-actions">
               <button class="btn-copy-deal" onclick="copyCleanDealUrl('${safeCleanUrl}')" title="Sao chép link Shopee gốc không kèm id bên thứ 3">
