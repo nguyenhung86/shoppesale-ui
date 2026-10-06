@@ -283,12 +283,14 @@
         <div class="deals-hero-banner">
           <div class="deals-hero-main">
             <div class="deals-hero-copy">
-              <span class="deals-badge">CHƯƠNG TRÌNH ĐẶC QUYỀN</span>
+              <div class="deals-hero-header-row">
+                <span class="deals-badge">CHƯƠNG TRÌNH ĐẶC QUYỀN</span>
+                <span class="deals-hero-date">⚡ <span class="desktop-only-txt">Tự động </span>Cập nhật liên tục<span class="desktop-only-txt"> từ Shopee</span></span>
+              </div>
               <h1 class="deals-hero-title">Săn sản phẩm hot,<br><em>nhận hoa hồng tới 33%</em></h1>
               <p class="deals-hero-desc">
-                Tổng hợp các sản phẩm chiết khấu cao nhất trên sàn Shopee. Chuyển link ngay để nhận hoàn tiền lên đến <b>80% hoa hồng</b>!
+                <span class="deals-desc-full">Tổng hợp các sản phẩm chiết khấu cao nhất trên sàn Shopee. </span>Chuyển link ngay để nhận hoàn tiền lên đến <b>80% hoa hồng</b>!
               </p>
-              <span class="deals-hero-date">⚡ Tự động cập nhật liên tục từ Shopee</span>
             </div>
             <div class="deals-hero-art" aria-hidden="true">
               <span class="deals-orbit orbit-one"></span>
@@ -305,21 +307,21 @@
               <span class="deals-step-num">1</span>
               <div class="deals-step-text">
                 <strong>Chọn sản phẩm</strong>
-                <span>Bấm "Nhận tiền" hoặc "Chép link" món hàng muốn mua.</span>
+                <span class="deals-step-sub">Bấm "Nhận tiền" hoặc "Chép link" món hàng muốn mua.</span>
               </div>
             </div>
             <div class="deals-step-item">
               <span class="deals-step-num">2</span>
               <div class="deals-step-text">
                 <strong>Chuyển đổi link</strong>
-                <span>Dán link vào ô Chuyển link hoặc gửi cho Bot Zalo.</span>
+                <span class="deals-step-sub">Dán link vào ô Chuyển link hoặc gửi cho Bot Zalo.</span>
               </div>
             </div>
             <div class="deals-step-item">
               <span class="deals-step-num">3</span>
               <div class="deals-step-text">
                 <strong>Mua & Nhận tiền</strong>
-                <span>Đặt mua trên Shopee, tiền hoàn tự động cộng vào ví!</span>
+                <span class="deals-step-sub">Đặt mua trên Shopee, tiền hoàn tự động cộng vào ví!</span>
               </div>
             </div>
           </div>
