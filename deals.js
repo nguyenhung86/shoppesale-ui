@@ -54,15 +54,21 @@
   // Điều hướng sang trang /convert và tự động điền link
   window.redirectToConvertWithDeal = function (cleanUrl) {
     if (!cleanUrl) return;
+
+    // Nếu chưa đăng nhập: sao chép link và mở modal đăng nhập
+    if (typeof getLoggedUser === 'function' && !getLoggedUser()) {
+      window.copyCleanDealUrl(cleanUrl);
+      if (typeof showLoginModal === 'function') {
+        showLoginModal();
+      }
+      return;
+    }
+
     sessionStorage.setItem('pending_convert_deal_url', cleanUrl);
 
     // Chuyển hướng sang trang chuyển link
-    if (window.location.hash) {
-      window.location.hash = '#convert';
-    } else {
-      history.pushState(null, '', '/convert');
-      if (typeof render === 'function') render();
-    }
+    history.pushState(null, '', '/convert');
+    if (typeof render === 'function') render();
 
     // Tự động điền và kích hoạt chuyển đổi sau khi trang convert mở
     setTimeout(() => {
@@ -70,12 +76,13 @@
       if (inputEl) {
         inputEl.value = cleanUrl;
         inputEl.focus();
-        showDealToast('✨ Đang tự động chuyển đổi link để nhận hoàn tiền...');
+        inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        showDealToast('✨ Đã điền link sản phẩm! Đang tiến hành chuyển đổi...');
         if (typeof handleConvert === 'function') {
           handleConvert();
         }
       }
-    }, 250);
+    }, 300);
   };
 
   // Hiển thị Toast thông báo
@@ -269,10 +276,10 @@
   function checkPendingDealConvert() {
     const pendingUrl = sessionStorage.getItem('pending_convert_deal_url');
     if (pendingUrl) {
-      sessionStorage.removeItem('pending_convert_deal_url');
       setTimeout(() => {
         const inputEl = document.querySelector('#product-link');
         if (inputEl) {
+          sessionStorage.removeItem('pending_convert_deal_url');
           inputEl.value = pendingUrl;
           if (typeof handleConvert === 'function') handleConvert();
         }

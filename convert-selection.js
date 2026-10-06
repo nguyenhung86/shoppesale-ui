@@ -495,8 +495,14 @@ function handleConvert() {
           `;
           
           // Chèn kết quả vào sau form chuyển đổi
-          const convertSection = document.querySelector('#product-link').closest('.section');
-          convertSection.appendChild(resultCard);
+          const targetInput = document.querySelector('#product-link');
+          const convertSection = targetInput ? targetInput.closest('.section') : null;
+          if (convertSection) {
+            convertSection.appendChild(resultCard);
+          } else {
+            const container = document.querySelector('#app') || document.body;
+            container.appendChild(resultCard);
+          }
           
           // Gắn sự kiện hiện QR Code
           const qrBtn = resultCard.querySelector('#show-qr-code');

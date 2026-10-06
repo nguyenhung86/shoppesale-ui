@@ -48,7 +48,7 @@ export default {
     }
 
     // 2. Xử lý khi bấm vào Link rút gọn root (VD: /RQgBxYSVu hoặc mã cũ)
-    const reservedPaths = new Set(['payout', 'admin', 'bills', 'api', 'dashboard', 'convert', 'assets', 'create-link-secure-api', 'index', 'shop', 'r']);
+    const reservedPaths = new Set(['payout', 'admin', 'bills', 'api', 'dashboard', 'deals', 'convert', 'assets', 'create-link-secure-api', 'index', 'shop', 'r']);
     const isSlug = path && /^[a-zA-Z0-9_-]{5,16}$/.test(path) && !reservedPaths.has(path.toLowerCase()) && !path.includes('.');
 
     if (isSlug) {
