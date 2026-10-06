@@ -14,6 +14,45 @@
     return 'https://api-vps.hoantienonline.io.vn/api/web';
   }
 
+  // Nhận diện sản phẩm ngành hàng Nữ, Mẹ và Bé
+  function isWomenOrBabyProduct(p) {
+    if (!p) return false;
+    const cat = p.categoryId || '';
+    const name = (p.productName || '').toLowerCase();
+    const isPackaging = name.includes('chai nhựa') || name.includes('hủ nhựa') || name.includes('lọ chiết') || name.includes('chai chiết') || name.includes('hũ nhựa') || name.includes('lọ rỗng');
+    if (isPackaging) return false;
+    if (cat === 'mom_baby' || cat === 'beauty') return true;
+    if (cat === 'fashion') {
+      if (name.includes('nam') && !name.includes('nữ') && !name.includes('unisex')) return false;
+      return true;
+    }
+    if (cat === 'jewelry') {
+      if (name.includes('nam') && !name.includes('nữ') && !name.includes('unisex')) return false;
+      return true;
+    }
+    if (cat === 'shoes_bags') {
+      if (name.includes('nữ') || name.includes('túi xách') || name.includes('balo') || name.includes('guốc') || name.includes('cao gót')) return true;
+    }
+    const femaleKeywords = [
+      'mẹ', 'bé', 'trẻ em', 'sơ sinh', 'bình sữa', 'tã', 'bỉm', 'váy', 'đầm', 
+      'son', 'kem dưỡng', 'serum', 'mỹ phẩm', 'chăm sóc da', 'trang điểm',
+      'nữ', 'khuyên tai', 'bông tai', 'vòng tay', 'dây chuyền', 'nhẫn', 
+      'túi xách', 'kẹp tóc', 'collagen', 'nội y', 'đồ lót', 'phụ khoa', 'sữa tắm'
+    ];
+    return femaleKeywords.some(kw => name.includes(kw));
+  }
+
+  function sortDealsWithPriority(products) {
+    return [...products].sort((a, b) => {
+      const aIsPriority = isWomenOrBabyProduct(a) ? 1 : 0;
+      const bIsPriority = isWomenOrBabyProduct(b) ? 1 : 0;
+      if (bIsPriority !== aIsPriority) return bIsPriority - aIsPriority;
+      const commDiff = (b.commissionRate || 0) - (a.commissionRate || 0);
+      if (commDiff !== 0) return commDiff;
+      return (b.sold || 0) - (a.sold || 0);
+    });
+  }
+
   // Tải danh sách sản phẩm từ backend VPS
   async function loadDealsData(category = 'all', keyword = '') {
     isLoading = true;
@@ -25,6 +64,9 @@
       const res = await fetch(url);
       const data = await res.json();
       if (data && data.success) {
+        if ((category === 'all' || !category) && Array.isArray(data.products)) {
+          data.products = sortDealsWithPriority(data.products);
+        }
         dealsCache = data;
       }
     } catch (e) {
@@ -257,19 +299,19 @@
   window.deals = function () {
     const categories = [
       { id: 'all', name: '🔥 Tất cả hot' },
-      { id: 'fashion', name: '👗 Thời trang' },
       { id: 'beauty', name: '💄 Sắc đẹp & Mỹ phẩm' },
-      { id: 'sports', name: '🏃 Thể thao & Dã ngoại' },
-      { id: 'jewelry', name: '💍 Đồng hồ & Trang sức' },
-      { id: 'shoes_bags', name: '👟 Giày dép & Túi ví' },
-      { id: 'health', name: '🌿 Sức khỏe & TPCN' },
-      { id: 'home', name: '🏠 Nhà cửa & Đời sống' },
-      { id: 'tech', name: '📱 Phụ kiện & Công nghệ' },
       { id: 'mom_baby', name: '🍼 Mẹ & Bé' },
+      { id: 'fashion', name: '👗 Thời trang nữ' },
+      { id: 'jewelry', name: '💍 Trang sức & Phụ kiện' },
+      { id: 'shoes_bags', name: '👠 Túi ví & Giày dép' },
+      { id: 'health', name: '🌿 Sức khỏe & Collagen' },
+      { id: 'home', name: '🏠 Nhà cửa & Đời sống' },
       { id: 'food', name: '🍿 Bách hóa & Ăn vặt' },
-      { id: 'stationery', name: '📚 Sách & Văn phòng phẩm' },
-      { id: 'auto_moto', name: '🚗 Xe máy & Ô tô' },
-      { id: 'pets', name: '🐾 Chăm sóc Thú cưng' }
+      { id: 'tech', name: '📱 Phụ kiện & Công nghệ' },
+      { id: 'sports', name: '🏃 Thể thao & Dã ngoại' },
+      { id: 'pets', name: '🐾 Chăm sóc Thú cưng' },
+      { id: 'stationery', name: '📚 Sách & VPP' },
+      { id: 'auto_moto', name: '🚗 Xe máy & Ô tô' }
     ];
 
     setTimeout(() => {
