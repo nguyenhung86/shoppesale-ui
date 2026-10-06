@@ -538,7 +538,8 @@ function handleConvert() {
         }
       } catch (err) {
         console.error("Lỗi chuyển đổi:", err);
-        alert("⚠️ Không thể kết nối máy chủ để lấy thông tin hoa hồng. Vui lòng kiểm tra lại cấu hình hoặc thử lại sau!");
+        const errMsg = (err && err.message) ? err.message : "Vui lòng thử lại sau!";
+        alert(`⚠️ Đã có sự cố khi tạo link: ${errMsg}`);
       } finally {
         isProcessingConvert = false;
         if (convertBtnEl) {
