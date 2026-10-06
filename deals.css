@@ -145,19 +145,78 @@
   pointer-events: none;
 }
 
+/* Slider danh mục 1 hàng ngang chuẩn Shopee */
+.deals-cat-tabs-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.deals-slider-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #334155;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  user-select: none;
+  z-index: 2;
+  padding: 0;
+}
+
+.deals-slider-btn:hover:not(.disabled) {
+  background: #fff7ed;
+  color: #ee4d2d;
+  border-color: #fdba74;
+  box-shadow: 0 4px 12px rgba(238, 77, 45, 0.2);
+  transform: scale(1.08);
+}
+
+.deals-slider-btn:active:not(.disabled) {
+  transform: scale(0.95);
+}
+
+.deals-slider-btn.disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+  box-shadow: none;
+}
+
 .deals-cat-tabs {
   display: flex;
-  gap: 8px 10px;
-  flex-wrap: wrap;
-  padding-bottom: 6px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 2px;
+  flex: 1;
+}
+
+.deals-cat-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 @media (max-width: 640px) {
+  .deals-slider-btn {
+    display: none;
+  }
   .deals-cat-tabs {
-    flex-wrap: nowrap;
-    overflow-x: auto;
     padding-bottom: 8px;
-    -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
   }
   .deals-cat-tabs::-webkit-scrollbar {

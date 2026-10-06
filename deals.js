@@ -105,9 +105,38 @@
   window.selectDealCategory = function (catId) {
     currentCategory = catId;
     document.querySelectorAll('.deals-cat-tab').forEach(tab => {
-      tab.classList.toggle('active', tab.dataset.cat === catId);
+      const isActive = tab.dataset.cat === catId;
+      tab.classList.toggle('active', isActive);
+      if (isActive) {
+        tab.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
     });
     loadDealsData(currentCategory, searchKeyword);
+    setTimeout(updateDealsTabArrows, 200);
+  };
+
+  // Cuộn thanh danh mục bằng 2 nút mũi tên ‹ ›
+  window.scrollDealsTabs = function (dir) {
+    const scrollEl = document.querySelector('#deals-cat-tabs-scroll');
+    if (!scrollEl) return;
+    const scrollAmount = 300;
+    scrollEl.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
+    setTimeout(updateDealsTabArrows, 300);
+  };
+
+  // Cập nhật trạng thái hiển thị của nút mũi tên
+  window.updateDealsTabArrows = function () {
+    const scrollEl = document.querySelector('#deals-cat-tabs-scroll');
+    if (!scrollEl) return;
+    const prevBtn = document.querySelector('.deals-slider-btn.prev');
+    const nextBtn = document.querySelector('.deals-slider-btn.next');
+    if (!prevBtn || !nextBtn) return;
+
+    const isAtStart = scrollEl.scrollLeft <= 5;
+    const isAtEnd = scrollEl.scrollLeft + scrollEl.clientWidth >= scrollEl.scrollWidth - 5;
+
+    prevBtn.classList.toggle('disabled', isAtStart);
+    nextBtn.classList.toggle('disabled', isAtEnd);
   };
 
   // Tìm kiếm
@@ -200,6 +229,7 @@
 
     setTimeout(() => {
       loadDealsData(currentCategory, searchKeyword);
+      updateDealsTabArrows();
     }, 50);
 
     return `
@@ -254,16 +284,25 @@
             />
           </div>
 
-          <div class="deals-cat-tabs">
-            ${categories.map(c => `
-              <button 
-                class="deals-cat-tab ${c.id === currentCategory ? 'active' : ''}" 
-                data-cat="${c.id}" 
-                onclick="selectDealCategory('${c.id}')"
-              >
-                ${c.name}
-              </button>
-            `).join('')}
+          <!-- Thanh danh mục 1 hàng ngang chuẩn Shopee với 2 nút mũi tên trượt ‹ › -->
+          <div class="deals-cat-tabs-slider">
+            <button class="deals-slider-btn prev disabled" type="button" aria-label="Cuộn sang trái" onclick="scrollDealsTabs(-1)">
+              ‹
+            </button>
+            <div class="deals-cat-tabs" id="deals-cat-tabs-scroll" onscroll="updateDealsTabArrows()">
+              ${categories.map(c => `
+                <button 
+                  class="deals-cat-tab ${c.id === currentCategory ? 'active' : ''}" 
+                  data-cat="${c.id}" 
+                  onclick="selectDealCategory('${c.id}')"
+                >
+                  ${c.name}
+                </button>
+              `).join('')}
+            </div>
+            <button class="deals-slider-btn next" type="button" aria-label="Cuộn sang phải" onclick="scrollDealsTabs(1)">
+              ›
+            </button>
           </div>
         </div>
 
