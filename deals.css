@@ -20,23 +20,12 @@
 .deals-hero-banner {
   position: relative;
   background: linear-gradient(115deg, #fffdfb 0%, #fff7f0 61%, #ffeddc 100%);
-  border: 1px solid #f0dfd2;
+  border: 1.5px solid #f2e0d3;
   border-radius: 24px;
   padding: 30px 32px 24px;
   margin-bottom: 24px;
-  box-shadow: 0 9px 24px rgba(55, 39, 25, 0.07);
+  box-shadow: 0 10px 28px rgba(55, 39, 25, 0.06);
   overflow: hidden;
-}
-
-.deals-hero-banner::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 45%;
-  height: 5px;
-  content: "";
-  background: linear-gradient(90deg, #ff7321, #ffbd63);
-  border-radius: 0 24px 0 0;
 }
 
 .deals-hero-main {
