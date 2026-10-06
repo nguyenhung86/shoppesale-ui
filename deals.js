@@ -185,10 +185,17 @@
       { id: 'all', name: '🔥 Tất cả hot' },
       { id: 'fashion', name: '👗 Thời trang' },
       { id: 'beauty', name: '💄 Sắc đẹp & Mỹ phẩm' },
+      { id: 'sports', name: '🏃 Thể thao & Dã ngoại' },
+      { id: 'jewelry', name: '💍 Đồng hồ & Trang sức' },
+      { id: 'shoes_bags', name: '👟 Giày dép & Túi ví' },
+      { id: 'health', name: '🌿 Sức khỏe & TPCN' },
       { id: 'home', name: '🏠 Nhà cửa & Đời sống' },
       { id: 'tech', name: '📱 Phụ kiện & Công nghệ' },
       { id: 'mom_baby', name: '🍼 Mẹ & Bé' },
-      { id: 'food', name: '🍿 Bách hóa & Ăn vặt' }
+      { id: 'food', name: '🍿 Bách hóa & Ăn vặt' },
+      { id: 'stationery', name: '📚 Sách & Văn phòng phẩm' },
+      { id: 'auto_moto', name: '🚗 Xe máy & Ô tô' },
+      { id: 'pets', name: '🐾 Chăm sóc Thú cưng' }
     ];
 
     setTimeout(() => {
