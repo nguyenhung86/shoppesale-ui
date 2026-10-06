@@ -181,6 +181,20 @@
       const safeTitle = (p.productName || 'Sản phẩm Shopee').replace(/"/g, '&quot;');
       const safeCleanUrl = (p.cleanProductUrl || '').replace(/'/g, "\\'");
 
+      // Format số lượng đã bán thực tế từ Shopee / LichSuGia
+      let soldHtml = '';
+      if (typeof p.sold === 'number' && p.sold > 0) {
+        let soldStr = '';
+        if (p.sold >= 1000000) {
+          soldStr = (p.sold / 1000000).toFixed(1).replace(/\.0$/, '') + 'tr';
+        } else if (p.sold >= 1000) {
+          soldStr = (p.sold / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+        } else {
+          soldStr = p.sold.toString();
+        }
+        soldHtml = `<span class="deal-sold">Đã bán ${soldStr}</span>`;
+      }
+
       return `
         <div class="deal-card">
           <div class="deal-img-wrapper">
@@ -191,9 +205,12 @@
             <h3 class="deal-title" title="${safeTitle}">${p.productName}</h3>
             <div class="deal-price-row">
               <span class="deal-price">${priceText}</span>
-              <span class="deal-rating">★ ${p.ratingStar || 5}</span>
+              ${soldHtml}
             </div>
-            <div class="deal-shop" title="${p.shopName || ''}">🏬 ${p.shopName || 'Shopee Shop'}</div>
+            <div class="deal-sub-row">
+              <span class="deal-rating">★ ${p.ratingStar || 5}</span>
+              <span class="deal-shop" title="${p.shopName || ''}">🏬 ${p.shopName || 'Shopee Shop'}</span>
+            </div>
             <div class="deal-actions">
               <button class="btn-copy-deal" onclick="copyCleanDealUrl('${safeCleanUrl}')" title="Sao chép link Shopee gốc không kèm id bên thứ 3">
                 📋 Chép link
