@@ -84,7 +84,7 @@
             // Dispatch event to trigger reload of order data
             window.dispatchEvent(new CustomEvent('zalo_id_synced', { detail: zaloId }));
           } else {
-            alert("Có lỗi xảy ra khi lưu. Vui lòng thử lại!");
+            alert(response.error || "❌ ID Zalo không tồn tại hoặc chưa tham gia nhóm. Vui lòng kiểm tra lại!");
           }
       } catch (err) {
           console.error("Lỗi lưu Zalo ID", err);

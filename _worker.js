@@ -2,8 +2,9 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 0. Chuyển tiếp toàn bộ yêu cầu trang sản phẩm /shop/*, link đệm /r/*, ảnh bill /bill_*, /bills/*, mã QR /qr_*, /qrcodes/* sang máy chủ VPS
+    // 0. Chuyển tiếp toàn bộ yêu cầu trang sản phẩm /shop/*, link đệm /r/*, ảnh bill /bill_*, /bills/*, mã QR /qr_*, /qrcodes/*, /api/* sang máy chủ VPS
     if (
+      url.pathname.startsWith('/api/') ||
       url.pathname.startsWith('/shop/') ||
       url.pathname.startsWith('/r/') ||
       url.pathname.startsWith('/bill_') ||
