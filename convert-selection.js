@@ -174,12 +174,32 @@ function handleConvert() {
           }
         } catch(eBridge) {}
 
-        // 2. Nếu chưa có Bridge, gọi RioHub API trực tiếp cho TikTok
+        // 2. Nếu chưa có Bridge, gọi RioHub API trực tiếp cho TikTok (hỗ trợ tự động fallback tên miền)
         if (!response && /tiktok\.com|vt\.tiktok\.com/i.test(rawUrl)) {
           try {
             const apiKey = "rhk_5e184fd38ebff8c159abbe6fb302d875cc4f00c4bbf162bc";
             const creatorUsername = "con.muon.noi6";
-            const rioRes = await fetch("https://riohub.vn/api/v1/partner/tiktok/affiliate/links", {
+            const RIOHUB_HOSTS = [
+              "https://riohub.riokupon.com",
+              "https://riohub.riokupon.me",
+              "https://riohub.vn"
+            ];
+
+            async function fetchRioHubFront(endpointPath, options = {}) {
+              let lastErr = null;
+              for (const host of RIOHUB_HOSTS) {
+                try {
+                  const res = await fetch(host + endpointPath, options);
+                  return res;
+                } catch(err) {
+                  lastErr = err;
+                  console.warn(`[RioHub Web] Tên miền ${host} lỗi kết nối, chuyển dự phòng tiếp theo...`, err.message);
+                }
+              }
+              throw lastErr || new Error("Không thể kết nối RioHub");
+            }
+
+            const rioRes = await fetchRioHubFront("/api/v1/partner/tiktok/affiliate/links", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -203,16 +223,16 @@ function handleConvert() {
               const prodId = rioData.product_id || (rioData.product && rioData.product.id);
               if (prodId) {
                 try {
-                  const pUrl = `https://riohub.vn/api/v1/partner/tiktok/affiliate/products?creator_username=${encodeURIComponent(creatorUsername)}&product_id=${encodeURIComponent(prodId)}`;
+                  const pPath = `/api/v1/partner/tiktok/affiliate/products?creator_username=${encodeURIComponent(creatorUsername)}&product_id=${encodeURIComponent(prodId)}`;
                   let pData = null;
                   
-                  // Thử lấy dữ liệu trực tiếp hoặc qua CORS Proxy nếu trình duyệt chặn preflight
+                  // Thử lấy dữ liệu trực tiếp qua fallback domains hoặc qua CORS Proxy
                   try {
-                    const pRes = await fetch(pUrl, { headers: { "X-Riohub-Api-Key": apiKey } });
+                    const pRes = await fetchRioHubFront(pPath, { headers: { "X-Riohub-Api-Key": apiKey } });
                     if (pRes.ok) pData = await pRes.json();
                   } catch(eDirect) {
                     try {
-                      const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(pUrl);
+                      const proxyUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://riohub.riokupon.com" + pPath);
                       const pResProxy = await fetch(proxyUrl, { headers: { "X-Riohub-Api-Key": apiKey } });
                       if (pResProxy.ok) pData = await pResProxy.json();
                     } catch(eProxy) {}
