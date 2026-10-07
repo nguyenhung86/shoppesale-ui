@@ -279,9 +279,14 @@ function handleConvert() {
                 platformName: "TikTok Shop"
               };
             } else if (rioData && (rioData.message || rioData.error)) {
+              let errMsg = "⚠️ Sản phẩm TikTok này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!";
+              const errTxt = typeof rioData.error === 'string' ? rioData.error : (rioData.error?.message || rioData.message || "");
+              if (errTxt.includes("Cannot extract product_id") || errTxt.includes("showcase")) {
+                errMsg = "⚠️ Link bạn gửi là link Gian hàng / Tủ trưng bày của Shop (Showcase). TikTok Shop chỉ hỗ trợ tạo link hoàn tiền cho từng Sản phẩm cụ thể. Bạn vui lòng bấm vào sản phẩm cần mua và copy link sản phẩm đó nhé!";
+              }
               response = {
                 success: false,
-                error: "⚠️ Sản phẩm TikTok này hiện tại không có hoa hồng tiếp thị liên kết. Sếp vui lòng chọn sản phẩm khác nhé!"
+                error: errMsg
               };
             }
           } catch(eRio) {
