@@ -934,3 +934,244 @@
   }
 }
 
+/* ==========================================================
+   2 TAB LỚN CHỌN SÀN: SHOPEE VS TIKTOK SHOP
+   ========================================================== */
+.deals-platform-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+  background: #ffffff;
+  padding: 8px;
+  border-radius: 20px;
+  border: 1.5px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+}
+
+.deals-platform-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 20px;
+  border-radius: 14px;
+  border: 1.5px solid transparent;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  user-select: none;
+  font-family: inherit;
+}
+
+.deals-platform-tab:hover:not(.active) {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+}
+
+.platform-tab-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.platform-tab-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+  transition: all 0.25s;
+}
+
+.platform-tab-svg {
+  width: 24px;
+  height: 24px;
+}
+
+.deals-platform-tab[data-platform="shopee"] .platform-tab-icon {
+  color: #ee4d2d;
+}
+
+.deals-platform-tab[data-platform="tiktok"] .platform-tab-icon {
+  color: #0f172a;
+}
+
+.platform-tab-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.platform-tab-name {
+  font-size: 16.5px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+
+.platform-tab-pill {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+/* Active State - Shopee */
+.deals-platform-tab[data-platform="shopee"].active {
+  background: linear-gradient(135deg, #fff5f2 0%, #ffece6 100%);
+  border-color: #ffd2c7;
+  color: #ee4d2d;
+  box-shadow: 0 6px 18px rgba(238, 77, 45, 0.12);
+}
+
+.deals-platform-tab[data-platform="shopee"].active .platform-tab-icon {
+  background: #ee4d2d;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3);
+}
+
+.deals-platform-tab[data-platform="shopee"].active .platform-tab-pill {
+  color: #d73211;
+  font-weight: 700;
+}
+
+/* Active State - TikTok */
+.deals-platform-tab[data-platform="tiktok"].active {
+  background: linear-gradient(135deg, #0f172a 0%, #000000 100%);
+  border-color: #334155;
+  color: #ffffff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+}
+
+.deals-platform-tab[data-platform="tiktok"].active .platform-tab-icon {
+  background: #1e293b;
+  color: #25f4ee;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.deals-platform-tab[data-platform="tiktok"].active .platform-tab-pill {
+  color: #25f4ee;
+  background: rgba(37, 244, 238, 0.15);
+  padding: 1px 8px;
+  border-radius: 99px;
+  display: inline-block;
+  font-weight: 700;
+}
+
+/* Meta trên thẻ sản phẩm */
+.deal-header-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.deal-platform-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.deal-platform-tag .tag-svg {
+  width: 12px;
+  height: 12px;
+}
+
+.deal-platform-tag.shopee {
+  background: #fff1ee;
+  color: #ee4d2d;
+}
+
+.deal-platform-tag.tiktok {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.deal-shop-name {
+  font-size: 11.5px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+/* Badge TikTok trên ảnh sản phẩm */
+.deal-comm-badge.tiktok-badge {
+  background: linear-gradient(135deg, #0f172a 0%, #000000 100%) !important;
+  color: #25f4ee !important;
+  border: 1px solid rgba(37, 244, 238, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Giao diện khi chọn Tab TikTok */
+.deals-container.platform-tiktok .deals-hero-banner {
+  background: linear-gradient(115deg, #f8fafc 0%, #f1f5f9 60%, #e2e8f0 100%);
+  border-color: #cbd5e1;
+}
+
+.deals-container.platform-tiktok .deals-badge.tiktok-badge {
+  background: #0f172a;
+  color: #25f4ee;
+  border-color: #334155;
+}
+
+.deals-container.platform-tiktok .deals-hero-title em {
+  color: #fe2c55;
+}
+
+.deals-container.platform-tiktok .btn-convert-deal {
+  background: linear-gradient(135deg, #0f172a 0%, #000000 100%);
+  color: #ffffff;
+  border: 1px solid #334155;
+}
+
+.deals-container.platform-tiktok .btn-convert-deal:hover {
+  background: linear-gradient(135deg, #fe2c55 0%, #e11d48 100%);
+  border-color: #fe2c55;
+  box-shadow: 0 4px 12px rgba(254, 44, 85, 0.35);
+}
+
+@media (max-width: 640px) {
+  .deals-platform-tabs {
+    gap: 8px;
+    padding: 6px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+  }
+  .deals-platform-tab {
+    padding: 10px 10px;
+    border-radius: 12px;
+  }
+  .platform-tab-inner {
+    gap: 8px;
+  }
+  .platform-tab-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+  .platform-tab-svg {
+    width: 18px;
+    height: 18px;
+  }
+  .platform-tab-name {
+    font-size: 13.5px;
+  }
+  .platform-tab-pill {
+    font-size: 10.5px;
+  }
+}
+
+
