@@ -27,14 +27,18 @@
 
   const TIKTOK_CATEGORIES = [
     { id: 'all', name: '🔥 Tất cả hot' },
-    { id: 'beauty', name: '💄 Sắc đẹp & Sức khỏe' },
-    { id: 'fashion', name: '👗 Thời trang & Phụ kiện' },
-    { id: 'electronics', name: '📱 Phụ kiện & Công nghệ' },
+    { id: 'beauty', name: '💄 Sắc đẹp & Mỹ phẩm' },
+    { id: 'mom_baby', name: '🍼 Mẹ & Bé' },
+    { id: 'fashion', name: '👗 Thời trang nữ' },
+    { id: 'jewelry', name: '💍 Trang sức & Phụ kiện' },
+    { id: 'shoes_bags', name: '👠 Túi ví & Giày dép' },
+    { id: 'health', name: '🌿 Sức khỏe & Collagen' },
     { id: 'home', name: '🏠 Nhà cửa & Đời sống' },
     { id: 'food', name: '🍿 Bách hóa & Ăn vặt' },
-    { id: 'mom_baby', name: '🍼 Mẹ & Bé' },
+    { id: 'tech', name: '📱 Phụ kiện & Công nghệ' },
     { id: 'sports', name: '🏃 Thể thao & Dã ngoại' },
-    { id: 'other', name: '🎁 Khác' }
+    { id: 'pets', name: '🐾 Chăm sóc Thú cưng' },
+    { id: 'auto_moto', name: '🚗 Xe máy & Ô tô' }
   ];
 
   // Lấy API URL từ cấu hình
