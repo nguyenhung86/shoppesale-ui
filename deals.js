@@ -162,7 +162,7 @@
       heroCopy.innerHTML = `
         <div class="deals-hero-header-row">
           <span class="deals-badge tiktok-badge">DEAL KHỦNG TIKTOK SHOP</span>
-          <span class="deals-hero-date">⚡ <span class="desktop-only-txt">Tự động </span>Cập nhật liên tục<span class="desktop-only-txt"> từ TikTok Shop & RioHub</span></span>
+          <span class="deals-hero-date">⚡ <span class="desktop-only-txt">Tự động </span>Cập nhật liên tục<span class="desktop-only-txt"> từ TikTok Shop</span></span>
         </div>
         <h1 class="deals-hero-title">Săn deal TikTok Shop,<br><em>nhận hoa hồng tới 30%+</em></h1>
         <p class="deals-hero-desc">
@@ -658,7 +658,7 @@
               ${currentPlatform === 'tiktok' ? `
                 <div class="deals-hero-header-row">
                   <span class="deals-badge tiktok-badge">DEAL KHỦNG TIKTOK SHOP</span>
-                  <span class="deals-hero-date">⚡ <span class="desktop-only-txt">Tự động </span>Cập nhật liên tục<span class="desktop-only-txt"> từ TikTok Shop & RioHub</span></span>
+                  <span class="deals-hero-date">⚡ <span class="desktop-only-txt">Tự động </span>Cập nhật liên tục<span class="desktop-only-txt"> từ TikTok Shop</span></span>
                 </div>
                 <h1 class="deals-hero-title">Săn deal TikTok Shop,<br><em>nhận hoa hồng tới 30%+</em></h1>
                 <p class="deals-hero-desc">
