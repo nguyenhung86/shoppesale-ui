@@ -2,10 +2,10 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Poster Deal Hoa Hồng Cao</title>
+  <title>Bảng Vàng Deal Hoa Hồng Cao - Shopee & TikTok Shop</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -13,371 +13,634 @@
       padding: 0;
     }
     html, body {
-      width: 800px;
+      width: 880px;
       margin: 0;
       padding: 0;
-      background: #fffdfa;
-      font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       overflow: hidden;
+      color: #1e293b;
     }
     .poster-container {
-      width: 800px;
-      background: linear-gradient(135deg, #fffdfa 0%, #fff7ef 45%, #ffeedd 100%);
-      padding: 32px 28px 26px;
+      width: 880px;
+      background: linear-gradient(145deg, #fffbf7 0%, #fff6ed 40%, #fef3e2 100%);
+      padding: 30px 28px 24px;
       position: relative;
       overflow: hidden;
-      border: 1px solid #f2dfd0;
     }
+
+    /* Ambient glow elements */
+    .glow-orange {
+      position: absolute;
+      top: -80px;
+      left: -80px;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(238, 77, 45, 0.14) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .glow-cyan {
+      position: absolute;
+      top: -80px;
+      right: -80px;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, rgba(0, 242, 254, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
     /* Header */
-    .poster-header {
+    .header {
       text-align: center;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 20px;
+    }
+    .top-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      color: #f8fafc;
+      font-size: 11.5px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 18px;
+      border-radius: 999px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .top-badge .dot {
+      width: 7px;
+      height: 7px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+    }
+    .main-title {
+      font-size: 32px;
+      font-weight: 900;
+      color: #0f172a;
+      letter-spacing: -0.8px;
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .main-title .gradient-text {
+      background: linear-gradient(135deg, #ee4d2d 0%, #ea580c 50%, #dc2626 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .subtitle b {
+      color: #ea580c;
+    }
+
+    /* Tabs pill bar */
+    .tabs-bar {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
       margin-bottom: 22px;
       position: relative;
       z-index: 2;
     }
-    .poster-badge {
-      display: inline-flex;
+    .tab-pill {
+      display: flex;
       align-items: center;
-      gap: 6px;
-      background: linear-gradient(135deg, #fff3e6 0%, #ffe8d1 100%);
-      border: 1.5px solid #ffcc99;
-      color: #ea580c;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      padding: 6px 18px;
-      border-radius: 999px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 8px rgba(234, 88, 12, 0.1);
-    }
-    .poster-title {
-      font-size: 28px;
-      font-weight: 900;
-      color: #0f172a;
-      line-height: 1.25;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-    .poster-title span {
-      background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .poster-subtitle {
+      gap: 8px;
+      padding: 9px 20px;
+      border-radius: 14px;
       font-size: 13.5px;
-      color: #64748b;
-      font-weight: 500;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     }
-    .poster-subtitle b {
-      color: #ea580c;
+    .tab-pill.shopee {
+      background: linear-gradient(135deg, #fff2eb 0%, #ffe3d3 100%);
+      border: 1.5px solid #ffba93;
+      color: #c2410c;
+    }
+    .tab-pill.tiktok {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      border: 1.5px solid #334155;
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.2);
+    }
+    .tab-pill .tag-rate {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+    .tab-pill.shopee .tag-rate {
+      background: #ee4d2d;
+      color: #fff;
+    }
+    .tab-pill.tiktok .tag-rate {
+      background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      color: #0f172a;
     }
 
-    /* Product Grid */
-    .poster-grid {
+    /* Two Columns Section */
+    .deals-columns {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-bottom: 20px;
+      gap: 16px;
       position: relative;
       z-index: 2;
+      margin-bottom: 20px;
     }
-    .product-card {
+
+    /* Column Container */
+    .deal-col {
       background: #ffffff;
-      border: 1.5px solid #f2e2d5;
-      border-radius: 18px;
-      padding: 12px;
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.05);
+      border: 1.5px solid #f1f5f9;
       display: flex;
-      gap: 14px;
-      align-items: center;
-      box-shadow: 0 4px 14px rgba(55, 39, 25, 0.05);
-      position: relative;
+      flex-direction: column;
+      gap: 11px;
     }
-    .product-img-wrap {
-      width: 105px;
-      height: 105px;
-      min-width: 105px;
+    .deal-col.shopee-col {
+      border-color: #ffd8bf;
+      background: linear-gradient(180deg, #fffbf8 0%, #ffffff 20%);
+    }
+    .deal-col.tiktok-col {
+      border-color: #e2e8f0;
+      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 20%);
+    }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid #f1f5f9;
+    }
+    .deal-col.shopee-col .col-header {
+      border-bottom-color: #ffe3d3;
+    }
+    .col-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .platform-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .shopee-col .platform-icon {
+      background: #ee4d2d;
+      color: #fff;
+    }
+    .tiktok-col .platform-icon {
+      background: #0f172a;
+      color: #fff;
+    }
+    .col-title {
+      font-size: 14.5px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+    .shopee-col .col-title {
+      color: #c2410c;
+    }
+    .col-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+    .shopee-col .col-badge {
+      background: #fff0ea;
+      color: #ea580c;
+      border: 1px solid #ffd8bf;
+    }
+    .tiktok-col .col-badge {
+      background: #0f172a;
+      color: #00f2fe;
+      border: 1px solid #334155;
+    }
+
+    /* Product Cards */
+    .product-card {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 9px;
+      background: #ffffff;
       border-radius: 14px;
+      border: 1px solid #f1f5f9;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s ease;
+    }
+    .shopee-col .product-card {
+      border-color: #fbeee4;
+    }
+    .tiktok-col .product-card {
+      border-color: #e2e8f0;
+    }
+
+    .prod-img-box {
+      width: 80px;
+      height: 80px;
+      min-width: 80px;
+      border-radius: 11px;
       overflow: hidden;
       position: relative;
       background: #f8fafc;
       border: 1px solid #f1f5f9;
     }
-    .product-img-wrap img {
+    .prod-img-box img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    .product-tag {
+    .prod-rate-tag {
       position: absolute;
-      top: 6px;
-      left: 6px;
+      top: 4px;
+      left: 4px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2.5px 6px;
+      border-radius: 6px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .shopee-col .prod-rate-tag {
       background: linear-gradient(135deg, #ff4500 0%, #ee4d2d 100%);
       color: #ffffff;
-      font-size: 10.5px;
-      font-weight: 800;
-      padding: 3px 7px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(238, 77, 45, 0.4);
     }
-    .product-info {
+    .tiktok-col .prod-rate-tag {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #00f2fe;
+      border: 1px solid #00f2fe;
+    }
+
+    .prod-details {
       flex: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
     }
-    .product-category {
-      font-size: 11px;
-      font-weight: 700;
-      color: #ea580c;
-      margin-bottom: 3px;
+    .prod-cat {
+      font-size: 10px;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.03em;
+      letter-spacing: 0.04em;
+      margin-bottom: 2px;
     }
-    .product-name {
-      font-size: 13px;
+    .shopee-col .prod-cat {
+      color: #ea580c;
+    }
+    .tiktok-col .prod-cat {
+      color: #0284c7;
+    }
+    .prod-title {
+      font-size: 12.5px;
       font-weight: 700;
       color: #1e293b;
       line-height: 1.35;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
-      height: 35px;
+      height: 34px;
     }
-    .product-price-row {
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-      margin-bottom: 3px;
-    }
-    .product-price {
-      font-size: 15.5px;
-      font-weight: 800;
-      color: #ee4d2d;
-    }
-    .product-meta-row {
+    .prod-bottom {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 11.5px;
-      color: #64748b;
+      justify-content: space-between;
     }
-    .product-rating {
-      color: #f59e0b;
-      font-weight: 700;
+    .prod-price {
+      font-size: 14px;
+      font-weight: 900;
     }
-    .product-sold {
+    .shopee-col .prod-price {
+      color: #ee4d2d;
+    }
+    .tiktok-col .prod-price {
+      color: #0f172a;
+    }
+    .prod-sold {
+      font-size: 11px;
       color: #64748b;
+      font-weight: 600;
+    }
+
+    /* Benefits Ribbon */
+    .benefits-ribbon {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      background: #ffffff;
+      border: 1.5px solid #fed7aa;
+      border-radius: 16px;
+      padding: 12px 18px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.06);
+    }
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .benefit-icon {
+      font-size: 20px;
+    }
+    .benefit-text strong {
+      display: block;
+      font-size: 12px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.25;
+    }
+    .benefit-text span {
+      font-size: 10.5px;
+      color: #64748b;
+      font-weight: 500;
     }
 
     /* Footer */
     .poster-footer {
-      background: linear-gradient(135deg, #ffffff 0%, #fff8f2 100%);
-      border: 1.5px solid #fed7aa;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       border-radius: 18px;
-      padding: 13px 20px;
+      padding: 14px 22px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.06);
       position: relative;
       z-index: 2;
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     .footer-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
     .footer-icon {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #ee4d2d 0%, #f97316 100%);
       border-radius: 12px;
       display: grid;
       place-items: center;
-      font-size: 21px;
-      color: #fff;
-      box-shadow: 0 4px 10px rgba(234, 88, 12, 0.3);
+      font-size: 22px;
+      box-shadow: 0 4px 12px rgba(238, 77, 45, 0.4);
     }
     .footer-text strong {
       display: block;
       font-size: 13.5px;
-      color: #0f172a;
+      color: #ffffff;
       font-weight: 800;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
     .footer-text span {
-      font-size: 11.5px;
-      color: #64748b;
+      font-size: 12px;
+      color: #94a3b8;
+      font-weight: 500;
     }
-    .footer-link-btn {
+    .footer-text span b {
+      color: #38bdf8;
+    }
+    .footer-btn {
       background: linear-gradient(135deg, #ff5722 0%, #ea580c 100%);
       color: #ffffff;
-      font-size: 13px;
+      font-size: 13.5px;
       font-weight: 800;
-      padding: 10px 20px;
+      padding: 11px 22px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(234, 88, 12, 0.3);
+      box-shadow: 0 4px 14px rgba(234, 88, 12, 0.4);
       letter-spacing: 0.02em;
       white-space: nowrap;
-    }
-
-    /* Decorative background shapes */
-    .bg-circle-1 {
-      position: absolute;
-      width: 280px;
-      height: 280px;
-      background: radial-gradient(circle, rgba(255, 144, 47, 0.1) 0%, transparent 70%);
-      top: -60px;
-      right: -60px;
-      border-radius: 50%;
-      pointer-events: none;
-    }
-    .bg-circle-2 {
-      position: absolute;
-      width: 320px;
-      height: 320px;
-      background: radial-gradient(circle, rgba(255, 87, 34, 0.08) 0%, transparent 70%);
-      bottom: -70px;
-      left: -70px;
-      border-radius: 50%;
-      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
   <div class="poster-container">
-    <div class="bg-circle-1"></div>
-    <div class="bg-circle-2"></div>
+    <div class="glow-orange"></div>
+    <div class="glow-cyan"></div>
 
     <!-- Header -->
-    <div class="poster-header">
-      <div class="poster-badge">👑 ĐẶC QUYỀN SHOPEE CASHBACK</div>
-      <h1 class="poster-title">BẢNG VÀNG <span>HOA HỒNG CAO</span></h1>
-      <p class="poster-subtitle">Tổng hợp các sản phẩm chiết khấu cao nhất • Hoàn tiền lên đến <b>80% hoa hồng về ví</b></p>
+    <div class="header">
+      <div class="top-badge">
+        <span class="dot"></span>
+        CẬP NHẬT MỚI: 2 SÀN MUA SẮM LỚN NHẤT VN
+      </div>
+      <h1 class="main-title">BẢNG VÀNG SĂN DEAL <span class="gradient-text">SIÊU HOA HỒNG</span></h1>
+      <p class="subtitle">Khám phá hơn <b>8.000+ sản phẩm</b> chiết khấu cao nhất • Nhận hoàn tiền tới <b>80% hoa hồng về ví!</b></p>
     </div>
 
-    <!-- 6 Products Grid -->
-    <div class="poster-grid">
+    <!-- Tabs visual switcher -->
+    <div class="tabs-bar">
+      <div class="tab-pill shopee">
+        <span>🛍️ TAB SHOPEE DEALS</span>
+        <span class="tag-rate">HH tới 33%</span>
+      </div>
+      <div class="tab-pill tiktok">
+        <span>⚡ TAB TIKTOK SHOP DEALS</span>
+        <span class="tag-rate">HH tới 31%</span>
+      </div>
+    </div>
 
-      <!-- Item 1: Khuyên tai bạc -->
-      <div class="product-card">
-        <div class="product-img-wrap">
-          <img src="https://cf.shopee.vn/file/vn-11134207-7r98o-lzfl8kxx40nh33" alt="">
-          <span class="product-tag">⚡ HH 27%</span>
-        </div>
-        <div class="product-info">
-          <span class="product-category">Trang sức bạc</span>
-          <h2 class="product-name">Khuyên tai đính nụ đá bạc 925 đẹp cho nữ De Merci</h2>
-          <div class="product-price-row">
-            <span class="product-price">15.000₫</span>
+    <!-- 2 Parallel Columns (Shopee vs TikTok) -->
+    <div class="deals-columns">
+
+      <!-- COLUMN 1: SHOPEE DEALS -->
+      <div class="deal-col shopee-col">
+        <div class="col-header">
+          <div class="col-header-left">
+            <div class="platform-icon">S</div>
+            <span class="col-title">SHOPEE HOT DEALS</span>
           </div>
-          <div class="product-meta-row">
-            <span class="product-rating">★ 4.8</span>
-            <span class="product-sold">Đã bán 1.6k</span>
+          <span class="col-badge">🔥 Top Bán Chạy</span>
+        </div>
+
+        <!-- S1: Khuyen tai bac -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://cf.shopee.vn/file/vn-11134207-7r98o-lzfl8kxx40nh33" alt="">
+            <span class="prod-rate-tag">⚡ HH 27%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Trang sức bạc 925</span>
+            <h3 class="prod-title">Khuyên tai đính nụ đá bạc 925 đẹp cho nữ De Merci</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">15.000₫</span>
+              <span class="prod-sold">★ 4.8 • Đã bán 1.6k</span>
+            </div>
           </div>
         </div>
+
+        <!-- S2: Kem duong da tay -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://cf.shopee.vn/file/vn-11134207-7ras8-mcrkxl0fib6qc7" alt="">
+            <span class="prod-rate-tag">⚡ HH 23.5%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Mỹ phẩm & Chăm sóc</span>
+            <h3 class="prod-title">Kem Dưỡng Da Tay Philosoft Moist Cấp Ẩm Da Khô</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">175.000₫</span>
+              <span class="prod-sold">★ 5.0 • Đã bán 1.1k</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- S3: The hoc cho be -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://cf.shopee.vn/file/vn-11134207-7r98o-lvivu5upa6q5eb" alt="">
+            <span class="prod-rate-tag">⚡ HH 22.5%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Mẹ & Bé • Đồ chơi</span>
+            <h3 class="prod-title">Combo 3 Bộ thẻ phát triển trí não cho bé 3-7 tuổi</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">265.000₫</span>
+              <span class="prod-sold">★ 5.0 • Chính hãng</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- S4: Bo thun lanh -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://cf.shopee.vn/file/sg-11134201-824gn-mpu39eafqqks75" alt="">
+            <span class="prod-rate-tag">⚡ HH 20%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Thời trang Mẹ & Bé</span>
+            <h3 class="prod-title">Bộ Thun Lạnh Cộc Tay Cho Bé Trai Bé Gái Chuchoe</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">62.245₫</span>
+              <span class="prod-sold">★ 4.9 • Đã bán 200k+</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Item 2: Kem dưỡng da tay -->
-      <div class="product-card">
-        <div class="product-img-wrap">
-          <img src="https://cf.shopee.vn/file/vn-11134207-7ras8-mcrkxl0fib6qc7" alt="">
-          <span class="product-tag">⚡ HH 23.5%</span>
-        </div>
-        <div class="product-info">
-          <span class="product-category">Mỹ phẩm & Skincare</span>
-          <h2 class="product-name">Kem Dưỡng Da Tay Philosoft Moist Cấp Ẩm Cho Da Khô</h2>
-          <div class="product-price-row">
-            <span class="product-price">175.000₫</span>
+      <!-- COLUMN 2: TIKTOK SHOP DEALS -->
+      <div class="deal-col tiktok-col">
+        <div class="col-header">
+          <div class="col-header-left">
+            <div class="platform-icon">🎵</div>
+            <span class="col-title" style="color: #0f172a;">TIKTOK SHOP DEALS</span>
           </div>
-          <div class="product-meta-row">
-            <span class="product-rating">★ 5.0</span>
-            <span class="product-sold">Đã bán 1.1k</span>
+          <span class="col-badge">⚡ 13 Ngành Hàng</span>
+        </div>
+
+        <!-- T1: Mascara LESSXCOCO -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://p19-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/0427e2a0e8e94f2abee629b2d2331e20~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my2&from=1432613627&from_p=3004324551" alt="">
+            <span class="prod-rate-tag">⚡ HH 30%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Sắc đẹp & Mỹ phẩm</span>
+            <h3 class="prod-title">Mascara LESSXCOCO Không Thấm Nước, Chuốt Mi Cong Tự Nhiên</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">39.999đ</span>
+              <span class="prod-sold">★ 4.9 • Đã bán 800+</span>
+            </div>
           </div>
         </div>
+
+        <!-- T2: Vi Da Monogram ENZO -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/3b3ada6af0164163981c7c13aa75c9fd~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my3&from=1432613627&from_p=3004324551" alt="">
+            <span class="prod-rate-tag">⚡ HH 30%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Túi ví & Phụ kiện</span>
+            <h3 class="prod-title">Ví Da PU Ngang Monogram ENZO Bóp Đựng Tiền Thẻ Cao Cấp</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">249.000đ</span>
+              <span class="prod-sold">★ 5.0 • Đã bán 492</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- T3: Kem Body Sica White -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/83c5ff7af4c246858abfa28e1032ced2~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my2&from=1432613627&from_p=3004324551" alt="">
+            <span class="prod-rate-tag">⚡ HH 25%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Dưỡng da body</span>
+            <h3 class="prod-title">Kem Sica White, Body Lụa 500gr Dưỡng Trắng Nâng Tone</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">225.329đ</span>
+              <span class="prod-sold">★ 4.9 • Đã bán 1.9k</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- T4: May lam sach rang YANGZI -->
+        <div class="product-card">
+          <div class="prod-img-box">
+            <img src="https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/66a955346a4346bd89f7bc52b79e1fc7~tplv-aphluv4xwc-origin-image.image?dr=15570&t=555f072d&ps=933b5bde&shp=5563f2fb&shcp=b3125ac7&idc=my3&from=1432613627&from_p=3004324551" alt="">
+            <span class="prod-rate-tag">⚡ HH 30%</span>
+          </div>
+          <div class="prod-details">
+            <span class="prod-cat">Gia dụng & Chăm sóc</span>
+            <h3 class="prod-title">Máy làm sạch răng YANGZI sóng âm cao cấp dùng tại nhà</h3>
+            <div class="prod-bottom">
+              <span class="prod-price">342.280đ</span>
+              <span class="prod-sold">★ 4.8 • Đã bán 348</span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Item 3: Trà Trinh Nữ Hoàng Cung -->
-      <div class="product-card">
-        <div class="product-img-wrap">
-          <img src="https://cf.shopee.vn/file/vn-11134207-81ztc-mst8rj72vea257" alt="">
-          <span class="product-tag">⚡ HH 22.5%</span>
-        </div>
-        <div class="product-info">
-          <span class="product-category">Sức khỏe phụ nữ</span>
-          <h2 class="product-name">Trà tiêu u giảm hạch Trinh Nữ Hoàng Cung Calen</h2>
-          <div class="product-price-row">
-            <span class="product-price">150.920₫</span>
-          </div>
-          <div class="product-meta-row">
-            <span class="product-rating">★ 4.9</span>
-            <span class="product-sold">Đã bán 1.9k</span>
-          </div>
+    </div>
+
+    <!-- 3 Core Benefits Ribbon -->
+    <div class="benefits-ribbon">
+      <div class="benefit-item">
+        <span class="benefit-icon">✨</span>
+        <div class="benefit-text">
+          <strong>2 Tab Riêng Biệt</strong>
+          <span>Shopee & TikTok Shop đầy đủ</span>
         </div>
       </div>
-
-      <!-- Item 4: Thẻ học cho bé -->
-      <div class="product-card">
-        <div class="product-img-wrap">
-          <img src="https://cf.shopee.vn/file/vn-11134207-7r98o-lvivu5upa6q5eb" alt="">
-          <span class="product-tag">⚡ HH 22.5%</span>
-        </div>
-        <div class="product-info">
-          <span class="product-category">Mẹ & Bé • Đồ chơi</span>
-          <h2 class="product-name">Combo 3 Bộ thẻ phát triển trí não cho bé 3-7 tuổi</h2>
-          <div class="product-price-row">
-            <span class="product-price">265.000₫</span>
-          </div>
-          <div class="product-meta-row">
-            <span class="product-rating">★ 5.0</span>
-            <span class="product-sold">Chính hãng</span>
-          </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">💰</span>
+        <div class="benefit-text">
+          <strong>Hoàn Tới 80% HH</strong>
+          <span>Tiền hoàn thật trả về ví bot</span>
         </div>
       </div>
-
-      <!-- Item 5: Balo thời trang -->
-      <div class="product-card">
-        <div class="product-img-wrap">
-          <img src="https://cf.shopee.vn/file/vn-11134207-7ras8-mbb36klgujebf6" alt="">
-          <span class="product-tag">⚡ HH 22%</span>
-        </div>
-        <div class="product-info">
-          <span class="product-category">Túi ví & Balo</span>
-          <h2 class="product-name">Balo Da Pu DG Thời Trang Cao Cấp Chống Nước</h2>
-          <div class="product-price-row">
-            <span class="product-price">189.000₫</span>
-          </div>
-          <div class="product-meta-row">
-            <span class="product-rating">★ 4.9</span>
-            <span class="product-sold">Đã bán 1.9k</span>
-          </div>
+      <div class="benefit-item">
+        <span class="benefit-icon">⚡</span>
+        <div class="benefit-text">
+          <strong>Cập Nhật Liên Tục</strong>
+          <span>Kho deal làm mới 24/7 tự động</span>
         </div>
       </div>
-
-      <!-- Item 6: Đồ bộ bé bán chạy 200k -->
-      <div class="product-card">
-        <div class="product-img-wrap">
-          <img src="https://cf.shopee.vn/file/sg-11134201-824gn-mpu39eafqqks75" alt="">
-          <span class="product-tag">⚡ HH 20%</span>
-        </div>
-        <div class="product-info">
-          <span class="product-category">Thời trang Mẹ & Bé</span>
-          <h2 class="product-name">Bộ Thun Lạnh Cộc Tay Cho Bé Trai Bé Gái Chuchoe</h2>
-          <div class="product-price-row">
-            <span class="product-price">62.245₫</span>
-          </div>
-          <div class="product-meta-row">
-            <span class="product-rating">★ 4.9</span>
-            <span class="product-sold">Đã bán 200.000</span>
-          </div>
-        </div>
-      </div>
-
     </div>
 
     <!-- Footer -->
@@ -385,14 +648,15 @@
       <div class="footer-left">
         <div class="footer-icon">🛍️</div>
         <div class="footer-text">
-          <strong>Xem thêm 1.000+ sản phẩm & nhận hoàn tiền tại:</strong>
-          <span>hoantienonline.io.vn/deals • Tự động hoàn tiền vào ví sau khi mua</span>
+          <strong>Xem trọn bộ 8.000+ sản phẩm & nhận hoàn tiền tại:</strong>
+          <span>Website chính thức: <b>hoantienonline.io.vn/deals</b></span>
         </div>
       </div>
-      <div class="footer-link-btn">
+      <div class="footer-btn">
         SĂN DEAL NGAY ›
       </div>
     </div>
+
   </div>
 
 </body>

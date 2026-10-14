@@ -100,7 +100,12 @@
       const baseUrl = getApiBase().replace(/\/+$/, '');
       const endpoint = currentPlatform === 'tiktok' ? 'tiktok-deals' : 'high-commission-products';
       const url = `${baseUrl}/${endpoint}?category=${encodeURIComponent(category)}&keyword=${encodeURIComponent(keyword)}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
       const data = await res.json();
       if (data && data.success) {
         if (currentPlatform === 'shopee' && (category === 'all' || !category) && Array.isArray(data.products)) {

@@ -3594,9 +3594,12 @@ function attachHandlers(api, config) {
                         const list = sheetData.data || sheetData.users || [];
                         const backupUser = list.find(u => String(u.userId || "").trim() === String(senderUserId).trim());
                         if (backupUser) {
-                            totalCompleted = Number(backupUser.unpaid || 0);
+                            const bUnpaid = Number(backupUser.unpaid || 0);
+                            const bUnpaidRef = Number(backupUser.unpaidReferral || 0);
+                            totalReferralRewardPending = bUnpaidRef;
+                            totalReferralRewardAll = bUnpaidRef;
+                            totalCompleted = Math.max(0, bUnpaid - bUnpaidRef);
                             totalReceived = Number(backupUser.paid || 0);
-                            totalReferralRewardPending = Number(backupUser.unpaidReferral || 0);
                             totalComm = totalCompleted + totalReceived;
                         }
                     } catch(e) {}
