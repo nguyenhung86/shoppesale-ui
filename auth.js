@@ -158,8 +158,7 @@ function handleGoogleCredentialResponse(response) {
     localStorage.setItem('shoppesale_user', JSON.stringify(user));
     
     // Hide login screen
-    const overlay = document.getElementById('login-overlay');
-    if (overlay) overlay.style.display = 'none';
+    hideLoginModal();
     
     // Show main layout
     const shell = document.querySelector('.app-shell');
@@ -188,13 +187,20 @@ function hideLoginModal() {
   if (overlay) {
     overlay.style.display = 'none';
     document.body.classList.remove('login-overlay-active');
+
+    // Dừng video hướng dẫn khi đóng popup để tránh phát tiếng ngầm
+    const guideIframe = overlay.querySelector('iframe');
+    if (guideIframe) {
+      const currentSrc = guideIframe.src;
+      guideIframe.src = currentSrc;
+    }
   }
 }
 
 window.showLoginModal = showLoginModal;
 window.hideLoginModal = hideLoginModal;
 
-// Lắng nghe sự kiện click ngoài modal và nút đóng
+// Lắng nghe sự kiện click ngoài modal, nút đóng và phím ESC
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('login-overlay');
   const closeBtn = document.getElementById('close-login-modal-btn');
@@ -210,6 +216,11 @@ document.addEventListener('DOMContentLoaded', () => {
       hideLoginModal();
     });
   }
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay && overlay.style.display !== 'none') {
+      hideLoginModal();
+    }
+  });
 });
 
 function updateTopbarUI(user) {
