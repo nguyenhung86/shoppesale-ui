@@ -361,12 +361,9 @@ function renderDashboard(response, query, formatVND) {
     <div class="order-results" style="width: 100%; max-width: 1016px; margin: 0 auto; padding-top: 20px;">
       <!-- Khối Tổng quan hoa hồng (Cập nhật động theo mốc thời gian lọc) -->
       <article class="commission-summary" style="margin-bottom: 20px; padding: 20px; border-radius: 20px; background: #fff; box-shadow: 0 10px 24px rgba(25,35,52,0.06); border: 1px solid #f6d3c0; background: linear-gradient(135deg, #fff 0%, #fffaf6 100%);">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-          <h2 style="display: flex; align-items: center; gap: 8px; min-height: 31px; padding-left: 11px; border-left: 3px solid #ff762d; font-size: 16px; font-weight: 700; margin: 0;">
-            <span class="order-summary-title-text" style="color: #17233b; font-size: 17px; font-weight: 800;">Tổng quan hoa hồng</span>
-            <em class="period-text" style="font-style: normal; font-size: 13px; font-weight: 600; color: #ff5d1d;">(Toàn thời gian)</em>
-          </h2>
-        </div>
+        <h2 style="display: flex; align-items: center; gap: 9px; min-height: 31px; padding-left: 11px; border-left: 3px solid #ff762d; font-size: 16px; font-weight: 700; margin: 0 0 16px;">
+          <span class="order-summary-title-text" style="color: #17233b; font-size: 17px; font-weight: 800;">Tổng quan hoa hồng</span>
+        </h2>
         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 5px;">
           <span class="total" style="display: block; padding: 13px 15px; border: 1px solid #ffd9cd; border-radius: 14px; background: #fff7f4; box-shadow: inset 0 3px 0 #ff6a38, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">TỔNG HOA HỒNG</small><b class="stat-total" style="display: block; margin-top: 4px; font-size: 21px; color: #f24f25; letter-spacing: -0.4px;">0 đ</b></span>
           <span class="pending" style="display: block; padding: 13px 15px; border: 1px solid #f6e1a1; border-radius: 14px; background: #fffdf3; box-shadow: inset 0 3px 0 #f4ad28, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐANG CHỜ XỬ LÝ</small><b class="stat-pending" style="display: block; margin-top: 4px; font-size: 21px; color: #e89616; letter-spacing: -0.4px;">0 đ</b></span>
@@ -501,10 +498,7 @@ function renderDashboard(response, query, formatVND) {
       }
     });
 
-    // Cập nhật 4 ô thống kê trên đầu & nhãn mốc thời gian
-    const periodTag = app.querySelector('.period-text');
-    if (periodTag) periodTag.textContent = `(${getFilterLabel(currentDateFilter)})`;
-
+    // Cập nhật 4 ô thống kê trên đầu
     const elTotal = app.querySelector('.stat-total');
     if (elTotal) elTotal.textContent = formatVND(subTotalComm);
 
