@@ -1,11 +1,13 @@
-// Biến lưu trữ bộ nhớ đệm (Cache) đơn hàng tránh load đi load lại nhiều lần
+// Biến lưu trữ bộ nhớ đệm (Cache) đơn hàng & bill chuyển khoản tránh load đi load lại nhiều lần
 let cachedOrders = null;
 let cachedZaloId = null;
+let cachedTransfers = null;
 
 try {
   const initZaloId = localStorage.getItem('shoppesale_zalo_id');
   if (initZaloId) {
-    const localCacheKey = "v2_orders_cache_" + String(initZaloId).trim().toLowerCase();
+    const cleanId = String(initZaloId).trim().toLowerCase();
+    const localCacheKey = "v2_orders_cache_" + cleanId;
     const cachedDataStr = localStorage.getItem(localCacheKey);
     if (cachedDataStr) {
       const parsed = JSON.parse(cachedDataStr);
@@ -13,6 +15,15 @@ try {
         cachedOrders = parsed;
         window.cachedOrders = parsed;
         cachedZaloId = initZaloId;
+      }
+    }
+    const localTransfersKey = "v2_transfers_cache_" + cleanId;
+    const cachedTransfersStr = localStorage.getItem(localTransfersKey);
+    if (cachedTransfersStr) {
+      const parsedT = JSON.parse(cachedTransfersStr);
+      if (Array.isArray(parsedT)) {
+        cachedTransfers = parsedT;
+        window.cachedTransfers = parsedT;
       }
     }
   }
@@ -64,14 +75,15 @@ function getOrderCategory(status, paymentStatus) {
 function parseOrderDateObj(dateVal) {
   if (!dateVal) return null;
   const str = String(dateVal).trim();
-  if (str.includes('/')) {
-    const parts = str.split('/');
+  const datePart = str.split(' ')[0];
+  if (datePart.includes('/')) {
+    const parts = datePart.split('/');
     if (parts.length === 3) {
       return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
     }
   }
-  if (str.includes('-')) {
-    const parts = str.split('T')[0].split('-');
+  if (datePart.includes('-')) {
+    const parts = datePart.split('T')[0].split('-');
     if (parts.length === 3) {
       if (parts[0].length === 4) {
         return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
@@ -82,6 +94,81 @@ function parseOrderDateObj(dateVal) {
   }
   const d = new Date(str);
   return isNaN(d.getTime()) ? null : d;
+}
+
+// Tính toán dãy số phân trang (Tối đa 5 nút số, chuẩn mẫu giao diện)
+function getPaginationRange(current, total) {
+  if (total <= 1) return [];
+  const maxButtons = 5;
+  let start = Math.max(1, current - Math.floor(maxButtons / 2));
+  let end = start + maxButtons - 1;
+  if (end > total) {
+    end = total;
+    start = Math.max(1, end - maxButtons + 1);
+  }
+  const pages = [];
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+  return pages;
+}
+
+// Render thanh phân trang chuẩn theo ảnh mẫu
+function renderOrderPagination(currentPage, totalPages, totalItems) {
+  const paginationContainer = document.querySelector('#order-pagination');
+  if (!paginationContainer) return;
+
+  if (totalPages <= 1 || totalItems <= 10) {
+    paginationContainer.innerHTML = '';
+    return;
+  }
+
+  const pages = getPaginationRange(currentPage, totalPages);
+  const isFirst = currentPage === 1;
+  const isLast = currentPage === totalPages;
+
+  let html = `
+    <div class="deals-pagination-bar" role="navigation" aria-label="Phân trang đơn hàng">
+      <button 
+        type="button" 
+        class="deals-page-btn nav-btn ${isFirst ? 'disabled' : ''}" 
+        ${isFirst ? 'disabled' : ''} 
+        onclick="${isFirst ? 'return false;' : `window.goToOrderPage(${currentPage - 1})`}"
+        aria-label="Trang trước"
+      >
+        « Trước
+      </button>
+  `;
+
+  pages.forEach(p => {
+    const isActive = p === currentPage;
+    html += `
+      <button 
+        type="button" 
+        class="deals-page-btn ${isActive ? 'active' : ''}" 
+        onclick="window.goToOrderPage(${p})"
+        aria-label="Trang ${p}"
+        ${isActive ? 'aria-current="page"' : ''}
+      >
+        ${p}
+      </button>
+    `;
+  });
+
+  html += `
+      <button 
+        type="button" 
+        class="deals-page-btn nav-btn ${isLast ? 'disabled' : ''}" 
+        ${isLast ? 'disabled' : ''} 
+        onclick="${isLast ? 'return false;' : `window.goToOrderPage(${currentPage + 1})`}"
+        aria-label="Trang sau"
+      >
+        Sau »
+      </button>
+    </div>
+  `;
+
+  paginationContainer.innerHTML = html;
 }
 
 function renderOrders(filteredOrders, formatVND) {
@@ -175,6 +262,162 @@ function renderOrders(filteredOrders, formatVND) {
   }).join('');
 }
 
+// Render danh sách bill chuyển tiền (Lịch sử bill)
+function renderTransfers(filteredTransfers, formatVND) {
+  const listContainer = document.querySelector('.order-list');
+  if (!listContainer) return;
+
+  if (filteredTransfers.length === 0) {
+    listContainer.innerHTML = `
+      <div style="text-align:center; padding:36px 20px; border:1px solid #e7e9ee; border-radius:18px; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.02);">
+        <div style="font-size: 32px; margin-bottom: 8px;">🧾</div>
+        <p style="color:#1e293b; font-size:14px; font-weight: 700; margin: 0 0 4px;">Chưa có lịch sử bill thanh toán</p>
+        <p style="color:#8490a3; font-size:12px; margin: 0 0 14px; max-width: 440px; margin-left: auto; margin-right: auto; line-height: 1.5;">Hệ thống tự động đối soát và chuyển khoản mỗi ngày khi số dư đạt từ 10.000đ. Sau khi chuyển, ảnh bill sẽ xuất hiện tại đây.</p>
+        <button class="btn-reset-order-filters" style="padding: 7px 16px; border-radius: 9px; border: 1px solid #ffd9cd; background: #fff0eb; color: #ff5d1d; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer; transition: all 0.2s;">Xem tất cả kỳ</button>
+      </div>
+    `;
+    const resetBtn = listContainer.querySelector('.btn-reset-order-filters');
+    if (resetBtn && window._resetOrderFilter) {
+      resetBtn.addEventListener('click', window._resetOrderFilter);
+    }
+    return;
+  }
+
+  listContainer.innerHTML = filteredTransfers.map(t => {
+    const rawDate = t.date || t.transferredAt || '';
+    let dateStr = rawDate || 'Gần đây';
+    const amountStr = formatVND(t.amount || 0);
+    const billUrl = [t.billUrl, t.billImageUrl, t.paymentProofUrl]
+      .map(v => String(v || '').trim()).find(v => /^https?:\/\//i.test(v));
+
+    return `
+      <article class="order-transfer-card" style="border-left: 4px solid #18ad60; padding: 16px 18px; border-top: 1px solid #e7e9ee; border-right: 1px solid #e7e9ee; border-bottom: 1px solid #e7e9ee; border-radius: 16px; background: #fff; box-shadow: 0 3px 8px rgba(23,32,51,0.04); margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <span style="border: 1px solid #bfead0; background: #eafaf1; color: #19a45c; padding: 4px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 800; font-style: normal;">✓ Chuyển khoản thành công</span>
+          <em style="border: 1px solid #d6e2ff; background: #f3f7ff; color: #2864de; padding: 4px 9px; border-radius: 6px; font-size: 10px; font-weight: 800; font-style: normal; margin-left: auto;">Ngân hàng 24/7</em>
+        </div>
+        <h3 style="margin: 12px 0 6px; font-size: 14.5px; line-height: 1.45; font-weight: 700; color: #243149;">
+          Thanh toán hoa hồng rút ví về tài khoản
+        </h3>
+        <p style="margin: 0; color: #8490a3; font-size: 11.5px; display: flex; align-items: center; gap: 4px;">
+          <span>Hình thức:</span> <b style="color: #334155; font-weight: 600;">Chuyển khoản tự động qua STK đã đăng ký</b>
+        </p>
+        <footer style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 13px; padding-top: 12px; border-top: 1px solid #e8ebf0; color: #6e7e94; font-size: 12px; flex-wrap: wrap;">
+          <span style="font-weight: 500;">🗓️ ${dateStr}</span>
+          <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
+            <b style="color: #18ad60; font-size: 16.5px; font-weight: 800;">+${amountStr}</b>
+            ${billUrl ? `
+              <a href="${billUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 13px; border-radius: 9px; background: #fff2ed; color: #ff5d1d; font-weight: 700; font-size: 12px; text-decoration: none; border: 1px solid #ffd8cc; box-shadow: 0 2px 4px rgba(255,93,29,0.08); transition: all 0.2s;">
+                👁️ Xem ảnh bill ↗
+              </a>
+            ` : `
+              <span style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px; border-radius: 8px; background: #eafbf2; color: #12a061; font-weight: 700; font-size: 11.5px; border: 1px solid #bfead0;">
+                ✓ Tiền đã về tài khoản
+              </span>
+            `}
+          </div>
+        </footer>
+      </article>
+    `;
+  }).join('');
+}
+
+// Nạp lịch sử bill chuyển khoản từ VPS / Google Sheet CSV / Fallback
+async function loadPaymentTransfers(zaloId, onLoaded) {
+  if (!zaloId) return [];
+  const cleanId = String(zaloId).trim();
+  const localCacheKey = "v2_transfers_cache_" + cleanId.toLowerCase();
+
+  // 1. Kiểm tra cache RAM
+  if (cachedTransfers && Array.isArray(cachedTransfers) && cachedTransfers.length > 0) {
+    if (typeof onLoaded === 'function') onLoaded(cachedTransfers);
+  }
+
+  // 2. Kiểm tra cache localStorage
+  try {
+    const cachedStr = localStorage.getItem(localCacheKey);
+    if (cachedStr) {
+      const parsed = JSON.parse(cachedStr);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cachedTransfers = parsed;
+        window.cachedTransfers = parsed;
+        if (typeof onLoaded === 'function') onLoaded(parsed);
+      }
+    }
+  } catch(e) {}
+
+  let data = [];
+  // 3. Gọi API VPS
+  try {
+    const url = CONFIG.API_URL + '?action=getPaymentHistory&zaloId=' + encodeURIComponent(cleanId) + '&_t=' + Date.now();
+    const response = await fetch(url).then(r => r.json());
+    if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
+      data = response.data.filter(item => item && (item.amount || item.transferAmount || item.paidAmount));
+    }
+  } catch(e) {}
+
+  // 4. Fallback Google Sheet CSV tab Lịch sử thanh toán gid=800356243
+  if (!data.length) {
+    try {
+      const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hnhrRHjTxLRnJatcyTuRFPOC7es3LoHawAOpZfOIcuo/export?format=csv&gid=800356243";
+      const csvRes = await fetch(sheetCsvUrl);
+      if (csvRes.ok) {
+        const csvText = await csvRes.text();
+        const lines = csvText.split('\n');
+        const targetId = cleanId.replace(/['"\r]/g, '');
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line) continue;
+          const parts = line.split(',');
+          const rowId = String(parts[0] || '').trim().replace(/['"\r]/g, '');
+          if (rowId === targetId) {
+            data.push({
+              amount: Number(parts[1]) || 0,
+              date: String(parts[2] || '').trim(),
+              billUrl: String(parts[3] || '').trim().replace(/\r/g, '')
+            });
+          }
+        }
+      }
+    } catch(eCsv) {}
+  }
+
+  // 5. Fallback từ đơn hàng đã thanh toán nếu chưa có bill trên bảng
+  if (!data.length && cachedOrders && cachedOrders.data) {
+    try {
+      const paidOrders = cachedOrders.data.filter(o => o && (o.paymentStatus === 'Đã TT' || o.paymentStatus === 'Đã thanh toán'));
+      if (paidOrders.length > 0) {
+        const groups = {};
+        paidOrders.forEach(o => {
+          const m = (o.orderDate || '').slice(0, 7) || 'Gần đây';
+          if (!groups[m]) groups[m] = { amount: 0, count: 0, date: o.orderDate };
+          groups[m].amount += Number(o.commission || 0);
+          groups[m].count += 1;
+        });
+
+        data = Object.keys(groups).sort().reverse().map(k => ({
+          amount: Math.round(groups[k].amount),
+          date: 'Thanh toán ' + (k.startsWith('202') ? 'tháng ' + k.slice(5) + '/' + k.slice(0, 4) : k) + ' (' + groups[k].count + ' đơn)',
+          transferredAt: groups[k].date,
+          status: 'Đã hoàn tất'
+        }));
+      }
+    } catch(eFallback) {}
+  }
+
+  // Lưu cache & kích hoạt cập nhật
+  if (data.length > 0) {
+    cachedTransfers = data;
+    window.cachedTransfers = data;
+    try {
+      localStorage.setItem(localCacheKey, JSON.stringify(data));
+    } catch(e) {}
+    if (typeof onLoaded === 'function') onLoaded(data);
+  }
+
+  return data;
+}
+
 function isOrderCacheValid(cachedTimeMs) {
   if (!cachedTimeMs) return false;
   // Cho phép lưu bộ nhớ tạm RAM/Local tối đa 30 giây để mượt mà khi chuyển tab,
@@ -187,6 +430,13 @@ function performSearch(query, forceRefresh = false) {
   
   const localCacheKey = "v2_orders_cache_" + String(query).trim().toLowerCase();
   const localTimeKey = "v2_orders_time_" + String(query).trim().toLowerCase();
+
+  // Nạp ngầm danh sách bill chuyển khoản song song để sẵn sàng ngay lập tức
+  loadPaymentTransfers(query, () => {
+    if (typeof window._triggerUpdateOrderView === 'function') {
+      window._triggerUpdateOrderView();
+    }
+  });
 
   // 1. Luôn hiển thị ngay tức thì từ bộ nhớ đệm cache (0ms) để khi F5 không bao giờ bị chập chờn
   const cachedDataStr = localStorage.getItem(localCacheKey);
@@ -261,7 +511,8 @@ function renderDashboard(response, query, formatVND) {
   };
   ordersList.sort((a, b) => parseOrderDate(b.orderDate) - parseOrderDate(a.orderDate));
   
-  if (ordersList.length === 0) {
+  const hasTransfers = cachedTransfers && Array.isArray(cachedTransfers) && cachedTransfers.length > 0;
+  if (ordersList.length === 0 && !hasTransfers) {
     app.innerHTML = `
       <div style="max-width: 600px; margin: 50px auto; padding: 40px 20px; text-align: center; background: #fff; border-radius: 20px; box-shadow: 0 10px 24px rgba(23,32,51,0.05); border: 1px solid #e8e9ef;">
         <div style="font-size: 40px; margin-bottom: 15px;">📦</div>
@@ -279,6 +530,10 @@ function renderDashboard(response, query, formatVND) {
     return;
   }
 
+  // Cấu hình phân trang (10 mục mỗi trang)
+  const ITEMS_PER_PAGE = 10;
+  let currentOrderPage = 1;
+
   // --- LOGIC PHÂN LOẠI & LỌC THEO NGÀY THÁNG (PHƯƠNG ÁN 1) ---
   const now = new Date();
   const pad2 = n => String(n).padStart(2, '0');
@@ -293,12 +548,18 @@ function renderDashboard(response, query, formatVND) {
   const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonthStr = formatYM(lastMonthDate);
 
-  // Thu thập danh sách các tháng duy nhất có đơn hàng
+  // Thu thập danh sách các tháng duy nhất có đơn hàng hoặc bill
   const monthsSet = new Set();
   ordersList.forEach(o => {
     const d = parseOrderDateObj(o.orderDate);
     if (d) monthsSet.add(formatYM(d));
   });
+  if (cachedTransfers && Array.isArray(cachedTransfers)) {
+    cachedTransfers.forEach(t => {
+      const d = parseOrderDateObj(t.date);
+      if (d) monthsSet.add(formatYM(d));
+    });
+  }
   const availableMonths = Array.from(monthsSet).sort().reverse();
 
   // Hàm kiểm tra khớp bộ lọc thời gian
@@ -315,24 +576,6 @@ function renderDashboard(response, query, formatVND) {
     if (filter === 'last_month') return monthStr === lastMonthStr;
     if (filter.startsWith('month:')) return monthStr === filter.replace('month:', '');
     return true;
-  };
-
-  // Nhãn hiển thị kỳ thời gian
-  const getFilterLabel = (filter) => {
-    if (!filter || filter === 'all') return 'Toàn thời gian';
-    if (filter === 'today') return 'Hôm nay';
-    if (filter === 'yesterday') return 'Hôm qua';
-    if (filter === 'this_month') return `Tháng này (${now.getMonth() + 1}/${now.getFullYear()})`;
-    if (filter === 'last_month') {
-      const prevM = lastMonthDate.getMonth() + 1;
-      const prevY = lastMonthDate.getFullYear();
-      return `Tháng trước (${prevM}/${prevY})`;
-    }
-    if (filter.startsWith('month:')) {
-      const [y, m] = filter.replace('month:', '').split('-');
-      return `Tháng ${m}/${y}`;
-    }
-    return 'Toàn thời gian';
   };
 
   // Trạng thái bộ lọc hiện tại
@@ -354,6 +597,7 @@ function renderDashboard(response, query, formatVND) {
   if (initCompletedCount === 0) {
     if (initPendingCount > 0) currentStatusTab = 'pending';
     else if (initCancelledCount > 0) currentStatusTab = 'cancelled';
+    else if (hasTransfers) currentStatusTab = 'transfers';
   }
 
   // Render khung giao diện
@@ -368,11 +612,17 @@ function renderDashboard(response, query, formatVND) {
           <span class="total" style="display: block; padding: 13px 15px; border: 1px solid #ffd9cd; border-radius: 14px; background: #fff7f4; box-shadow: inset 0 3px 0 #ff6a38, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">TỔNG HOA HỒNG</small><b class="stat-total" style="display: block; margin-top: 4px; font-size: 21px; color: #f24f25; letter-spacing: -0.4px;">0 đ</b></span>
           <span class="pending" style="display: block; padding: 13px 15px; border: 1px solid #f6e1a1; border-radius: 14px; background: #fffdf3; box-shadow: inset 0 3px 0 #f4ad28, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐANG CHỜ XỬ LÝ</small><b class="stat-pending" style="display: block; margin-top: 4px; font-size: 21px; color: #e89616; letter-spacing: -0.4px;">0 đ</b></span>
           <span class="done" style="display: block; padding: 13px 15px; border: 1px solid #d3eee0; border-radius: 14px; background: #f2fbf6; box-shadow: inset 0 3px 0 #21b565, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ HOÀN THÀNH</small><b class="stat-done" style="display: block; margin-top: 4px; font-size: 21px; color: #18a45b; letter-spacing: -0.4px;">0 đ</b></span>
-          <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ NHẬN</small><b class="stat-received" style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">0 đ</b></span>
+          <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04); cursor: pointer; transition: transform 0.15s ease;" title="Bấm để xem danh sách bill chuyển tiền">
+            <small style="display: flex; align-items: center; justify-content: space-between; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">
+              <span>ĐÃ NHẬN</span>
+              <span style="color: #2864de; font-weight: 700;">Xem bill ↗</span>
+            </small>
+            <b class="stat-received" style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">0 đ</b>
+          </span>
         </div>
       </article>
       
-      <!-- Tiêu đề danh sách đơn -->
+      <!-- Tiêu đề danh sách đơn / bill -->
       <h2 class="order-list-title" style="margin: 24px 0 12px; font-size: 18px; font-weight: 800; color: #172033; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-left: 4px solid #ff5d1d; letter-spacing: -0.2px;">Danh sách đơn hàng của bạn</h2>
       
       <!-- Thanh lọc nhanh thời gian (Quick Filter Chips + Dropdown Chọn tháng) -->
@@ -401,21 +651,25 @@ function renderDashboard(response, query, formatVND) {
         </div>
       </div>
 
-      <!-- Ô tìm kiếm mã đơn hoặc tên sản phẩm -->
+      <!-- Ô tìm kiếm mã đơn hoặc tên sản phẩm / số tiền -->
       <div style="margin-bottom: 12px; position: relative;">
-        <input type="text" class="order-search-input" placeholder="Tìm mã đơn hàng hoặc tên sản phẩm..." style="width: 100%; box-sizing: border-box; padding: 10px 14px 10px 36px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font: 500 13px 'Be Vietnam Pro', sans-serif; color: #1e293b; outline: none; transition: all 0.2s;">
+        <input type="text" class="order-search-input" placeholder="Tìm mã đơn hàng, tên sản phẩm hoặc số tiền bill..." style="width: 100%; box-sizing: border-box; padding: 10px 14px 10px 36px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font: 500 13px 'Be Vietnam Pro', sans-serif; color: #1e293b; outline: none; transition: all 0.2s;">
         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #94a3b8; pointer-events: none;">🔍</span>
       </div>
 
-      <!-- 3 Tab Trạng thái đơn hàng -->
-      <div class="order-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 12px; background: #ececf3; border: 1px solid #f0e5df; background: #fff8f4;">
-        <button class="tab-btn" data-tab="completed" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Hoàn tất <b class="badge-completed" style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
-        <button class="tab-btn" data-tab="pending" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Đang giao <b class="badge-pending" style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
-        <button class="tab-btn" data-tab="cancelled" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Đã hủy <b class="badge-cancelled" style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
+      <!-- 4 Tab Trạng thái đơn hàng & Lịch sử bill (Vị trí 1) -->
+      <div class="order-tabs" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 12px; background: #fff8f4; border: 1px solid #f0e5df;">
+        <button class="tab-btn" data-tab="completed" style="padding: 10px 4px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer; text-align: center;">Hoàn tất <b class="badge-completed" style="margin-left: 4px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
+        <button class="tab-btn" data-tab="pending" style="padding: 10px 4px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer; text-align: center;">Đang giao <b class="badge-pending" style="margin-left: 4px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
+        <button class="tab-btn" data-tab="cancelled" style="padding: 10px 4px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer; text-align: center;">Đã hủy <b class="badge-cancelled" style="margin-left: 4px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
+        <button class="tab-btn" data-tab="transfers" style="padding: 10px 4px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer; text-align: center;">Lịch sử bill <b class="badge-transfers" style="margin-left: 4px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
       </div>
 
-      <!-- Danh sách thẻ đơn -->
+      <!-- Danh sách thẻ đơn / bill -->
       <div class="order-list" style="display: grid; gap: 12px; margin-top: 16px;"></div>
+
+      <!-- Thanh Phân trang (Pagination) chuẩn theo ảnh mẫu người dùng yêu cầu -->
+      <div id="order-pagination" class="deals-pagination-container"></div>
 
       <style>
         .date-chip-btn {
@@ -449,12 +703,128 @@ function renderDashboard(response, query, formatVND) {
           border-color: #ff5d1d !important;
           box-shadow: 0 0 0 3px rgba(255, 93, 29, 0.12) !important;
         }
+        .commission-summary .received:hover {
+          transform: translateY(-2px);
+          box-shadow: inset 0 3px 0 #3975ea, 0 6px 14px rgba(40, 100, 222, 0.12) !important;
+        }
+        .order-tabs .tab-btn {
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          outline: none;
+        }
+        .order-tabs .tab-btn:hover:not(.active) {
+          background: rgba(255, 255, 255, 0.7) !important;
+          color: #ff5d1d !important;
+        }
+        @media (max-width: 520px) {
+          .order-tabs .tab-btn {
+            padding: 8px 2px !important;
+            font-size: 11px !important;
+          }
+          .order-tabs .tab-btn b {
+            margin-left: 2px !important;
+            padding: 1px 4px !important;
+            font-size: 9px !important;
+          }
+        }
+        @media (max-width: 380px) {
+          .order-tabs .tab-btn {
+            font-size: 10px !important;
+            padding: 7px 1px !important;
+          }
+        }
+
+        /* Pagination Styles chuẩn mẫu */
+        .deals-pagination-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 28px 0 24px;
+          width: 100%;
+        }
+        .deals-pagination-bar {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .deals-page-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 40px;
+          height: 40px;
+          padding: 0 10px;
+          background: #ffffff;
+          color: #334155;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          font-size: 14.5px;
+          font-weight: 600;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          user-select: none;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        .deals-page-btn:hover:not(.active):not(.disabled) {
+          border-color: #ff5d1d;
+          color: #ff5d1d;
+          background: #fff8f6;
+        }
+        .deals-page-btn.active {
+          background: #ee4d2d !important;
+          border-color: #ee4d2d !important;
+          color: #ffffff !important;
+          font-weight: 700 !important;
+          box-shadow: 0 4px 14px rgba(238, 77, 45, 0.4) !important;
+          cursor: default;
+          pointer-events: none;
+        }
+        .deals-page-btn.nav-btn {
+          padding: 0 14px;
+          color: #0284c7;
+          font-weight: 600;
+        }
+        .deals-page-btn.disabled,
+        .deals-page-btn:disabled {
+          background: #fafafa !important;
+          border-color: #f1f5f9 !important;
+          color: #cbd5e1 !important;
+          cursor: not-allowed !important;
+          box-shadow: none !important;
+          pointer-events: none;
+        }
+        @media (max-width: 520px) {
+          .deals-pagination-bar {
+            gap: 5px;
+          }
+          .deals-page-btn {
+            min-width: 36px;
+            height: 36px;
+            font-size: 13px;
+            padding: 0 6px;
+            border-radius: 7px;
+          }
+          .deals-page-btn.nav-btn {
+            padding: 0 10px;
+            font-size: 12.5px;
+          }
+        }
       </style>
     </div>
   `;
 
-  // --- HÀM CẬP NHẬT GIAO DIỆN KHI THAY ĐỔI BỘ LỌC ---
+  // --- HÀM CẬP NHẬT GIAO DIỆN KHI THAY ĐỔI BỘ LỌC HOẶC PHÂN TRANG ---
   const updateOrderView = () => {
+    // Cập nhật tiêu đề linh hoạt theo tab
+    const listTitle = app.querySelector('.order-list-title');
+    if (listTitle) {
+      listTitle.textContent = currentStatusTab === 'transfers' 
+        ? 'Lịch sử bill chuyển tiền của bạn' 
+        : 'Danh sách đơn hàng của bạn';
+    }
+
     // 1. Lọc theo Date Filter
     let dateFiltered = ordersList.filter(o => matchDateFilter(o, currentDateFilter));
 
@@ -511,7 +881,7 @@ function renderDashboard(response, query, formatVND) {
     const elRec = app.querySelector('.stat-received');
     if (elRec) elRec.textContent = formatVND(subRecComm);
 
-    // Cập nhật số lượng trên các badge của 3 tab trạng thái
+    // Cập nhật số lượng trên các badge
     const bCompleted = app.querySelector('.badge-completed');
     if (bCompleted) bCompleted.textContent = subCountCompleted;
 
@@ -521,17 +891,67 @@ function renderDashboard(response, query, formatVND) {
     const bCancelled = app.querySelector('.badge-cancelled');
     if (bCancelled) bCancelled.textContent = subCountCancelled;
 
-    // 4. Lọc theo tab trạng thái đang chọn
-    const finalOrders = dateFiltered.filter(o => getOrderCategory(o.status || o.orderStatus, o.paymentStatus) === currentStatusTab);
+    // Lọc danh sách bill (transfers) theo kỳ thời gian và từ khóa tìm kiếm
+    let dateFilteredTransfers = (cachedTransfers && Array.isArray(cachedTransfers)) ? cachedTransfers : [];
+    dateFilteredTransfers = dateFilteredTransfers.filter(t => matchDateFilter({ orderDate: t.date }, currentDateFilter));
+    if (q) {
+      dateFilteredTransfers = dateFilteredTransfers.filter(t => {
+        const amtStr = String(t.amount || '');
+        const dateStr = String(t.date || '').toLowerCase();
+        return amtStr.includes(q) || dateStr.includes(q);
+      });
+    }
 
-    // 5. Render danh sách
-    renderOrders(finalOrders, formatVND);
+    const bTransfers = app.querySelector('.badge-transfers');
+    if (bTransfers) bTransfers.textContent = dateFilteredTransfers.length;
+
+    // 4. Render danh sách và phân trang theo tab đang chọn
+    if (currentStatusTab === 'transfers') {
+      const totalPages = Math.ceil(dateFilteredTransfers.length / ITEMS_PER_PAGE) || 1;
+      if (currentOrderPage > totalPages) currentOrderPage = 1;
+      const pageTransfers = dateFilteredTransfers.slice((currentOrderPage - 1) * ITEMS_PER_PAGE, currentOrderPage * ITEMS_PER_PAGE);
+      renderTransfers(pageTransfers, formatVND);
+      renderOrderPagination(currentOrderPage, totalPages, dateFilteredTransfers.length);
+    } else {
+      const finalOrders = dateFiltered.filter(o => getOrderCategory(o.status || o.orderStatus, o.paymentStatus) === currentStatusTab);
+      const totalPages = Math.ceil(finalOrders.length / ITEMS_PER_PAGE) || 1;
+      if (currentOrderPage > totalPages) currentOrderPage = 1;
+      const pageOrders = finalOrders.slice((currentOrderPage - 1) * ITEMS_PER_PAGE, currentOrderPage * ITEMS_PER_PAGE);
+      renderOrders(pageOrders, formatVND);
+      renderOrderPagination(currentOrderPage, totalPages, finalOrders.length);
+    }
+  };
+
+  // Đăng ký hàm kích hoạt cập nhật giao diện toàn cục
+  window._triggerUpdateOrderView = () => {
+    updateOrderView();
+  };
+
+  // Chuyển trang và cuộn mượt mà lên đầu danh sách
+  window.goToOrderPage = function(page) {
+    if (typeof page !== 'number' || isNaN(page)) return;
+    if (page < 1 || page === currentOrderPage) return;
+    currentOrderPage = page;
+    updateOrderView();
+
+    const targetEl = app.querySelector('.order-tabs') || app.querySelector('.order-list-title');
+    if (targetEl) {
+      const offset = 80;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = targetEl.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      window.scrollTo({
+        top: Math.max(0, elementPosition - offset),
+        behavior: 'smooth'
+      });
+    }
   };
 
   // Hàm reset bộ lọc về mặc định
   window._resetOrderFilter = () => {
     currentDateFilter = 'all';
     currentSearchQuery = '';
+    currentOrderPage = 1;
     const searchInp = app.querySelector('.order-search-input');
     if (searchInp) searchInp.value = '';
     const select = app.querySelector('.order-month-select');
@@ -552,6 +972,7 @@ function renderDashboard(response, query, formatVND) {
       const select = app.querySelector('.order-month-select');
       if (select) select.value = '';
       currentDateFilter = btn.dataset.date;
+      currentOrderPage = 1; // Reset về trang 1
       updateOrderView();
     });
   });
@@ -569,6 +990,7 @@ function renderDashboard(response, query, formatVND) {
         const allBtn = app.querySelector('.date-chip-btn[data-date="all"]');
         if (allBtn) allBtn.classList.add('active');
       }
+      currentOrderPage = 1; // Reset về trang 1
       updateOrderView();
     });
   }
@@ -581,12 +1003,35 @@ function renderDashboard(response, query, formatVND) {
       clearTimeout(searchTimer);
       searchTimer = setTimeout(() => {
         currentSearchQuery = e.target.value;
+        currentOrderPage = 1; // Reset về trang 1
         updateOrderView();
       }, 150);
     });
   }
 
-  // Gắn sự kiện cho 3 Tab Trạng thái
+  // Gắn sự kiện click vào ô ĐÃ NHẬN ở bảng tổng quan để xem ngay lịch sử bill
+  const recStatCard = app.querySelector('.commission-summary .received');
+  if (recStatCard) {
+    recStatCard.addEventListener('click', () => {
+      const transferBtn = app.querySelector('.tab-btn[data-tab="transfers"]');
+      if (transferBtn) {
+        transferBtn.click();
+        const targetEl = app.querySelector('.order-tabs') || app.querySelector('.order-list-title');
+        if (targetEl) {
+          const offset = 80;
+          const bodyRect = document.body.getBoundingClientRect().top;
+          const elementRect = targetEl.getBoundingClientRect().top;
+          const elementPosition = elementRect - bodyRect;
+          window.scrollTo({
+            top: Math.max(0, elementPosition - offset),
+            behavior: 'smooth'
+          });
+        }
+      }
+    });
+  }
+
+  // Gắn sự kiện cho 4 Tab Trạng thái & Bill (Vị trí 1)
   const statusTabs = app.querySelectorAll('.order-tabs button');
   statusTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -607,6 +1052,7 @@ function renderDashboard(response, query, formatVND) {
       if (activeBadge) activeBadge.style.background = '#fff0eb';
 
       currentStatusTab = tab.dataset.tab;
+      currentOrderPage = 1; // Reset về trang 1
       updateOrderView();
     });
   });
