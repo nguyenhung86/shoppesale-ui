@@ -75,20 +75,30 @@ function getOrderCategory(status, paymentStatus) {
 function parseOrderDateObj(dateVal) {
   if (!dateVal) return null;
   const str = String(dateVal).trim();
-  const datePart = str.split(' ')[0];
+  const spaceParts = str.split(' ');
+  const datePart = spaceParts[0];
+  const timePart = spaceParts[1] || '';
+  let hours = 0, minutes = 0, seconds = 0;
+  if (timePart && timePart.includes(':')) {
+    const tParts = timePart.split(':');
+    hours = parseInt(tParts[0], 10) || 0;
+    minutes = parseInt(tParts[1], 10) || 0;
+    seconds = parseInt(tParts[2], 10) || 0;
+  }
+
   if (datePart.includes('/')) {
     const parts = datePart.split('/');
     if (parts.length === 3) {
-      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10), hours, minutes, seconds);
     }
   }
   if (datePart.includes('-')) {
     const parts = datePart.split('T')[0].split('-');
     if (parts.length === 3) {
       if (parts[0].length === 4) {
-        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10), hours, minutes, seconds);
       } else if (parts[2].length === 4) {
-        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10), hours, minutes, seconds);
       }
     }
   }
@@ -262,6 +272,67 @@ function renderOrders(filteredOrders, formatVND) {
   }).join('');
 }
 
+// Cửa sổ nhỏ (Modal) xem ảnh bill chuyển khoản trực tiếp trên trang
+function openBillModal(imageUrl, amountStr, dateStr) {
+  if (!imageUrl) return;
+  document.querySelector('.bill-preview-modal-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'bill-preview-modal-overlay';
+  overlay.style = `
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.78);
+    backdrop-filter: blur(4px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+  `;
+
+  overlay.innerHTML = `
+    <div class="bill-preview-card" style="position: relative; background: #ffffff; border-radius: 20px; width: 100%; max-width: 440px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4); overflow: hidden;">
+      <header style="display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid #f1f5f9; background: #fafafa;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 18px;">🧾</span>
+          <div>
+            <h3 style="margin: 0; font-size: 14.5px; font-weight: 700; color: #1e293b;">Chứng từ chuyển tiền</h3>
+            <small style="color: #64748b; font-size: 11px;">${dateStr || ''} ${amountStr ? '• ' + amountStr : ''}</small>
+          </div>
+        </div>
+        <button type="button" class="btn-close-bill" aria-label="Đóng" style="width: 32px; height: 32px; border: 0; border-radius: 50%; background: #f1f5f9; color: #64748b; font-size: 18px; font-weight: bold; cursor: pointer; display: grid; place-items: center; transition: all 0.15s;">✕</button>
+      </header>
+
+      <div style="flex: 1; overflow: auto; padding: 12px; background: #0b1120; display: flex; align-items: center; justify-content: center; min-height: 280px; position: relative;">
+        <div class="bill-loader" style="position: absolute; width: 34px; height: 34px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #ff5d1d; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+        <img src="${imageUrl}" alt="Ảnh bill chuyển khoản" style="max-width: 100%; max-height: 68vh; object-fit: contain; border-radius: 10px; display: block; position: relative; z-index: 1;" onload="const l=this.previousElementSibling; if(l) l.style.display='none';" onerror="const l=this.previousElementSibling; if(l) l.style.display='none'; this.parentElement.innerHTML='<div style=\\'color:#fff; text-align:center; padding:30px; font-size:13px;\\'>⚠️ Không thể tải trước ảnh bill.<br><a href=\\'${imageUrl}\\' target=\\'_blank\\' style=\\'color:#38bdf8; font-weight:bold; text-decoration:underline; display:inline-block; margin-top:10px;\\'>Bấm để mở ảnh trong tab mới ↗</a></div>';" />
+      </div>
+
+      <footer style="padding: 12px 18px; background: #fafafa; border-top: 1px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <span style="font-size: 12px; color: #16a34a; font-weight: 700; display: flex; align-items: center; gap: 4px;">✓ Chuyển khoản thành công</span>
+        <a href="${imageUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 12px; color: #0284c7; font-weight: 600; text-decoration: none; padding: 6px 12px; border-radius: 8px; background: #f0f9ff; border: 1px solid #bae6fd;">Mở ảnh gốc ↗</a>
+      </footer>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.querySelector('.btn-close-bill')?.addEventListener('click', close);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) close();
+  });
+  window.addEventListener('keydown', function onEsc(e) {
+    if (e.key === 'Escape') {
+      close();
+      window.removeEventListener('keydown', onEsc);
+    }
+  });
+}
+window.openBillModal = openBillModal;
+
 // Render danh sách bill chuyển tiền (Lịch sử bill)
 function renderTransfers(filteredTransfers, formatVND) {
   const listContainer = document.querySelector('.order-list');
@@ -292,9 +363,8 @@ function renderTransfers(filteredTransfers, formatVND) {
 
     return `
       <article class="order-transfer-card" style="border-left: 4px solid #18ad60; padding: 16px 18px; border-top: 1px solid #e7e9ee; border-right: 1px solid #e7e9ee; border-bottom: 1px solid #e7e9ee; border-radius: 16px; background: #fff; box-shadow: 0 3px 8px rgba(23,32,51,0.04); margin-bottom: 12px;">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
           <span style="border: 1px solid #bfead0; background: #eafaf1; color: #19a45c; padding: 4px 9px; border-radius: 6px; font-size: 10.5px; font-weight: 800; font-style: normal;">✓ Chuyển khoản thành công</span>
-          <em style="border: 1px solid #d6e2ff; background: #f3f7ff; color: #2864de; padding: 4px 9px; border-radius: 6px; font-size: 10px; font-weight: 800; font-style: normal; margin-left: auto;">Ngân hàng 24/7</em>
         </div>
         <h3 style="margin: 12px 0 6px; font-size: 14.5px; line-height: 1.45; font-weight: 700; color: #243149;">
           Thanh toán hoa hồng rút ví về tài khoản
@@ -307,9 +377,9 @@ function renderTransfers(filteredTransfers, formatVND) {
           <div style="display: flex; align-items: center; gap: 10px; margin-left: auto;">
             <b style="color: #18ad60; font-size: 16.5px; font-weight: 800;">+${amountStr}</b>
             ${billUrl ? `
-              <a href="${billUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 13px; border-radius: 9px; background: #fff2ed; color: #ff5d1d; font-weight: 700; font-size: 12px; text-decoration: none; border: 1px solid #ffd8cc; box-shadow: 0 2px 4px rgba(255,93,29,0.08); transition: all 0.2s;">
+              <button type="button" class="btn-open-bill-modal" onclick="openBillModal('${billUrl}', '+${amountStr}', '${dateStr}')" style="display: inline-flex; align-items: center; gap: 4px; padding: 6px 13px; border-radius: 9px; background: #fff2ed; color: #ff5d1d; font-weight: 700; font-size: 12px; border: 1px solid #ffd8cc; box-shadow: 0 2px 4px rgba(255,93,29,0.08); cursor: pointer; transition: all 0.2s; outline: none;">
                 👁️ Xem ảnh bill ↗
-              </a>
+              </button>
             ` : `
               <span style="display: inline-flex; align-items: center; gap: 4px; padding: 5px 11px; border-radius: 8px; background: #eafbf2; color: #12a061; font-weight: 700; font-size: 11.5px; border: 1px solid #bfead0;">
                 ✓ Tiền đã về tài khoản
@@ -404,6 +474,13 @@ async function loadPaymentTransfers(zaloId, onLoaded) {
       }
     } catch(eFallback) {}
   }
+
+  // Sắp xếp bill chuyển tiền từ MỚI NHẤT đến CŨ NHẤT (Newest to Oldest)
+  data.sort((a, b) => {
+    const tA = parseOrderDateObj(a.date || a.transferredAt)?.getTime() || 0;
+    const tB = parseOrderDateObj(b.date || b.transferredAt)?.getTime() || 0;
+    return tB - tA;
+  });
 
   // Lưu cache & kích hoạt cập nhật
   if (data.length > 0) {
@@ -886,7 +963,15 @@ function renderDashboard(response, query, formatVND) {
     if (bCancelled) bCancelled.textContent = subCountCancelled;
 
     // Lọc danh sách bill (transfers) theo kỳ thời gian và từ khóa tìm kiếm
-    let dateFilteredTransfers = (cachedTransfers && Array.isArray(cachedTransfers)) ? cachedTransfers : [];
+    let dateFilteredTransfers = (cachedTransfers && Array.isArray(cachedTransfers)) ? [...cachedTransfers] : [];
+    
+    // Sắp xếp bill chuyển tiền từ MỚI NHẤT đến CŨ NHẤT (Newest to Oldest)
+    dateFilteredTransfers.sort((a, b) => {
+      const tA = parseOrderDateObj(a.date || a.transferredAt)?.getTime() || 0;
+      const tB = parseOrderDateObj(b.date || b.transferredAt)?.getTime() || 0;
+      return tB - tA;
+    });
+
     dateFilteredTransfers = dateFilteredTransfers.filter(t => matchDateFilter({ orderDate: t.date }, currentDateFilter));
     if (q) {
       dateFilteredTransfers = dateFilteredTransfers.filter(t => {
