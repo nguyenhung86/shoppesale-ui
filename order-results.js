@@ -403,7 +403,7 @@ function renderDashboard(response, query, formatVND) {
 
       <!-- Ô tìm kiếm mã đơn hoặc tên sản phẩm -->
       <div style="margin-bottom: 12px; position: relative;">
-        <input type="text" class="order-search-input" placeholder="🔍 Tìm mã đơn hàng hoặc tên sản phẩm..." style="width: 100%; box-sizing: border-box; padding: 10px 14px 10px 36px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font: 500 13px 'Be Vietnam Pro', sans-serif; color: #1e293b; outline: none; transition: all 0.2s;">
+        <input type="text" class="order-search-input" placeholder="Tìm mã đơn hàng hoặc tên sản phẩm..." style="width: 100%; box-sizing: border-box; padding: 10px 14px 10px 36px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font: 500 13px 'Be Vietnam Pro', sans-serif; color: #1e293b; outline: none; transition: all 0.2s;">
         <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #94a3b8; pointer-events: none;">🔍</span>
       </div>
 
