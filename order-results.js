@@ -61,16 +61,46 @@ function getOrderCategory(status, paymentStatus) {
   return "pending";
 }
 
+function parseOrderDateObj(dateVal) {
+  if (!dateVal) return null;
+  const str = String(dateVal).trim();
+  if (str.includes('/')) {
+    const parts = str.split('/');
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+  }
+  if (str.includes('-')) {
+    const parts = str.split('T')[0].split('-');
+    if (parts.length === 3) {
+      if (parts[0].length === 4) {
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      } else if (parts[2].length === 4) {
+        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+      }
+    }
+  }
+  const d = new Date(str);
+  return isNaN(d.getTime()) ? null : d;
+}
+
 function renderOrders(filteredOrders, formatVND) {
   const listContainer = document.querySelector('.order-list');
   if (!listContainer) return;
   
   if (filteredOrders.length === 0) {
     listContainer.innerHTML = `
-      <div style="text-align:center; padding:40px 20px; border:1px solid #e7e9ee; border-radius:18px; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.02);">
-        <p style="color:#8490a3; font-size:13px; font-weight: 500;">Không có đơn hàng nào trong mục này.</p>
+      <div style="text-align:center; padding:36px 20px; border:1px solid #e7e9ee; border-radius:18px; background:#fff; box-shadow:0 4px 10px rgba(0,0,0,0.02);">
+        <div style="font-size: 28px; margin-bottom: 8px;">📦</div>
+        <p style="color:#1e293b; font-size:14px; font-weight: 700; margin: 0 0 4px;">Không có đơn hàng nào</p>
+        <p style="color:#8490a3; font-size:12px; margin: 0 0 14px;">Không tìm thấy đơn hàng nào trong mốc thời gian và trạng thái đang chọn.</p>
+        <button class="btn-reset-order-filters" style="padding: 7px 16px; border-radius: 9px; border: 1px solid #ffd9cd; background: #fff0eb; color: #ff5d1d; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer; transition: all 0.2s;">Xem tất cả đơn</button>
       </div>
     `;
+    const resetBtn = listContainer.querySelector('.btn-reset-order-filters');
+    if (resetBtn && window._resetOrderFilter) {
+      resetBtn.addEventListener('click', window._resetOrderFilter);
+    }
     return;
   }
   
@@ -103,28 +133,14 @@ function renderOrders(filteredOrders, formatVND) {
     let rawDate = o.orderDate || '';
     let dateStr = 'Không rõ ngày';
     if (rawDate) {
-      let str = String(rawDate).trim();
-      if (str.includes('T')) str = str.split('T')[0];
-      if (str.includes(' ')) str = str.split(' ')[0];
-      if (str.includes('-')) {
-        const parts = str.split('-');
-        if (parts.length === 3 && parts[0].length === 4) {
-          dateStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
-        } else {
-          dateStr = str;
-        }
-      } else if (str.includes('/')) {
-        dateStr = str;
+      const d = parseOrderDateObj(rawDate);
+      if (d) {
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        dateStr = `${dd}/${mm}/${yyyy}`;
       } else {
-        const d = new Date(str);
-        if (!isNaN(d.getTime())) {
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, '0');
-          const dd = String(d.getDate()).padStart(2, '0');
-          dateStr = `${dd}/${mm}/${yyyy}`;
-        } else {
-          dateStr = str;
-        }
+        dateStr = String(rawDate);
       }
     }
     const itemName = o.itemName || 'Sản phẩm hoàn tiền';
@@ -238,30 +254,10 @@ function renderDashboard(response, query, formatVND) {
 
   const ordersList = response.data || [];
   
-  // Sắp xếp đơn hàng từ mới nhất đến cũ nhất theo ngày (DD/MM/YYYY)
+  // Sắp xếp đơn hàng từ mới nhất đến cũ nhất
   const parseOrderDate = (dateVal) => {
-    if (!dateVal) return 0;
-    const dateStr = String(dateVal).trim();
-    if (dateStr.includes('/')) {
-      const parts = dateStr.split('/');
-      if (parts.length === 3) {
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-        return new Date(year, month, day).getTime();
-      }
-    }
-    if (dateStr.includes('-')) {
-      const parts = dateStr.split('T')[0].split('-');
-      if (parts.length === 3 && parts[0].length === 4) {
-        const year = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        return new Date(year, month, day).getTime();
-      }
-    }
-    const parsed = Date.parse(dateStr);
-    return isNaN(parsed) ? 0 : parsed;
+    const d = parseOrderDateObj(dateVal);
+    return d ? d.getTime() : 0;
   };
   ordersList.sort((a, b) => parseOrderDate(b.orderDate) - parseOrderDate(a.orderDate));
   
@@ -282,70 +278,328 @@ function renderDashboard(response, query, formatVND) {
     `;
     return;
   }
-  
-  // Tính toán số liệu thống kê
-  let totalCommission = 0;
-  let totalPending = 0;
-  let totalCompleted = 0;
-  let totalReceived = 0;
-  
-  let completedCount = 0;
-  let pendingCount = 0;
-  let cancelledCount = 0;
-  
+
+  // --- LOGIC PHÂN LOẠI & LỌC THEO NGÀY THÁNG (PHƯƠNG ÁN 1) ---
+  const now = new Date();
+  const pad2 = n => String(n).padStart(2, '0');
+  const formatYMD = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  const formatYM = d => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}`;
+
+  const todayStr = formatYMD(now);
+  const yestDate = new Date(now);
+  yestDate.setDate(yestDate.getDate() - 1);
+  const yestStr = formatYMD(yestDate);
+  const thisMonthStr = formatYM(now);
+  const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthStr = formatYM(lastMonthDate);
+
+  // Thu thập danh sách các tháng duy nhất có đơn hàng
+  const monthsSet = new Set();
+  ordersList.forEach(o => {
+    const d = parseOrderDateObj(o.orderDate);
+    if (d) monthsSet.add(formatYM(d));
+  });
+  const availableMonths = Array.from(monthsSet).sort().reverse();
+
+  // Hàm kiểm tra khớp bộ lọc thời gian
+  const matchDateFilter = (order, filter) => {
+    if (!filter || filter === 'all') return true;
+    const d = parseOrderDateObj(order.orderDate);
+    if (!d) return filter === 'all';
+    const dayStr = formatYMD(d);
+    const monthStr = formatYM(d);
+
+    if (filter === 'today') return dayStr === todayStr;
+    if (filter === 'yesterday') return dayStr === yestStr;
+    if (filter === 'this_month') return monthStr === thisMonthStr;
+    if (filter === 'last_month') return monthStr === lastMonthStr;
+    if (filter.startsWith('month:')) return monthStr === filter.replace('month:', '');
+    return true;
+  };
+
+  // Nhãn hiển thị kỳ thời gian
+  const getFilterLabel = (filter) => {
+    if (!filter || filter === 'all') return 'Toàn thời gian';
+    if (filter === 'today') return 'Hôm nay';
+    if (filter === 'yesterday') return 'Hôm qua';
+    if (filter === 'this_month') return `Tháng này (${now.getMonth() + 1}/${now.getFullYear()})`;
+    if (filter === 'last_month') {
+      const prevM = lastMonthDate.getMonth() + 1;
+      const prevY = lastMonthDate.getFullYear();
+      return `Tháng trước (${prevM}/${prevY})`;
+    }
+    if (filter.startsWith('month:')) {
+      const [y, m] = filter.replace('month:', '').split('-');
+      return `Tháng ${m}/${y}`;
+    }
+    return 'Toàn thời gian';
+  };
+
+  // Trạng thái bộ lọc hiện tại
+  let currentDateFilter = 'all';
+  let currentStatusTab = 'completed';
+  let currentSearchQuery = '';
+
+  // Tính số lượng ban đầu để chọn tab mặc định
+  let initCompletedCount = 0;
+  let initPendingCount = 0;
+  let initCancelledCount = 0;
   ordersList.forEach(o => {
     const cat = getOrderCategory(o.status || o.orderStatus, o.paymentStatus);
-    const commission = Number(o.commission) || 0;
-    const isPaid = o.paymentStatus === 'Đã TT';
-    
-    if (cat === 'completed') completedCount++;
-    else if (cat === 'pending') pendingCount++;
-    else if (cat === 'cancelled') cancelledCount++;
-    
-    if (cat !== 'cancelled') {
-      totalCommission += commission;
-      if (isPaid) {
-        totalReceived += commission;
-      } else {
-        if (cat === 'pending') {
-          totalPending += commission;
-        } else if (cat === 'completed') {
-          totalCompleted += commission;
-        }
-      }
-    }
+    if (cat === 'completed') initCompletedCount++;
+    else if (cat === 'pending') initPendingCount++;
+    else if (cat === 'cancelled') initCancelledCount++;
   });
-  
+
+  if (initCompletedCount === 0) {
+    if (initPendingCount > 0) currentStatusTab = 'pending';
+    else if (initCancelledCount > 0) currentStatusTab = 'cancelled';
+  }
+
+  // Render khung giao diện
   app.innerHTML = `
     <div class="order-results" style="width: 100%; max-width: 1016px; margin: 0 auto; padding-top: 20px;">
+      <!-- Khối Tổng quan hoa hồng (Cập nhật động theo mốc thời gian lọc) -->
       <article class="commission-summary" style="margin-bottom: 20px; padding: 20px; border-radius: 20px; background: #fff; box-shadow: 0 10px 24px rgba(25,35,52,0.06); border: 1px solid #f6d3c0; background: linear-gradient(135deg, #fff 0%, #fffaf6 100%);">
-        <h2 style="display: flex; align-items: center; gap: 9px; min-height: 31px; padding-left: 11px; border-left: 3px solid #ff762d; font-size: 16px; font-weight: 700; margin: 0 0 16px;">
-          <span class="order-summary-title-text" style="color: #17233b; font-size: 17px; font-weight: 800;">Tổng quan hoa hồng</span>
-        </h2>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 15px;">
-          <span class="total" style="display: block; padding: 13px 15px; border: 1px solid #ffd9cd; border-radius: 14px; background: #fff7f4; box-shadow: inset 0 3px 0 #ff6a38, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">TỔNG HOA HỒNG</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #f24f25; letter-spacing: -0.4px;">${formatVND(totalCommission)}</b></span>
-          <span class="pending" style="display: block; padding: 13px 15px; border: 1px solid #f6e1a1; border-radius: 14px; background: #fffdf3; box-shadow: inset 0 3px 0 #f4ad28, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐANG CHỜ XỬ LÝ</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #e89616; letter-spacing: -0.4px;">${formatVND(totalPending)}</b></span>
-          <span class="done" style="display: block; padding: 13px 15px; border: 1px solid #d3eee0; border-radius: 14px; background: #f2fbf6; box-shadow: inset 0 3px 0 #21b565, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ HOÀN THÀNH</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #18a45b; letter-spacing: -0.4px;">${formatVND(totalCompleted)}</b></span>
-          <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ NHẬN</small><b style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">${formatVND(totalReceived)}</b></span>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+          <h2 style="display: flex; align-items: center; gap: 9px; min-height: 31px; padding-left: 11px; border-left: 3px solid #ff762d; font-size: 16px; font-weight: 700; margin: 0;">
+            <span class="order-summary-title-text" style="color: #17233b; font-size: 17px; font-weight: 800;">Tổng quan hoa hồng</span>
+          </h2>
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 20px; background: #fff2ec; border: 1px solid #ffd3c2; color: #ff5d1d; font-size: 11px; font-weight: 700;">
+            <span>⏱️</span>
+            <span class="period-text">Toàn thời gian</span>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 5px;">
+          <span class="total" style="display: block; padding: 13px 15px; border: 1px solid #ffd9cd; border-radius: 14px; background: #fff7f4; box-shadow: inset 0 3px 0 #ff6a38, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">TỔNG HOA HỒNG</small><b class="stat-total" style="display: block; margin-top: 4px; font-size: 21px; color: #f24f25; letter-spacing: -0.4px;">0 đ</b></span>
+          <span class="pending" style="display: block; padding: 13px 15px; border: 1px solid #f6e1a1; border-radius: 14px; background: #fffdf3; box-shadow: inset 0 3px 0 #f4ad28, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐANG CHỜ XỬ LÝ</small><b class="stat-pending" style="display: block; margin-top: 4px; font-size: 21px; color: #e89616; letter-spacing: -0.4px;">0 đ</b></span>
+          <span class="done" style="display: block; padding: 13px 15px; border: 1px solid #d3eee0; border-radius: 14px; background: #f2fbf6; box-shadow: inset 0 3px 0 #21b565, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ HOÀN THÀNH</small><b class="stat-done" style="display: block; margin-top: 4px; font-size: 21px; color: #18a45b; letter-spacing: -0.4px;">0 đ</b></span>
+          <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ NHẬN</small><b class="stat-received" style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">0 đ</b></span>
         </div>
       </article>
       
-      <h2 class="order-list-title" style="margin: 24px 0 11px; font-size: 18px; font-weight: 800; color: #172033; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-left: 4px solid #ff5d1d; letter-spacing: -0.2px;">Danh sách đơn hàng của bạn</h2>
+      <!-- Tiêu đề danh sách đơn -->
+      <h2 class="order-list-title" style="margin: 24px 0 12px; font-size: 18px; font-weight: 800; color: #172033; display: flex; align-items: center; gap: 9px; padding-left: 12px; border-left: 4px solid #ff5d1d; letter-spacing: -0.2px;">Danh sách đơn hàng của bạn</h2>
       
-      <div class="order-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 12px; background: #ececf3; border: 1px solid #f0e5df; background: #fff8f4;">
-        <button class="tab-btn" data-tab="completed" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Hoàn tất <b style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">${completedCount}</b></button>
-        <button class="tab-btn" data-tab="pending" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Đang giao <b style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">${pendingCount}</b></button>
-        <button class="tab-btn" data-tab="cancelled" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Đã hủy <b style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">${cancelledCount}</b></button>
+      <!-- Thanh lọc nhanh thời gian (Quick Filter Chips + Dropdown Chọn tháng) -->
+      <div class="order-date-filter-bar" style="background: #fff; padding: 13px 15px; border-radius: 14px; border: 1px solid #f0e5df; box-shadow: 0 2px 7px rgba(25,35,52,0.03); margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+          <span style="font-size: 12px; font-weight: 700; color: #475569; display: flex; align-items: center; gap: 6px;">
+            <span>📅</span> Lọc theo thời gian:
+          </span>
+          <div>
+            <select class="order-month-select" style="padding: 6px 12px; border-radius: 9px; border: 1px solid #e2e8f0; background: #fff; color: #334155; font: 600 12px 'Be Vietnam Pro', sans-serif; cursor: pointer; outline: none; transition: all 0.2s;">
+              <option value="">🗓️ Xem tháng khác...</option>
+              ${availableMonths.map(m => {
+                const [y, mm] = m.split('-');
+                return `<option value="month:${m}">Tháng ${mm}/${y}</option>`;
+              }).join('')}
+            </select>
+          </div>
+        </div>
+        
+        <div class="order-date-chips" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+          <button class="date-chip-btn active" data-date="all">Tất cả</button>
+          <button class="date-chip-btn" data-date="today">Hôm nay</button>
+          <button class="date-chip-btn" data-date="yesterday">Hôm qua</button>
+          <button class="date-chip-btn" data-date="this_month">Tháng này</button>
+          <button class="date-chip-btn" data-date="last_month">Tháng trước</button>
+        </div>
       </div>
+
+      <!-- Ô tìm kiếm mã đơn hoặc tên sản phẩm -->
+      <div style="margin-bottom: 12px; position: relative;">
+        <input type="text" class="order-search-input" placeholder="🔍 Tìm mã đơn hàng hoặc tên sản phẩm..." style="width: 100%; box-sizing: border-box; padding: 10px 14px 10px 36px; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; font: 500 13px 'Be Vietnam Pro', sans-serif; color: #1e293b; outline: none; transition: all 0.2s;">
+        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: #94a3b8; pointer-events: none;">🔍</span>
+      </div>
+
+      <!-- 3 Tab Trạng thái đơn hàng -->
+      <div class="order-tabs" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 4px; border-radius: 12px; background: #ececf3; border: 1px solid #f0e5df; background: #fff8f4;">
+        <button class="tab-btn" data-tab="completed" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Hoàn tất <b class="badge-completed" style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
+        <button class="tab-btn" data-tab="pending" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Đang giao <b class="badge-pending" style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
+        <button class="tab-btn" data-tab="cancelled" style="padding: 10px; border: 0; border-radius: 9px; background: transparent; color: #3c4960; font: 700 12px 'Be Vietnam Pro', sans-serif; cursor: pointer;">Đã hủy <b class="badge-cancelled" style="margin-left: 5px; padding: 2px 6px; border-radius: 10px; background: #f1f1f5; font-size: 10px;">0</b></button>
+      </div>
+
+      <!-- Danh sách thẻ đơn -->
       <div class="order-list" style="display: grid; gap: 12px; margin-top: 16px;"></div>
+
+      <style>
+        .date-chip-btn {
+          padding: 6px 13px;
+          border: 1px solid #e2e8f0;
+          border-radius: 20px;
+          background: #f8fafc;
+          color: #475569;
+          font: 700 12px 'Be Vietnam Pro', sans-serif;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .date-chip-btn:hover {
+          background: #fff0eb;
+          color: #ff5d1d;
+          border-color: #ffd9cd;
+        }
+        .date-chip-btn.active {
+          border-color: #ff5d1d !important;
+          background: #ff5d1d !important;
+          color: #ffffff !important;
+          box-shadow: 0 2px 6px rgba(255, 93, 29, 0.25) !important;
+        }
+        .order-search-input:focus {
+          border-color: #ff5d1d !important;
+          box-shadow: 0 0 0 3px rgba(255, 93, 29, 0.12) !important;
+        }
+        .order-month-select:focus {
+          border-color: #ff5d1d !important;
+          box-shadow: 0 0 0 3px rgba(255, 93, 29, 0.12) !important;
+        }
+      </style>
     </div>
   `;
-  
-  // Liên kết sự kiện click đổi tab đơn hàng
-  const tabs = app.querySelectorAll('.order-tabs button');
-  tabs.forEach(tab => {
+
+  // --- HÀM CẬP NHẬT GIAO DIỆN KHI THAY ĐỔI BỘ LỌC ---
+  const updateOrderView = () => {
+    // 1. Lọc theo Date Filter
+    let dateFiltered = ordersList.filter(o => matchDateFilter(o, currentDateFilter));
+
+    // 2. Lọc tiếp theo Search Query (nếu có)
+    const q = currentSearchQuery.trim().toLowerCase();
+    if (q) {
+      dateFiltered = dateFiltered.filter(o => {
+        const idMatch = String(o.orderId || '').toLowerCase().includes(q);
+        const nameMatch = String(o.itemName || '').toLowerCase().includes(q);
+        return idMatch || nameMatch;
+      });
+    }
+
+    // 3. Tính toán số liệu thống kê cho dateFiltered
+    let subTotalComm = 0;
+    let subPendingComm = 0;
+    let subDoneComm = 0;
+    let subRecComm = 0;
+
+    let subCountCompleted = 0;
+    let subCountPending = 0;
+    let subCountCancelled = 0;
+
+    dateFiltered.forEach(o => {
+      const cat = getOrderCategory(o.status || o.orderStatus, o.paymentStatus);
+      const comm = Number(o.commission) || 0;
+      const isPaid = o.paymentStatus === 'Đã TT';
+
+      if (cat === 'completed') subCountCompleted++;
+      else if (cat === 'pending') subCountPending++;
+      else if (cat === 'cancelled') subCountCancelled++;
+
+      if (cat !== 'cancelled') {
+        subTotalComm += comm;
+        if (isPaid) {
+          subRecComm += comm;
+        } else {
+          if (cat === 'pending') subPendingComm += comm;
+          else if (cat === 'completed') subDoneComm += comm;
+        }
+      }
+    });
+
+    // Cập nhật 4 ô thống kê trên đầu & nhãn mốc thời gian
+    const periodTag = app.querySelector('.period-text');
+    if (periodTag) periodTag.textContent = getFilterLabel(currentDateFilter);
+
+    const elTotal = app.querySelector('.stat-total');
+    if (elTotal) elTotal.textContent = formatVND(subTotalComm);
+
+    const elPending = app.querySelector('.stat-pending');
+    if (elPending) elPending.textContent = formatVND(subPendingComm);
+
+    const elDone = app.querySelector('.stat-done');
+    if (elDone) elDone.textContent = formatVND(subDoneComm);
+
+    const elRec = app.querySelector('.stat-received');
+    if (elRec) elRec.textContent = formatVND(subRecComm);
+
+    // Cập nhật số lượng trên các badge của 3 tab trạng thái
+    const bCompleted = app.querySelector('.badge-completed');
+    if (bCompleted) bCompleted.textContent = subCountCompleted;
+
+    const bPending = app.querySelector('.badge-pending');
+    if (bPending) bPending.textContent = subCountPending;
+
+    const bCancelled = app.querySelector('.badge-cancelled');
+    if (bCancelled) bCancelled.textContent = subCountCancelled;
+
+    // 4. Lọc theo tab trạng thái đang chọn
+    const finalOrders = dateFiltered.filter(o => getOrderCategory(o.status || o.orderStatus, o.paymentStatus) === currentStatusTab);
+
+    // 5. Render danh sách
+    renderOrders(finalOrders, formatVND);
+  };
+
+  // Hàm reset bộ lọc về mặc định
+  window._resetOrderFilter = () => {
+    currentDateFilter = 'all';
+    currentSearchQuery = '';
+    const searchInp = app.querySelector('.order-search-input');
+    if (searchInp) searchInp.value = '';
+    const select = app.querySelector('.order-month-select');
+    if (select) select.value = '';
+    app.querySelectorAll('.date-chip-btn').forEach(b => {
+      if (b.dataset.date === 'all') b.classList.add('active');
+      else b.classList.remove('active');
+    });
+    updateOrderView();
+  };
+
+  // Gắn sự kiện cho các nút Date Chip
+  const dateChips = app.querySelectorAll('.date-chip-btn');
+  dateChips.forEach(btn => {
+    btn.addEventListener('click', () => {
+      dateChips.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const select = app.querySelector('.order-month-select');
+      if (select) select.value = '';
+      currentDateFilter = btn.dataset.date;
+      updateOrderView();
+    });
+  });
+
+  // Gắn sự kiện cho Dropdown chọn tháng
+  const monthSelect = app.querySelector('.order-month-select');
+  if (monthSelect) {
+    monthSelect.addEventListener('change', () => {
+      const val = monthSelect.value;
+      if (val) {
+        currentDateFilter = val;
+        dateChips.forEach(b => b.classList.remove('active'));
+      } else {
+        currentDateFilter = 'all';
+        const allBtn = app.querySelector('.date-chip-btn[data-date="all"]');
+        if (allBtn) allBtn.classList.add('active');
+      }
+      updateOrderView();
+    });
+  }
+
+  // Gắn sự kiện cho ô tìm kiếm
+  const searchInput = app.querySelector('.order-search-input');
+  if (searchInput) {
+    let searchTimer = null;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        currentSearchQuery = e.target.value;
+        updateOrderView();
+      }, 150);
+    });
+  }
+
+  // Gắn sự kiện cho 3 Tab Trạng thái
+  const statusTabs = app.querySelectorAll('.order-tabs button');
+  statusTabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      tabs.forEach(t => {
+      statusTabs.forEach(t => {
         t.classList.remove('active');
         t.style.background = 'transparent';
         t.style.color = '#3c4960';
@@ -353,31 +607,22 @@ function renderDashboard(response, query, formatVND) {
         const badge = t.querySelector('b');
         if (badge) badge.style.background = '#f1f1f5';
       });
-      
+
       tab.classList.add('active');
       tab.style.background = '#fff';
       tab.style.color = '#f25323';
       tab.style.boxShadow = '0 3px 9px rgba(233,91,34,0.12)';
       const activeBadge = tab.querySelector('b');
       if (activeBadge) activeBadge.style.background = '#fff0eb';
-      
-      const tabName = tab.dataset.tab;
-      const filtered = ordersList.filter(o => getOrderCategory(o.status || o.orderStatus, o.paymentStatus) === tabName);
-      renderOrders(filtered, formatVND);
+
+      currentStatusTab = tab.dataset.tab;
+      updateOrderView();
     });
   });
-  
 
-  
-  // Xác định tab hiển thị mặc định
-  let initialTab = 'completed';
-  if (completedCount === 0) {
-    if (pendingCount > 0) initialTab = 'pending';
-    else if (cancelledCount > 0) initialTab = 'cancelled';
-  }
-  
-  tabs.forEach(t => {
-    if (t.dataset.tab === initialTab) {
+  // Thiết lập trạng thái tab mặc định
+  statusTabs.forEach(t => {
+    if (t.dataset.tab === currentStatusTab) {
       t.classList.add('active');
       t.style.background = '#fff';
       t.style.color = '#f25323';
@@ -393,9 +638,9 @@ function renderDashboard(response, query, formatVND) {
       if (badge) badge.style.background = '#f1f1f5';
     }
   });
-  
-  const initialFiltered = ordersList.filter(o => getOrderCategory(o.status || o.orderStatus, o.paymentStatus) === initialTab);
-  renderOrders(initialFiltered, formatVND);
+
+  // Chạy lần đầu tiên để nạp toàn bộ số liệu và danh sách đơn
+  updateOrderView();
 }
 
 let isOrderResultsMounted = false;
