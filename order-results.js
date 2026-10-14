@@ -612,13 +612,7 @@ function renderDashboard(response, query, formatVND) {
           <span class="total" style="display: block; padding: 13px 15px; border: 1px solid #ffd9cd; border-radius: 14px; background: #fff7f4; box-shadow: inset 0 3px 0 #ff6a38, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">TỔNG HOA HỒNG</small><b class="stat-total" style="display: block; margin-top: 4px; font-size: 21px; color: #f24f25; letter-spacing: -0.4px;">0 đ</b></span>
           <span class="pending" style="display: block; padding: 13px 15px; border: 1px solid #f6e1a1; border-radius: 14px; background: #fffdf3; box-shadow: inset 0 3px 0 #f4ad28, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐANG CHỜ XỬ LÝ</small><b class="stat-pending" style="display: block; margin-top: 4px; font-size: 21px; color: #e89616; letter-spacing: -0.4px;">0 đ</b></span>
           <span class="done" style="display: block; padding: 13px 15px; border: 1px solid #d3eee0; border-radius: 14px; background: #f2fbf6; box-shadow: inset 0 3px 0 #21b565, 0 3px 8px rgba(25,35,52,0.04);"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ HOÀN THÀNH</small><b class="stat-done" style="display: block; margin-top: 4px; font-size: 21px; color: #18a45b; letter-spacing: -0.4px;">0 đ</b></span>
-          <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04); cursor: pointer; transition: transform 0.15s ease;" title="Bấm để xem danh sách bill chuyển tiền">
-            <small style="display: flex; align-items: center; justify-content: space-between; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">
-              <span>ĐÃ NHẬN</span>
-              <span style="color: #2864de; font-weight: 700;">Xem bill ↗</span>
-            </small>
-            <b class="stat-received" style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">0 đ</b>
-          </span>
+          <span class="received" style="display: block; padding: 13px 15px; border: 1px solid #d6e2ff; border-radius: 14px; background: #f3f7ff; box-shadow: inset 0 3px 0 #3975ea, 0 3px 8px rgba(25,35,52,0.04); cursor: pointer; transition: transform 0.15s ease;" title="Bấm để xem danh sách bill chuyển tiền"><small style="display: block; color: #8590a2; font-size: 10px; font-weight: 800; letter-spacing: 0.02em;">ĐÃ NHẬN</small><b class="stat-received" style="display: block; margin-top: 4px; font-size: 21px; color: #2864de; letter-spacing: -0.4px;">0 đ</b></span>
         </div>
       </article>
       
