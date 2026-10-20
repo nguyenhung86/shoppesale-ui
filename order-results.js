@@ -29,17 +29,27 @@ try {
   }
 } catch(e) {}
 
-function getPlatform(orderId) {
+function getPlatform(orderId, orderObj) {
+  if (orderObj && orderObj.platform) {
+    const p = String(orderObj.platform).toLowerCase();
+    if (p.includes("food")) return "ShopeeFood";
+    if (p.includes("tiktok")) return "TikTok";
+    if (p.includes("lazada")) return "Lazada";
+    return orderObj.platform;
+  }
   if (!orderId) return "Shopee";
   const cleaned = String(orderId).trim();
   if (!/^\d+$/.test(cleaned)) {
     return "Shopee";
   }
-  if (cleaned.length === 18 || cleaned.length === 19) {
+  if (cleaned.length >= 18 && cleaned.length <= 20) {
     return "TikTok";
   }
-  if (cleaned.length === 15 || cleaned.length === 16) {
+  if (cleaned.length >= 13 && cleaned.length <= 17) {
     return "Lazada";
+  }
+  if (cleaned.length >= 9 && cleaned.length <= 12) {
+    return "ShopeeFood";
   }
   return "Shopee";
 }
@@ -202,7 +212,7 @@ function renderOrders(filteredOrders, formatVND) {
   }
   
   listContainer.innerHTML = filteredOrders.map(o => {
-    const platform = getPlatform(o.orderId);
+    const platform = getPlatform(o.orderId, o);
     const category = getOrderCategory(o.status || o.orderStatus, o.paymentStatus);
     
     let borderLeftColor = '#18ad60'; // completed
@@ -224,6 +234,8 @@ function renderOrders(filteredOrders, formatVND) {
       platformStyle = 'border: 1px solid #d6e2ff; background: #f3f7ff; color: #2864de; margin-left: auto;';
     } else if (platform === 'TikTok') {
       platformStyle = 'border: 1px solid #e1e3e8; background: #f4f5f8; color: #111111; margin-left: auto;';
+    } else if (platform === 'ShopeeFood') {
+      platformStyle = 'border: 1px solid #ffe0b2; background: #fff4e5; color: #e65100; margin-left: auto;';
     }
     
     const cashbackAmount = formatVND(o.commission);

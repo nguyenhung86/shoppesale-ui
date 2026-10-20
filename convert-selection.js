@@ -169,7 +169,7 @@ function handleConvert() {
               commissionAmount: bridgeRes.commissionAmount || 0,
               price: bridgeRes.price || 0,
               imageUrl: bridgeRes.imageUrl || "",
-              platformName: bridgeRes.platformName || (/tiktok/i.test(rawUrl) ? "TikTok Shop" : (/lazada/i.test(rawUrl) ? "Lazada" : "Shopee"))
+              platformName: bridgeRes.platformName || (/tiktok/i.test(rawUrl) ? "TikTok Shop" : (/lazada/i.test(rawUrl) ? "Lazada" : (/spf\.shopee\.vn|shopeefood|\/now-food/i.test(rawUrl) ? "ShopeeFood" : "Shopee")))
             };
           }
         } catch(eBridge) {}
@@ -313,17 +313,15 @@ function handleConvert() {
           let imageUrl = response.imageUrl || "";
           
           // Xác định sàn mua hàng
-          let platform = response.platformName || "Shopee";
           const lowerUrl = rawUrl.toLowerCase();
+          let platform = response.platformName || "Shopee";
           if (lowerUrl.includes('lazada')) platform = "Lazada";
           else if (lowerUrl.includes('tiktok')) platform = "TikTok Shop";
-          else if (lowerUrl.includes('shopeefood')) platform = "ShopeeFood";
+          else if (/shopeefood|spf\.shopee\.vn|\/now-food/i.test(lowerUrl) || response.platformName === "ShopeeFood") platform = "ShopeeFood";
           
-          // THEO YÊU CẦU CỦA SẾP: TIKTOK VÀ LAZADA HIỂN THỊ LINK GỐC, KHÔNG BỌC LINK SHOPPESALE.IO.VN
-          if (platform === "TikTok Shop" || platform === "Lazada") {
-            if (response.rawAffiliateLink || response.affiliateLink || response.originalLink) {
-              shortLink = response.rawAffiliateLink || response.affiliateLink || response.originalLink;
-            }
+          // Trả về link gốc trực tiếp cho mọi sàn (Shopee, ShopeeFood, TikTok, Lazada)
+          if (response.rawAffiliateLink || response.affiliateLink || response.shortLink) {
+            shortLink = response.rawAffiliateLink || response.affiliateLink || response.shortLink;
           }
 
           // Xử lý tên sản phẩm động cho TikTok Shop (Loại bỏ các chữ lỗi mặc định)
@@ -333,6 +331,11 @@ function handleConvert() {
                 ? response.productName
                 : "Sản phẩm TikTok Shop";
             }
+          }
+
+          // Xử lý tên quán cho ShopeeFood
+          if (platform === "ShopeeFood") {
+            productName = "ShopeeFood";
           }
 
           // Tự động điều chỉnh tỷ lệ hoa hồng cơ bản theo chính sách đặc biệt tài khoản của sếp (Trích xuất chuẩn 100% từ affiliate-bot.js)
@@ -387,11 +390,16 @@ function handleConvert() {
           }
           
           // Tên sản phẩm hiển thị chuẩn từ API
-          let displayName = productName || "Sản phẩm mua sắm";
+          let displayName = productName || (platform === "ShopeeFood" ? "ShopeeFood" : "Sản phẩm mua sắm");
+          if (platform === "ShopeeFood") {
+            displayName = "ShopeeFood";
+          }
 
           // Ảnh sản phẩm chuẩn từ API
           let safeImage = imageUrl;
-          if (!safeImage || safeImage.includes("unsplash")) {
+          if (platform === "ShopeeFood" && (!safeImage || safeImage.includes("hero-illustration") || safeImage.includes("unsplash"))) {
+            safeImage = "assets/shopeefood-mark.svg";
+          } else if (!safeImage || safeImage.includes("unsplash")) {
             safeImage = "assets/hero-illustration-v3.png";
           }
 
@@ -456,7 +464,7 @@ function handleConvert() {
           } else if (platform === "Lazada") {
             breakdownStr = `Lazada ${finalRate}%`;
           } else if (platform === "ShopeeFood") {
-            breakdownStr = `${finalRate}%`;
+            breakdownStr = "Cập nhật sau";
           } else {
             breakdownStr = `${platform} ${finalRate}%`;
           }
@@ -472,7 +480,7 @@ function handleConvert() {
             <div style="display: flex; gap: 14px; margin-bottom: 20px; align-items: flex-start;">
               <img src="${safeImage}" style="width: 64px; height: 64px; border-radius: 10px; object-fit: cover; border: 1px solid #f1f5f9; flex-shrink: 0;" alt="Product Image" />
               <div style="font-size: 14px; font-weight: 700; color: #1e293b; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px;">
-                ${displayName}
+                ${platform === "ShopeeFood" ? "🍔 Quán: " : ""}${displayName}
               </div>
             </div>
             
@@ -481,27 +489,35 @@ function handleConvert() {
               <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-bottom: 6px; display: flex; align-items: center; gap: 4px;">
                 Hoa hồng ước tính: <svg style="width: 14px; height: 14px; fill: #94a3b8;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
               </div>
-              <div style="margin-top: 4px;">
-                <div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
-                  <span style="font-size: clamp(18px, 4.8vw, 24px); font-weight: 800; color: #0f172a; line-height: 1.2;">
-                    ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : finalRate + '%'}
-                  </span>
-                  <span style="font-size: clamp(11px, 3.2vw, 13px); color: #ea580c; font-weight: 600;">
-                    (${breakdownStr})
+              ${platform === "ShopeeFood" ? `
+                <div style="margin-top: 6px;">
+                  <span style="font-size: 15px; font-weight: 700; color: #16a34a; line-height: 1.5; display: block;">
+                    Sẽ được cập nhật vào ngày mai (Shopee chưa hỗ trợ xem trước hoa hồng ước tính) ⏳
                   </span>
                 </div>
-                ${displayPrice > 0 ? `
-                <div style="font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500;">
-                  Giá: ${displayPrice.toLocaleString('vi-VN')}đ
+              ` : `
+                <div style="margin-top: 4px;">
+                  <div style="display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap;">
+                    <span style="font-size: clamp(18px, 4.8vw, 24px); font-weight: 800; color: #0f172a; line-height: 1.2;">
+                      ≈ ${cashback > 0 ? cashback.toLocaleString('vi-VN') + 'đ' : finalRate + '%'}
+                    </span>
+                    <span style="font-size: clamp(11px, 3.2vw, 13px); color: #ea580c; font-weight: 600;">
+                      (${breakdownStr})
+                    </span>
+                  </div>
+                  ${displayPrice > 0 ? `
+                  <div style="font-size: 13px; color: #64748b; margin-top: 4px; font-weight: 500;">
+                    Giá: ${displayPrice.toLocaleString('vi-VN')}đ
+                  </div>
+                  ` : ''}
                 </div>
-                ` : ''}
-              </div>
+              `}
             </div>
             
             <!-- Primary CTA Action Button -->
             <a href="${shortLink}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f97316; color: #ffffff; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(249,115,22,0.25); margin-bottom: 12px; transition: all 0.2s;">
               <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
-              Mở link mua hàng
+              ${platform === "ShopeeFood" ? "Mở link đặt món" : "Mở link mua hàng"}
             </a>
             
             <!-- Secondary Action Buttons -->

@@ -357,6 +357,7 @@
     .badge-shopee { background: #FFF0EA; color: #F4511E; }
     .badge-lazada { background: #EEF0FC; color: #0F136D; }
     .badge-tiktok { background: #F1F1F5; color: #000; }
+    .badge-food { background: #FFF4E5; color: #E65100; border: 1px solid #FFE0B2; }
     .badge-success { background: #E8F8EF; color: #16A34A; }
     .badge-pending { background: #FFF9E6; color: #D97706; }
     .badge-canceled { background: #FDECEC; color: #DC2626; }
@@ -1048,6 +1049,13 @@
 
   <script>
     const API_URL = "https://api-vps.hoantienonline.io.vn/api/web";
+    const EXCLUDED_ORDER_IDS = new Set([
+      '26101935BBNWE8',
+      '261019359FK0DS',
+      '261019357JG6BR',
+      '2610193AK5RTP5',
+      '2610191TMTT5DK'
+    ]);
     let adminUsers = [];
     let adminOrders = [];
     let adminProfiles = [];
@@ -1086,9 +1094,12 @@
           const cachedOrders = localStorage.getItem("cached_admin_orders");
           if (cachedOrders) {
             adminOrders = JSON.parse(cachedOrders);
-            if (Array.isArray(adminOrders) && adminOrders.length > 0) {
-              populateMonthOptions();
-              filterOrdersTable();
+            if (Array.isArray(adminOrders)) {
+              adminOrders = adminOrders.filter(o => !EXCLUDED_ORDER_IDS.has(String(o.orderId || o.id || '').trim()));
+              if (adminOrders.length > 0) {
+                populateMonthOptions();
+                filterOrdersTable();
+              }
             }
           }
           updateOverviewStats();
@@ -1209,7 +1220,7 @@
 
         // 2. Cập nhật Đơn hàng
         if (resOrders.status === "fulfilled" && resOrders.value?.success && Array.isArray(resOrders.value.data)) {
-          adminOrders = resOrders.value.data;
+          adminOrders = resOrders.value.data.filter(o => !EXCLUDED_ORDER_IDS.has(String(o.orderId || o.id || '').trim()));
           try { localStorage.setItem("cached_admin_orders", JSON.stringify(adminOrders)); } catch(e){}
           populateMonthOptions();
           updateOverviewStats();
@@ -1508,7 +1519,8 @@
         if (json.success) {
           const accInfo = json.accounts ? json.accounts.map(a => `${a.name}: ${a.count} đơn`).join(', ') : '';
           const sheetMsg = json.sheetSyncing ? `\n- Google Sheet: Đang tự động nạp ngầm các đơn lên Sheet...` : '';
-          alert(`⚡ Đồng bộ đơn Shopee thành công (30 ngày gần nhất)!\n\n- Đã quét: ${json.scrapedCount || 0} đơn (${accInfo})\n- Đơn mới thêm: ${json.newCount || 0}\n- Đơn cập nhật: ${json.updatedCount || 0}\n- Tổng đơn hệ thống: ${json.totalOrders || 0}${sheetMsg}\n- Thời gian: ${(json.durationMs / 1000).toFixed(1)} giây.`);
+          const foodMsg = json.shopeeFoodCount > 0 ? `\n- Shopee TMĐT: ${json.shopeeCount || 0} đơn | ShopeeFood: ${json.shopeeFoodCount} đơn 🍔` : '';
+          alert(`⚡ Đồng bộ đơn Shopee & ShopeeFood thành công (30 ngày gần nhất)!\n\n- Đã quét: ${json.scrapedCount || 0} đơn (${accInfo})${foodMsg}\n- Đơn mới thêm: ${json.newCount || 0}\n- Đơn cập nhật: ${json.updatedCount || 0}\n- Tổng đơn hệ thống: ${json.totalOrders || 0}${sheetMsg}\n- Thời gian: ${(json.durationMs / 1000).toFixed(1)} giây.`);
           await loadAdminData();
         } else {
           alert("⚠️ Lỗi đồng bộ: " + (json.error || "Không thể quét đơn Shopee"));
@@ -1838,8 +1850,10 @@
 
       const rowsHtml = orders.map((o, i) => {
         let platformClass = "badge-shopee";
-        if ((o.platform || '').toLowerCase() === "tiktok") platformClass = "badge-tiktok";
-        if ((o.platform || '').toLowerCase() === "lazada") platformClass = "badge-lazada";
+        const pLower = (o.platform || '').toLowerCase();
+        if (pLower.includes("tiktok")) platformClass = "badge-tiktok";
+        else if (pLower.includes("lazada")) platformClass = "badge-lazada";
+        else if (pLower.includes("food")) platformClass = "badge-food";
 
         const rawStatus = String(o.status || o.orderStatus || 'Pending').trim();
         const stLower = rawStatus.toLowerCase();
@@ -1864,12 +1878,29 @@
         const commission = Math.round(Number(o.commission || o.commissionAmount || 0));
         const amount = Math.round(Number(o.amount || o.price || 0));
 
+        let displayName = o.customerName || o.zaloName;
+        const cleanSubId = String(o.subId || o.userId || o.zaloId || '').trim();
+        if (!displayName || displayName === 'unknown' || /^\d{12,25}$/.test(String(displayName).trim())) {
+          const prof = Array.isArray(adminProfiles) ? adminProfiles.find(p => String(p.userId || '').trim() === cleanSubId) : null;
+          if (prof && (prof.userName || prof.zaloName)) {
+            displayName = prof.userName || prof.zaloName;
+          } else {
+            const usr = Array.isArray(adminUsers) ? adminUsers.find(u => String(u.userId || '').trim() === cleanSubId) : null;
+            if (usr && usr.userName) {
+              displayName = usr.userName;
+            }
+          }
+        }
+        if (!displayName || displayName === 'unknown') {
+          displayName = o.subId || '-';
+        }
+
         return `
           <tr>
             <td>${i + 1}</td>
             <td>${o.orderDate || '-'}</td>
             <td><strong>${o.orderId || '-'}</strong></td>
-            <td>${o.customerName || o.zaloName || o.subId || '-'}</td>
+            <td>${displayName}</td>
             <td><span class="badge-tag ${platformClass}">${o.platform || 'Shopee'}</span></td>
             <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${o.itemName || 'Sản phẩm hoàn tiền'}</td>
             <td>${amount.toLocaleString('vi-VN')}đ</td>
@@ -1902,6 +1933,7 @@
                               String(o.itemName || '').toLowerCase().includes(q) || 
                               String(o.customerName || '').toLowerCase().includes(q) ||
                               String(o.zaloName || '').toLowerCase().includes(q) ||
+                              String(o.platform || '').toLowerCase().includes(q) ||
                               String(o.subId || '').toLowerCase().includes(q) ||
                               String(o.userId || '').toLowerCase().includes(q) ||
                               String(o.zaloId || '').toLowerCase().includes(q);
