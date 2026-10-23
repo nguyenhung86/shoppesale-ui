@@ -711,6 +711,7 @@
         <button class="btn-action" onclick="exportToCSV()"><i class="fa-solid fa-file-excel"></i> Xuất Excel</button>
         <button class="btn-action" id="btn-refresh-data" onclick="loadAdminData(this)"><i class="fa-solid fa-rotate"></i> Làm mới</button>
         <button class="btn-action btn-shopee-action" id="btn-sync-shopee-top" onclick="triggerSyncShopeeOrders(this)" title="Quét & Đồng bộ đơn Shopee từ 2 tài khoản (30 ngày)"><i class="fa-solid fa-bolt"></i> Đồng bộ Shopee</button>
+        <button class="btn-action" id="btn-sync-lazada-top" onclick="triggerSyncLazadaOrders(this)" style="background: #000080; color: white; border-color: #0F136D; font-weight: 600;" title="Quét & Đồng bộ đơn Lazada từ trình duyệt (60 ngày)"><i class="fa-solid fa-bolt"></i> Đồng bộ Lazada</button>
         <button class="btn-action" id="btn-push-sheet-top" onclick="triggerPushVpsOrdersToSheet(this)" style="background: #10B981; color: white; border-color: #059669; font-weight: 700;" title="Đẩy đơn hàng từ cache VPS lên Google Sheet (bù các đơn bị thiếu/lỗi)"><i class="fa-solid fa-cloud-arrow-up"></i> Đẩy đơn lên Sheet</button>
         <button class="btn-action btn-primary-action" onclick="handleAdminLogout()"><i class="fa-solid fa-power-off"></i> Đăng xuất</button>
       </div>
@@ -814,6 +815,9 @@
           </select>
           <button class="btn-action btn-shopee-action" id="btn-sync-shopee-orders" onclick="triggerSyncShopeeOrders(this)" title="Quét & Đồng bộ đơn Shopee từ 2 tài khoản (30 ngày)">
             <i class="fa-solid fa-bolt"></i> Đồng bộ Shopee
+          </button>
+          <button class="btn-action" id="btn-sync-lazada-orders" onclick="triggerSyncLazadaOrders(this)" style="background: #000080; color: white; border-color: #0F136D; font-weight: 600;" title="Quét & Đồng bộ đơn Lazada từ trình duyệt (60 ngày)">
+            <i class="fa-solid fa-bolt"></i> Đồng bộ Lazada
           </button>
           <button class="btn-action" id="btn-push-sheet-orders" onclick="triggerPushVpsOrdersToSheet(this)" style="background: #10B981; color: white; border-color: #059669; font-weight: 700;" title="Đẩy đơn hàng từ cache VPS lên Google Sheet (bù các đơn bị thiếu/lỗi)">
             <i class="fa-solid fa-cloud-arrow-up"></i> Đẩy đơn lên Sheet
@@ -1539,6 +1543,38 @@
           if (b) {
             b.disabled = false;
             b.innerHTML = '<i class="fa-solid fa-bolt"></i> Đồng bộ Shopee';
+          }
+        });
+      }
+    }
+
+    async function triggerSyncLazadaOrders(btn) {
+      const topBtn = document.getElementById("btn-sync-lazada-top");
+      const tabBtn = document.getElementById("btn-sync-lazada-orders");
+      [topBtn, tabBtn].forEach(b => {
+        if (b) {
+          b.disabled = true;
+          b.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang quét...';
+        }
+      });
+      try {
+        const res = await fetch(`${API_URL}?action=syncLazadaOrders&days=60`);
+        const json = await res.json();
+        if (json.success) {
+          const totalCommStr = Math.round(json.totalCommissionSum || 0).toLocaleString('vi-VN') + 'đ';
+          const memberCommStr = Math.round(json.memberCommissionSum || 0).toLocaleString('vi-VN') + 'đ';
+          alert(`⚡ Đồng bộ đơn Lazada thành công (${json.dateRangeStr || '60 ngày'})!\n\n- Đã cào: ${json.scrapedCount || 0} đơn\n- Đơn mới thêm: ${json.newCount || 0}\n- Đơn cập nhật: ${json.updatedCount || 0}\n- Tổng hoa hồng sàn: ${totalCommStr}\n- Tiền hoàn cho khách: ${memberCommStr}\n- Trình duyệt: ${json.accountName || 'CDP'} (cổng ${json.port || '55949'})\n- Thời gian: ${(json.durationMs / 1000).toFixed(1)} giây.`);
+          await loadAdminData();
+        } else {
+          alert("⚠️ Lỗi đồng bộ Lazada: " + (json.error || "Không thể cào dữ liệu Lazada"));
+        }
+      } catch (e) {
+        alert("Lỗi kết nối VPS: " + e.message);
+      } finally {
+        [topBtn, tabBtn].forEach(b => {
+          if (b) {
+            b.disabled = false;
+            b.innerHTML = '<i class="fa-solid fa-bolt"></i> Đồng bộ Lazada';
           }
         });
       }
