@@ -792,6 +792,13 @@
           <input type="text" id="search-orders-input" oninput="filterOrdersTable()" onkeyup="filterOrdersTable()" placeholder="Tìm theo Mã đơn, Sản phẩm, Tên Zalo, ID Zalo...">
         </div>
         <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <select id="filter-order-platform" onchange="filterOrdersTable()" class="form-control" style="width: auto; padding: 10px 14px; font-size: 13px; font-weight: 600;">
+            <option value="all">🌐 Tất cả các sàn</option>
+            <option value="Shopee">🟠 Shopee</option>
+            <option value="TikTok">🖤 TikTok Shop</option>
+            <option value="Lazada">💙 Lazada</option>
+            <option value="ShopeeFood">🍔 ShopeeFood</option>
+          </select>
           <select id="filter-order-status" onchange="filterOrdersTable()" class="form-control" style="width: auto; padding: 10px 14px; font-size: 13px; font-weight: 600;">
             <option value="all">📦 Tất cả trạng thái đơn</option>
             <option value="Pending">🕒 Chờ xử lý (Pending)</option>
@@ -1849,8 +1856,16 @@
       }
 
       const rowsHtml = orders.map((o, i) => {
+        let displayPlatform = o.platform || "";
+        if (!displayPlatform) {
+          const oId = String(o.orderId || o.id || '').trim();
+          if (/^\d{18,20}$/.test(oId)) displayPlatform = "TikTok";
+          else if (/^\d{13,17}$/.test(oId)) displayPlatform = "Lazada";
+          else if (/^\d{9,12}$/.test(oId)) displayPlatform = "ShopeeFood";
+          else displayPlatform = "Shopee";
+        }
         let platformClass = "badge-shopee";
-        const pLower = (o.platform || '').toLowerCase();
+        const pLower = displayPlatform.toLowerCase();
         if (pLower.includes("tiktok")) platformClass = "badge-tiktok";
         else if (pLower.includes("lazada")) platformClass = "badge-lazada";
         else if (pLower.includes("food")) platformClass = "badge-food";
@@ -1901,7 +1916,7 @@
             <td>${o.orderDate || '-'}</td>
             <td><strong>${o.orderId || '-'}</strong></td>
             <td>${displayName}</td>
-            <td><span class="badge-tag ${platformClass}">${o.platform || 'Shopee'}</span></td>
+            <td><span class="badge-tag ${platformClass}">${displayPlatform}</span></td>
             <td style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${o.itemName || 'Sản phẩm hoàn tiền'}</td>
             <td>${amount.toLocaleString('vi-VN')}đ</td>
             <td style="color: var(--success); font-weight: 700;">+${commission.toLocaleString('vi-VN')}đ</td>
@@ -1917,6 +1932,9 @@
     function filterOrdersTable() {
       const searchInput = document.getElementById("search-orders-input");
       const q = searchInput ? searchInput.value.trim().toLowerCase() : "";
+
+      const platformSelect = document.getElementById("filter-order-platform");
+      const platformFilter = platformSelect ? platformSelect.value : "all";
 
       const statusSelect = document.getElementById("filter-order-status");
       const statusFilter = statusSelect ? statusSelect.value : "all";
@@ -1938,6 +1956,27 @@
                               String(o.userId || '').toLowerCase().includes(q) ||
                               String(o.zaloId || '').toLowerCase().includes(q);
 
+        let matchPlatform = true;
+        if (platformFilter !== "all") {
+          let plat = String(o.platform || '').trim();
+          if (!plat) {
+            const oId = String(o.orderId || o.id || '').trim();
+            if (/^\d{18,20}$/.test(oId)) plat = "TikTok";
+            else if (/^\d{13,17}$/.test(oId)) plat = "Lazada";
+            else if (/^\d{9,12}$/.test(oId)) plat = "ShopeeFood";
+            else plat = "Shopee";
+          }
+          const pLower = plat.toLowerCase();
+          const targetP = platformFilter.toLowerCase();
+          if (targetP === "shopeefood") {
+            matchPlatform = pLower.includes("food");
+          } else if (targetP === "shopee") {
+            matchPlatform = pLower.includes("shopee") && !pLower.includes("food");
+          } else {
+            matchPlatform = pLower.includes(targetP);
+          }
+        }
+
         let matchStatus = true;
         if (statusFilter !== "all") {
           const st = String(o.status || o.orderStatus || '').toLowerCase();
@@ -1954,9 +1993,10 @@
           }
         }
 
-        return matchMonth && matchQ && matchStatus && matchPayment;
+        return matchMonth && matchQ && matchPlatform && matchStatus && matchPayment;
       });
 
+      window._currentFilteredOrders = filtered;
       renderOrdersTable(filtered);
 
       // Nếu không tìm thấy trong RAM và từ khóa dài >= 3 ký tự -> Gọi API getAdminOrders trên VPS siêu tốc
@@ -2028,8 +2068,17 @@
         });
       } else {
         csvContent += "STT,Ngay Dat,Ma Don,Thanh Vien,San,Ten San Pham,Gia Don,Hoa Hong,Trang Thai\n";
-        adminOrders.forEach((o, i) => {
-          csvContent += `"${i+1}","${o.orderDate||''}","${o.orderId}","${o.customerName||''}","${o.platform||'Shopee'}","${(o.itemName||'').replace(/"/g, '""')}","${o.amount||0}","${o.commission||0}","${o.orderStatus||''}"\n`;
+        const listToExport = (window._currentFilteredOrders && window._currentFilteredOrders.length > 0) ? window._currentFilteredOrders : adminOrders;
+        listToExport.forEach((o, i) => {
+          let plat = o.platform || '';
+          if (!plat) {
+            const oId = String(o.orderId || o.id || '').trim();
+            if (/^\d{18,20}$/.test(oId)) plat = "TikTok";
+            else if (/^\d{13,17}$/.test(oId)) plat = "Lazada";
+            else if (/^\d{9,12}$/.test(oId)) plat = "ShopeeFood";
+            else plat = "Shopee";
+          }
+          csvContent += `"${i+1}","${o.orderDate||''}","${o.orderId}","${o.customerName||o.zaloName||''}","${plat}","${(o.itemName||'').replace(/"/g, '""')}","${o.amount||0}","${o.commission||0}","${o.status||o.orderStatus||''}"\n`;
         });
       }
       const encodedUri = encodeURI(csvContent);
