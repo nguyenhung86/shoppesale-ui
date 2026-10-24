@@ -1296,7 +1296,7 @@ function syncRealDataToUI() {
   }
 
   // 1c. Cập nhật Ngày tham gia hiển thị trên trang Web (Dashboard, Account)
-  const joinDate = getJoinDate();
+  const joinDate = getJoinDate(); document.querySelectorAll('.account-joindate-val').forEach(el => el.textContent = joinDate); document.querySelectorAll('.account-email-val').forEach(el => el.textContent = user.email || 'Chưa cập nhật email');
   document.querySelectorAll('.wallet-user small, .account-person p, .dash-member-stats div:nth-child(3) b').forEach(el => {
     if (el.textContent.includes("11/07/2026")) {
       el.textContent = el.textContent.replace("11/07/2026", joinDate);
@@ -1399,7 +1399,7 @@ function syncRealDataToUI() {
     };
 
     // Cập nhật tab TỔNG QUAN (Dashboard)
-    if (activeHash === 'dashboard') {
+    if (activeHash === 'dashboard' || activeHash === 'account') {
       setIfChanged('.dash-total strong, .wallet-balance strong', formatVND(totalCommission));
       setIfChanged('.dash-status.processing b, .status-processing b', formatVND(totalPending));
       setIfChanged('.dash-status.completed b, .status-completed b', formatVND(totalCompleted));
