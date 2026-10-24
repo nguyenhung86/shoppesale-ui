@@ -129,6 +129,7 @@ function accountRedesignedPage() {
         <section class="account-panel account-connections-panel">
           <div class="account-panel-heading">
             <div><span class="account-section-icon">⌘</span><div><small>ĐỒNG BỘ & THANH TOÁN</small><h2>Liên kết nhận tiền</h2></div></div>
+            <span class="account-panel-badge">♕ Kim Cương · 80%</span>
           </div>
           <div class="account-setting-grid">
             <button class="account-setting zalo" type="button">
@@ -150,7 +151,7 @@ function accountRedesignedPage() {
               <i>›</i>
             </button>
           </div>
-          <div class="account-tip" style="margin-top:14px; background:#fff7ed; border-color:#fed7aa; color:#9a3412;">
+          <div class="account-tip" style="background:#fff7ed; border-color:#fed7aa; color:#9a3412;">
             <b style="color:#ea580c;">💡</b>
             <span>Nhắn riêng cho Bot Zalo cú pháp <b>/stk [Tên_Ngân_Hàng] [Số_Tài_Khoản]</b> để tự động nhận tiền hoàn mỗi ngày.</span>
           </div>
