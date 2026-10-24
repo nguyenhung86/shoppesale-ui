@@ -1,7 +1,7 @@
 (() => {
   function mountDashboardBanner() {
     const dashboard = document.querySelector('.dashboard-view');
-    if (!dashboard || dashboard.querySelector('.dashboard-commission-banner')) return;
+    if (!dashboard || !dashboard.querySelector('.dashboard-wallet') || dashboard.querySelector('.dashboard-commission-banner')) return;
 
     const banner = document.createElement('section');
     banner.className = 'dashboard-commission-banner';
