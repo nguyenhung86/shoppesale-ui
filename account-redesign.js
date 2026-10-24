@@ -1,58 +1,171 @@
 function accountRedesignedPage() {
+  const user = (typeof getLoggedUser === 'function' ? getLoggedUser() : null) || {};
+  const userEmail = user.email || 'Chưa cập nhật email';
+  const savedPhone = localStorage.getItem('shoppesale_phone') || '';
+  const joinDate = (typeof getJoinDate === 'function' ? getJoinDate() : null) || localStorage.getItem('shoppesale_join_date') || '11/07/2026';
+
   return `
-    <div class="account-view">
-      <section class="account-hero">
-        <div class="account-hero-copy">
-          <div class="account-kicker"><span>✦</span> HỒ SƠ THÀNH VIÊN</div>
-          <div class="account-person">
-            <span class="account-avatar">HV</span>
-            <div>
-              <h1>Hồng Vinh</h1>
-              <p>Thành viên từ 11/07/2026</p>
-            </div>
+    <div class="account-view dashboard-view">
+      <section class="dashboard-intro">
+        <div class="intro-copy">
+          <h1>Bấm nhận hàng<br>để <em>nhận hoàn tiền</em></h1>
+          <p>Tra cứu đơn hàng và theo dõi hoa hồng<br>của bạn chỉ trong vài giây.</p>
+          <div class="intro-markets">
+            <span class="market-shopee">S</span><b>Shopee</b>
+            <span class="market-lazada">◆</span><b>Lazada</b>
+            <span class="market-tiktok">♪</span><b>TikTok Shop</b>
           </div>
         </div>
-        <div class="account-hero-orbit" aria-hidden="true"></div>
+        <img src="assets/hero-illustration-v3.png" alt="Minh họa hoàn tiền mua sắm">
+        <div class="intro-phone-ui"><span class="phone-check">✓</span><b>Hoàn tiền</b><i></i><i></i><i></i></div>
       </section>
 
-      <section class="account-balance-card">
-        <div class="account-balance-main">
-          <span class="account-balance-icon">₫</span>
-          <div><small>TỔNG HOA HỒNG</small><strong>0đ</strong><p>Tiền hoàn hợp lệ sẽ được cộng sau đối soát.</p></div>
+      <section class="dashboard-wallet">
+        <div class="wallet-top">
+          <div class="wallet-user">
+            <span class="avatar account-avatar">HV</span>
+            <span>Xin chào,<strong>Hồng Vinh</strong><small>▣ Từ 11/07/2026</small></span>
+          </div>
+          <div class="wallet-top-actions">
+            <button type="button" class="wallet-top-btn account-payment-summary payment-history" title="Xem lịch sử thanh toán & Bill">
+              <span>◷</span> Lịch sử TT
+            </button>
+            <button type="button" class="wallet-top-btn account-edit-top-btn" title="Chỉnh sửa hồ sơ cá nhân">
+              <span>✎</span> Sửa hồ sơ
+            </button>
+          </div>
+          <span class="wallet-tier">♕ Kim Cương</span>
         </div>
-        <div class="account-quick-stats">
-          <div><span>▣</span><small>Tổng đơn hàng</small><b>0</b></div>
-          <div><span>♧</span><small>Đã giới thiệu</small><b>0</b></div>
-          <div><span>◷</span><small>Đang chờ xử lý</small><b>0đ</b></div>
-          <button class="account-payment-summary payment-history" type="button" aria-label="Xem lịch sử thanh toán"><span>◷</span><small>Lịch sử</small><b>Thanh toán</b></button>
+
+        <div class="wallet-balance">
+          <span class="wallet-art">◴</span>
+          <small>TỔNG HOA HỒNG</small>
+          <strong>0đ</strong>
+          <em>hoantienonline.io.vn</em>
+        </div>
+
+        <div class="wallet-stats wallet-status-stats">
+          <div class="status-processing"><span>◷</span><small>ĐANG CHỜ XỬ LÝ</small><b>0đ</b></div>
+          <div class="status-completed"><span>✓</span><small>ĐÃ HOÀN THÀNH</small><b>0đ</b></div>
+          <div class="status-received"><span>₫</span><small>ĐÃ NHẬN</small><b>0đ</b></div>
+        </div>
+
+        <div class="wallet-actions">
+          <a href="#convert">↪ Chuyển đổi</a>
+          <button type="button" data-page="orders">▣ Đơn hàng</button>
+          <button type="button" data-page="referrals">♧ Giới thiệu</button>
+          <button type="button" class="wallet-action-history payment-history">◷ Lịch sử nhận tiền</button>
         </div>
       </section>
 
-      <div class="account-content-grid">
+      <div class="dashboard-counters">
+        <div><span>◇</span><p>Tổng đơn hàng<b>0</b></p></div>
+        <div><span>♧</span><p>Bạn đã mời<b>0</b></p></div>
+      </div>
+
+      <section class="dashboard-chart commission-chart-card">
+        <div class="commission-chart-head">
+          <div>
+            <span>↗</span>
+            <div>
+              <small>THEO DÕI HOA HỒNG</small>
+              <h2>Biểu đồ tiền hoa hồng theo tháng</h2>
+            </div>
+          </div>
+          <b>0đ</b>
+        </div>
+        <div class="commission-chart-visual">
+          <div class="commission-chart-y"><i>600k</i><i>450k</i><i>300k</i><i>150k</i><i>0</i></div>
+          <div class="commission-chart-canvas">
+            <svg viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="commissionFill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#ff6b25" stop-opacity=".28"/>
+                  <stop offset="100%" stop-color="#ff6b25" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <g stroke="#edf0f4" stroke-width="1">
+                <path d="M0 18H1000"/><path d="M0 67H1000"/><path d="M0 116H1000"/><path d="M0 165H1000"/><path d="M0 214H1000"/>
+              </g>
+            </svg>
+            <span class="commission-chart-dot"></span>
+            <span class="commission-chart-label"><b>0đ</b><small>T7/26</small></span>
+          </div>
+          <div class="commission-chart-months">
+            <span>T8/25</span><span>T9/25</span><span>T10/25</span><span>T11/25</span><span>T12/25</span><span>T1/26</span><span>T2/26</span><span>T3/26</span><span>T4/26</span><span>T5/26</span><span>T6/26</span><span>T7/26</span>
+          </div>
+        </div>
+      </section>
+
+      <div class="account-unified-grid">
         <section class="account-panel account-profile-panel">
           <div class="account-panel-heading">
             <div><span class="account-section-icon">♙</span><div><small>THÔNG TIN CÁ NHÂN</small><h2>Hồ sơ của bạn</h2></div></div>
-            <button class="account-edit-all" type="button">Chỉnh sửa</button>
+            <button class="account-edit-all" type="button">✎ Chỉnh sửa</button>
           </div>
           <div class="account-info-list">
-            <button class="account-info-item" type="button"><span class="account-info-icon">♙</span><span><small>Tên hiển thị</small><b>Hồng Vinh</b></span><i>›</i></button>
-            <button class="account-info-item" type="button"><span class="account-info-icon">⌕</span><span><small>Số điện thoại</small><b class="is-empty">Thêm số điện thoại</b></span><i>›</i></button>
+            <button class="account-info-item" type="button">
+              <span class="account-info-icon">♙</span>
+              <span><small>Tên hiển thị</small><b>Hồng Vinh</b></span>
+              <i>›</i>
+            </button>
+            <button class="account-info-item" type="button">
+              <span class="account-info-icon">⌕</span>
+              <span><small>Số điện thoại</small><b class="${savedPhone ? '' : 'is-empty'}">${savedPhone || 'Thêm số điện thoại'}</b></span>
+              <i>›</i>
+            </button>
+            <div class="account-info-item is-readonly">
+              <span class="account-info-icon">✉</span>
+              <span><small>Email Google</small><b class="account-email-val">${userEmail}</b></span>
+            </div>
+            <div class="account-info-item is-readonly">
+              <span class="account-info-icon">▣</span>
+              <span><small>Ngày tham gia</small><b class="account-joindate-val">${joinDate}</b></span>
+            </div>
           </div>
-          <div class="account-tip"><b>✓</b><span>Hoàn thiện số điện thoại để bảo vệ tài khoản và hỗ trợ rút tiền nhanh hơn.</span></div>
+          <div class="account-tip"><b>✓</b><span>Hoàn thiện số điện thoại để bảo vệ tài khoản và hỗ trợ đối soát rút tiền nhanh hơn.</span></div>
         </section>
 
+        <section class="account-panel account-connections-panel">
+          <div class="account-panel-heading">
+            <div><span class="account-section-icon">⌘</span><div><small>ĐỒNG BỘ & THANH TOÁN</small><h2>Liên kết nhận tiền</h2></div></div>
+          </div>
+          <div class="account-setting-grid">
+            <button class="account-setting zalo" type="button">
+              <span class="account-setting-icon">Z</span>
+              <span>
+                <small>ZALO</small>
+                <b>Đồng bộ với tài khoản Zalo</b>
+                <em>Chưa liên kết</em>
+              </span>
+              <i>›</i>
+            </button>
+            <button class="account-setting payment-history" type="button">
+              <span class="account-setting-icon">₫</span>
+              <span>
+                <small>LỊCH SỬ CHI TRẢ</small>
+                <b>Lịch sử chuyển khoản & Bill</b>
+                <em style="color:#18ad60; background:#eafaf1;">Xem biên lai nhận tiền</em>
+              </span>
+              <i>›</i>
+            </button>
+          </div>
+          <div class="account-tip" style="margin-top:14px; background:#fff7ed; border-color:#fed7aa; color:#9a3412;">
+            <b style="color:#ea580c;">💡</b>
+            <span>Nhắn riêng cho Bot Zalo cú pháp <b>/stk [Tên_Ngân_Hàng] [Số_Tài_Khoản]</b> để tự động nhận tiền hoàn mỗi ngày.</span>
+          </div>
+        </section>
       </div>
 
-      <section class="account-panel account-connections">
-        <div class="account-panel-heading">
-          <div><span class="account-section-icon">⌘</span><div><small>THIẾT LẬP TÀI KHOẢN</small><h2>Nhận tiền & bảo mật</h2></div></div>
-          <p>Hoàn tất các thiết lập để giao dịch thuận tiện hơn.</p>
+      <section class="dashboard-commission-banner">
+        <img class="commission-banner-gift" src="assets/commission-gift-v2.png" alt="">
+        <div class="commission-banner-copy">
+          <small>ƯU ĐÃI ĐẶC BIỆT</small>
+          <strong>Nhận ngay <em>80%</em> hoa hồng</strong>
+          <span>Khi xác nhận đơn hàng thành công</span>
         </div>
-        <div class="account-setting-grid">
-          <button class="account-setting zalo" type="button"><span class="account-setting-icon">Z</span><span><small>ZALO</small><b>Liên kết nhóm Hoàn Tiền</b><em>Chưa liên kết</em></span><i>›</i></button>
-        </div>
+        <span class="commission-banner-coin" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       </section>
-
     </div>
   `;
 }
@@ -326,6 +439,10 @@ function openEditProfileModal() {
         localStorage.removeItem('shoppesale_phone');
       }
       
+      document.querySelectorAll('.wallet-user strong, .account-person h1, .account-info-list button:first-child b').forEach(el => {
+        el.textContent = newName;
+      });
+      
       if (typeof window.syncRealDataToUI === 'function') {
         window.syncRealDataToUI();
       }
@@ -352,16 +469,25 @@ function enhanceAccountPage() {
   view.dataset.ready = 'true';
   
   // Gắn sự kiện click mở modal chỉnh sửa hồ sơ
-  const editBtn = view.querySelector('.account-edit-all');
-  if (editBtn) {
-    editBtn.addEventListener('click', openEditProfileModal);
-  }
-  
-  view.querySelectorAll('.account-info-item').forEach(item => {
-    item.addEventListener('click', openEditProfileModal);
+  view.querySelectorAll('.account-edit-all, .account-edit-top-btn, button.account-info-item').forEach(btn => {
+    btn.addEventListener('click', openEditProfileModal);
   });
 
-  view.querySelector('.account-payment-summary.payment-history')?.addEventListener('click', openPaymentHistoryModal);
+  // Gắn sự kiện click mở modal lịch sử thanh toán & Bill
+  view.querySelectorAll('.payment-history').forEach(btn => {
+    btn.addEventListener('click', openPaymentHistoryModal);
+  });
+
+  // Gắn sự kiện điều hướng nhanh từ các nút trong ví (Đơn hàng, Giới thiệu)
+  view.querySelectorAll('.wallet-actions button[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.dataset.page;
+      if (page) {
+        history.pushState(null, '', '/' + page);
+        render();
+      }
+    });
+  });
 }
 
 if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'account') render();
