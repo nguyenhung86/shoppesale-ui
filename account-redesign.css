@@ -864,3 +864,244 @@
     gap: 12px;
   }
 }
+
+/* =========================================================
+   UNIFIED ACCOUNT & DASHBOARD REDESIGN (.account-view.dashboard-view)
+   ========================================================= */
+.main:has(.account-view.dashboard-view) {
+  max-width: 1240px;
+}
+
+.account-view.dashboard-view .wallet-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.account-view.dashboard-view .wallet-top-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.account-view.dashboard-view .wallet-top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  font: 700 11px "Be Vietnam Pro", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.account-view.dashboard-view .wallet-top-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.account-view.dashboard-view .wallet-tier {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+}
+
+.account-view.dashboard-view .wallet-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.account-view.dashboard-view .wallet-actions button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.account-view.dashboard-view .wallet-actions button:hover {
+  border-color: #ffb894;
+  background: #fff8f3;
+  color: #ea580c;
+}
+
+.account-view.dashboard-view .wallet-actions .wallet-action-history {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #ea580c;
+}
+
+.account-view.dashboard-view .account-unified-grid {
+  max-width: 760px;
+  margin: 23px auto 0;
+  display: grid;
+  grid-template-columns: 1.06fr 0.94fr;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.account-view.dashboard-view .account-profile-panel {
+  grid-column: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.account-view.dashboard-view .account-profile-panel .account-info-list {
+  grid-template-columns: 1fr;
+}
+
+.account-view.dashboard-view .account-profile-panel .account-info-item {
+  border-bottom: 1px solid #f0e9e3;
+}
+
+.account-view.dashboard-view .account-profile-panel .account-info-item:last-child {
+  border-bottom: 0;
+}
+
+.account-view.dashboard-view .account-profile-panel .account-info-item + .account-info-item {
+  border-left: 0;
+}
+
+.account-view.dashboard-view .account-info-item.is-readonly {
+  cursor: default;
+}
+
+.account-view.dashboard-view .account-info-item.is-readonly:hover {
+  background: #fff;
+}
+
+.account-view.dashboard-view .account-connections-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-view.dashboard-view .account-connections-panel .account-tip {
+  margin-top: auto;
+}
+
+.account-view.dashboard-view .dashboard-commission-banner {
+  max-width: 760px;
+  margin: 23px auto 0;
+}
+
+@media (max-width: 760px) {
+  .account-view.dashboard-view .wallet-top {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 118px;
+    padding-bottom: 44px;
+  }
+
+  .account-view.dashboard-view .wallet-top-actions {
+    display: none;
+  }
+
+  .account-view.dashboard-view .wallet-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .account-view.dashboard-view .wallet-actions a,
+  .account-view.dashboard-view .wallet-actions button {
+    padding: 11px 8px;
+    font-size: 11px;
+  }
+
+  .account-view.dashboard-view .account-unified-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 18px;
+  }
+}
+
+/* Overview placeholder when content is moved to Account tab */
+.overview-blank-stage {
+  max-width: 960px;
+  margin: 0 auto;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border: 2px dashed #e5e7eb;
+  border-radius: 26px;
+  background: linear-gradient(180deg, #ffffff 0%, #fcfaf8 100%);
+  text-align: center;
+}
+
+.overview-blank-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #fff3eb;
+  border: 1px solid #ffd8be;
+  color: #ea580c;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.overview-blank-stage h1 {
+  margin: 14px 0 8px;
+  color: #172c49;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.overview-blank-stage p {
+  max-width: 480px;
+  margin: 0 0 22px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.overview-blank-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.overview-blank-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 11px 18px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.overview-blank-btn.primary {
+  background: #ff5b18;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(255, 91, 24, 0.22);
+}
+
+.overview-blank-btn.primary:hover {
+  background: #ea4f10;
+  transform: translateY(-1px);
+}
+
+.overview-blank-btn.secondary {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.overview-blank-btn.secondary:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
