@@ -1,7 +1,5 @@
 (() => {
   function updateCommissionRange() {
-    if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') && (location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') !== 'dashboard') return;
-
     const card = document.querySelector('.commission-chart-card');
     const monthsEl = card?.querySelector('.commission-chart-months');
     const svg = card?.querySelector('.commission-chart-canvas svg');
