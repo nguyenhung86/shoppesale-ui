@@ -129,7 +129,6 @@ function accountRedesignedPage() {
         <section class="account-panel account-connections-panel">
           <div class="account-panel-heading">
             <div><span class="account-section-icon">⌘</span><div><small>ĐỒNG BỘ & THANH TOÁN</small><h2>Liên kết nhận tiền</h2></div></div>
-            <span class="account-panel-badge">♕ Kim Cương · 80%</span>
           </div>
           <div class="account-setting-grid">
             <button class="account-setting zalo" type="button">
