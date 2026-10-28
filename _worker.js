@@ -51,8 +51,13 @@ export default {
     // 2. Xử lý khi bấm vào Link rút gọn root (VD: /RQgBxYSVu hoặc mã cũ)
     const reservedPaths = new Set([
       'dashboard', 'deals', 'convert', 'orders', 'events', 'ranking', 'account', 'guide',
-      'payout', 'admin', 'bills', 'api', 'assets', 'create-link-secure-api', 'index', 'shop', 'r'
+      'payout', 'admin', 'bills', 'api', 'assets', 'create-link-secure-api', 'index', 'shop', 'r', 'chinh-sach-bao-mat', 'privacy', 'privacy-policy'
     ]);
+    const lowerPath = path.toLowerCase();
+    if (lowerPath === 'chinh-sach-bao-mat' || lowerPath === 'privacy' || lowerPath === 'privacy-policy') {
+      const policyReq = new Request(new URL('/chinh-sach-bao-mat.html', request.url), request);
+      return env.ASSETS ? env.ASSETS.fetch(policyReq) : fetch(policyReq);
+    }
     const isSlug = path && /^[a-zA-Z0-9_-]{5,16}$/.test(path) && !reservedPaths.has(path.toLowerCase()) && !path.includes('.');
 
     if (isSlug) {
