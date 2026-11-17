@@ -6,7 +6,6 @@ function addImportantPanel() {
 
   const panel = document.createElement('details');
   panel.className = 'important-panel';
-  panel.setAttribute('open', '');
   panel.innerHTML = `
   <summary class="important-summary">
     <div class="important-summary-left">
