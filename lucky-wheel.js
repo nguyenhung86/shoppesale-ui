@@ -572,7 +572,7 @@
                 <ul class="wheel-rule-list">
                   <li class="wheel-rule-item">
                     <span class="wheel-rule-check" aria-hidden="true">✓</span>
-                    <span>Mỗi đơn hàng hợp lệ mới (từ 18/11/2026) chuyển sang trạng thái <strong>Hoàn thành</strong> tự động cộng <strong>+1 vé quay</strong>.</span>
+                    <span>Mỗi đơn hàng chuyển sang trạng thái <strong>Hoàn thành</strong> (từ ngày 18/11/2026 trở đi) tự động cộng <strong>+1 vé quay</strong>.</span>
                   </li>
                   <li class="wheel-rule-item">
                     <span class="wheel-rule-check" aria-hidden="true">✓</span>
