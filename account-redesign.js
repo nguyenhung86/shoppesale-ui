@@ -54,6 +54,7 @@ function accountRedesignedPage() {
           <a href="#convert">↪ Chuyển đổi</a>
           <button type="button" data-page="orders">▣ Đơn hàng</button>
           <button type="button" data-page="referrals">♧ Giới thiệu</button>
+          <button type="button" data-page="wheel">🎡 Vòng quay</button>
           <button type="button" class="wallet-action-history payment-history">◷ Lịch sử nhận tiền</button>
         </div>
       </section>

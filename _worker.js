@@ -50,7 +50,7 @@ export default {
 
     // 2. Xử lý khi bấm vào Link rút gọn root (VD: /RQgBxYSVu hoặc mã cũ)
     const reservedPaths = new Set([
-      'dashboard', 'deals', 'convert', 'orders', 'events', 'ranking', 'account', 'guide',
+      'dashboard', 'deals', 'convert', 'wheel', 'orders', 'events', 'ranking', 'account', 'guide',
       'payout', 'admin', 'bills', 'api', 'assets', 'create-link-secure-api', 'index', 'shop', 'r', 'chinh-sach-bao-mat', 'privacy', 'privacy-policy'
     ]);
     const isSlug = path && /^[a-zA-Z0-9_-]{5,16}$/.test(path) && !reservedPaths.has(path.toLowerCase()) && !path.includes('.');
@@ -132,7 +132,7 @@ export default {
     }
 
     // 3. Phục vụ toàn bộ website Pages (SPA fallback cho các trang web chính)
-    const spaPaths = new Set(['dashboard', 'deals', 'convert', 'orders', 'events', 'ranking', 'account', 'guide', 'chinh-sach-bao-mat', 'privacy', 'privacy-policy']);
+    const spaPaths = new Set(['dashboard', 'deals', 'convert', 'wheel', 'orders', 'events', 'ranking', 'account', 'guide', 'chinh-sach-bao-mat', 'privacy', 'privacy-policy']);
     if (spaPaths.has(path.toLowerCase())) {
       const indexReq = new Request(new URL('/', request.url), request);
       return env.ASSETS ? env.ASSETS.fetch(indexReq) : fetch(indexReq);
