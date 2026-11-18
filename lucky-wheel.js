@@ -22,6 +22,8 @@
     bonusFreeSpins: 0,
     usedTickets: 0,
     totalWonAmount: 0,
+    dailySpinsUsed: 0,
+    dailySpinsLimit: 5,
     isTestRestricted: false,
     userHistory: [],
     recentWinners: [],
@@ -509,6 +511,10 @@
                     <span class="wheel-rule-check" aria-hidden="true">✓</span>
                     <span>Tiền thưởng trúng được cộng thẳng vào số dư ví.</span>
                   </li>
+                  <li class="wheel-rule-item">
+                    <span class="wheel-rule-check" aria-hidden="true">✓</span>
+                    <span>Mỗi tài khoản được quay tối đa <strong>5 lượt/ngày</strong> (vé còn dư được bảo lưu sang ngày hôm sau).</span>
+                  </li>
                 </ul>
               </div>
 
@@ -552,6 +558,11 @@
       if (wheelState.adminBonusTickets > 0) {
         chips.push(`<span class="wheel-breakdown-chip is-admin">👑 Vé Test Admin: ${wheelState.adminBonusTickets} vé</span>`);
       }
+      const dailyLimitVal = wheelState.dailySpinsLimit || 5;
+      const dailyChipText = wheelState.adminBonusTickets > 0
+        ? `📅 Hôm nay: ${wheelState.dailySpinsUsed} lượt (Chuẩn ${dailyLimitVal} lượt/ngày)`
+        : `📅 Hôm nay: ${Math.min(wheelState.dailySpinsUsed, dailyLimitVal)}/${dailyLimitVal} lượt`;
+      chips.push(`<span class="wheel-breakdown-chip">${dailyChipText}</span>`);
       chips.push(`<span class="wheel-breakdown-chip">🛍️ Từ đơn mới: ${wheelState.earnedOrderTickets} vé</span>`);
       chips.push(`<span class="wheel-breakdown-chip">🔄 Quay thêm: ${wheelState.bonusFreeSpins} vé</span>`);
       breakdownEl.innerHTML = chips.join('');
@@ -655,6 +666,8 @@
         wheelState.bonusFreeSpins = Number(data.bonusFreeSpins) || 0;
         wheelState.usedTickets = Number(data.usedTickets) || 0;
         wheelState.totalWonAmount = Number(data.totalWonAmount) || 0;
+        wheelState.dailySpinsUsed = Number(data.dailySpinsUsed) || 0;
+        wheelState.dailySpinsLimit = Number(data.dailySpinsLimit) || 5;
         wheelState.isTestRestricted = Boolean(data.isTestRestricted);
         wheelState.userHistory = Array.isArray(data.userHistory) ? data.userHistory : [];
         wheelState.recentWinners = Array.isArray(data.recentWinners) ? data.recentWinners : [];
@@ -884,6 +897,12 @@
           wheelState.bonusFreeSpins += 1;
         }
         wheelState.totalWonAmount = Number(data.totalWonAmount) || wheelState.totalWonAmount;
+        if (data.dailySpinsUsed !== undefined) {
+          wheelState.dailySpinsUsed = Number(data.dailySpinsUsed) || 0;
+        }
+        if (data.dailySpinsLimit !== undefined) {
+          wheelState.dailySpinsLimit = Number(data.dailySpinsLimit) || 5;
+        }
         if (Array.isArray(data.userHistory)) wheelState.userHistory = data.userHistory;
         if (Array.isArray(data.recentWinners)) wheelState.recentWinners = data.recentWinners;
 
