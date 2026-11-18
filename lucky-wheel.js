@@ -418,8 +418,8 @@
     chip.classList.toggle('is-open', info.isOpen);
     chip.classList.toggle('is-closed', !info.isOpen);
     chip.innerHTML = info.isOpen
-      ? `<span class="wheel-time-dot" aria-hidden="true"></span><span>Đang mở Giờ Vàng (${info.openHour}h–${info.closeHour}h)</span><span class="wheel-time-clock">Còn ${info.countdown}</span>`
-      : `<span class="wheel-time-dot" aria-hidden="true"></span><span>Giờ vàng ${info.openHour}h–${info.closeHour}h</span><span class="wheel-time-clock">Mở sau ${info.countdown}</span>`;
+      ? `<span class="wheel-time-dot" aria-hidden="true"></span><span class="wheel-time-text">Giờ vàng ${info.openHour}h–${info.closeHour}h</span><span class="wheel-time-sep" aria-hidden="true">|</span><span class="wheel-time-clock">${info.countdown}</span>`
+      : `<span class="wheel-time-dot" aria-hidden="true"></span><span class="wheel-time-text">Mở quay ${info.openHour}h–${info.closeHour}h sau</span><span class="wheel-time-sep" aria-hidden="true">|</span><span class="wheel-time-clock">${info.countdown}</span>`;
     if (wheelState.lastUiOpenState !== null && wheelState.lastUiOpenState !== info.isOpen) {
       updateWheelUI();
     }
