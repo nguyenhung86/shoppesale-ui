@@ -3,18 +3,18 @@
    HoanTienOnline - Studio Casino Edition (v2)
    ========================================================= */
 
-/* ---------- 1. Glowing Text Navigation Tab ("🎡 Vòng quay") ---------- */
+/* ---------- 1. Metallic Shimmer Navigation Tab ("Vòng quay") ---------- */
 .topbar .nav a[data-page="wheel"] {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   background: transparent;
   border: none;
   box-shadow: none;
-  color: #ff4500 !important;
-  font-weight: 800 !important;
-  animation: wheelTextGlow 2s ease-in-out infinite;
-  transition: background 0.18s ease, color 0.18s ease, transform 0.16s ease;
+  text-shadow: none !important;
+  color: #ea580c;
+  font-weight: 700 !important;
+  transition: background 0.18s ease, transform 0.16s ease;
 }
 
 .topbar .nav a[data-page="wheel"]:hover,
@@ -22,20 +22,50 @@
   background: #fff0e6 !important;
   border: none;
   box-shadow: none;
-  color: #ff4500 !important;
+  text-shadow: none !important;
 }
 
-@keyframes wheelTextGlow {
-  0%, 100% {
-    text-shadow:
-      0 0 6px rgba(255, 94, 0, 0.42),
-      0 0 14px rgba(251, 191, 36, 0.32);
+.wheel-nav-svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  display: block;
+  animation: wheelNavSpin 9s linear infinite;
+}
+
+.wheel-nav-text {
+  display: inline-block;
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 700;
+  text-shadow: none !important;
+  background: linear-gradient(
+    90deg,
+    #ea580c 0%,
+    #dc2626 25%,
+    #f59e0b 50%,
+    #ea580c 75%,
+    #dc2626 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: wheelTextShimmer 3.2s linear infinite;
+}
+
+@keyframes wheelNavSpin {
+  to {
+    transform: rotate(360deg);
   }
-  50% {
-    text-shadow:
-      0 0 8px rgba(255, 69, 0, 0.85),
-      0 0 18px rgba(255, 165, 0, 0.72),
-      0 0 28px rgba(253, 224, 71, 0.55);
+}
+
+@keyframes wheelTextShimmer {
+  0% {
+    background-position: 200% center;
+  }
+  100% {
+    background-position: 0% center;
   }
 }
 
@@ -1346,6 +1376,8 @@
 @media (prefers-reduced-motion: reduce) {
   .topbar .nav a[data-page="wheel"],
   .topbar .nav a[data-page="wheel"]::after,
+  .wheel-nav-svg,
+  .wheel-nav-text,
   .wallet-actions button[data-page="wheel"],
   .wallet-actions button[data-page="wheel"]::after,
   .wheel-sunburst,
