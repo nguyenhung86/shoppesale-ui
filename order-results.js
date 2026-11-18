@@ -1339,8 +1339,8 @@ function syncRealDataToUI() {
     isOrderResultsMounted = false;
   }
 
-  // Cập nhật trạng thái liên kết Zalo trên tab Tài khoản
-  if (activeHash === 'account') {
+  // Cập nhật trạng thái liên kết Zalo trên Trang chủ / Tài khoản
+  if (activeHash === 'dashboard' || activeHash === 'account') {
     if (typeof updateZaloSyncUI === 'function') {
       updateZaloSyncUI(savedZaloId);
     }

@@ -183,6 +183,10 @@ function formatPaymentHistoryDate(value) {
 }
 
 function openPaymentHistoryModal() {
+  if (typeof getLoggedUser === 'function' && !getLoggedUser()) {
+    if (typeof showLoginModal === 'function') showLoginModal();
+    return;
+  }
   document.querySelector('.payment-history-modal-overlay')?.remove();
 
   const modal = document.createElement('div');
@@ -321,9 +325,14 @@ function renderPaymentTransferRows(transfers) {
   }).join('');
 }
 
+pages.dashboard = accountRedesignedPage;
 pages.account = accountRedesignedPage;
 
 function openEditProfileModal() {
+  if (typeof getLoggedUser === 'function' && !getLoggedUser()) {
+    if (typeof showLoginModal === 'function') showLoginModal();
+    return;
+  }
   const user = getLoggedUser() || { name: "User" };
   const savedPhone = localStorage.getItem('shoppesale_phone') || "";
   
@@ -490,7 +499,8 @@ function enhanceAccountPage() {
   });
 }
 
-if ((location.hash.slice(1) || location.pathname.slice(1) || 'dashboard') === 'account') render();
+const currentHomeRoute = location.hash.slice(1) || location.pathname.replace(/^\/+|\/+$/g, '') || 'dashboard';
+if (currentHomeRoute === 'dashboard' || currentHomeRoute === 'account') render();
 requestAnimationFrame(enhanceAccountPage);
 window.addEventListener('hashchange', () => requestAnimationFrame(enhanceAccountPage));
 window.addEventListener('popstate', () => requestAnimationFrame(enhanceAccountPage));

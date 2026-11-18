@@ -28,6 +28,10 @@
 
     button.addEventListener('click', event => {
       event.preventDefault();
+      if (typeof getLoggedUser === 'function' && !getLoggedUser()) {
+        if (typeof showLoginModal === 'function') showLoginModal();
+        return;
+      }
       panel.classList.toggle('is-open');
       if (panel.classList.contains('is-open')) panel.querySelector('input')?.focus();
     });
