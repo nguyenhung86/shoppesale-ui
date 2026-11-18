@@ -310,7 +310,7 @@
       labelsHtml += `
         <g transform="rotate(${rotAngle} ${cx} ${cy})">
           ${subText ? `<text x="${labelX}" y="236" text-anchor="${anchor}" fill="${pal.sub}" font-family="'Be Vietnam Pro', sans-serif" font-size="10.5" font-weight="800" letter-spacing="0.06em">${subText}</text>` : ''}
-          <text x="${labelX}" y="${subText ? '260' : '256'}" text-anchor="${anchor}" fill="${pal.text}" stroke="${pal.outline}" stroke-width="2.2" paint-order="stroke" font-family="'Be Vietnam Pro', sans-serif" font-size="${mainSize}" font-weight="900">${mainText}</text>
+          <text x="${labelX}" y="${subText ? '260' : '256'}" text-anchor="${anchor}" fill="${pal.text}" stroke="${pal.outline}" stroke-width="2.2" paint-order="stroke" font-family="'Be Vietnam Pro', sans-serif" font-size="${mainSize}" font-weight="800">${mainText}</text>
         </g>
       `;
     });
@@ -372,8 +372,8 @@
 
   /* ---------- Spin Button Builder & UI Page Template ---------- */
   function buildSpinButtonInnerHtml(user, zaloId) {
-    const iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M3 12h18"/><path d="m5.64 5.64 12.72 12.72"/><path d="m18.36 5.64-12.72 12.72"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>`;
-    const sparkleSvg = `<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z"/></svg>`;
+    const iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M3 12h18"/><path d="m5.64 5.64 12.72 12.72"/><path d="m18.36 5.64-12.72 12.72"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>`;
+    const sparkleSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 14.4 9.6 22 12 14.4 14.4 12 22 9.6 14.4 2 12 9.6 9.6Z"/></svg>`;
 
     let label = 'Bấm Quay Ngay';
     let countHtml = `<span class="wheel-spin-btn-count">${wheelState.availableTickets} vé</span>`;
