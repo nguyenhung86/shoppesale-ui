@@ -38,7 +38,7 @@
     if (typeof CONFIG !== 'undefined' && CONFIG && CONFIG.API_URL) {
       return CONFIG.API_URL;
     }
-    return 'https://api.hoantienonline.io.vn';
+    return 'https://api-vps.hoantienonline.io.vn/api/web';
   }
 
   function getCurrentUser() {
@@ -370,7 +370,39 @@
     return html;
   }
 
-  /* ---------- UI Page Template ---------- */
+  /* ---------- Spin Button Builder & UI Page Template ---------- */
+  function buildSpinButtonInnerHtml(user, zaloId) {
+    const iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M3 12h18"/><path d="m5.64 5.64 12.72 12.72"/><path d="m18.36 5.64-12.72 12.72"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/></svg>`;
+    const sparkleSvg = `<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z"/></svg>`;
+
+    let label = 'Bấm Quay Ngay';
+    let countHtml = `<span class="wheel-spin-btn-count">${wheelState.availableTickets} vé</span>`;
+    let icon = wheelState.availableTickets > 0 ? sparkleSvg : iconSvg;
+
+    if (wheelState.isSpinning) {
+      label = 'Đang Quay Thưởng...';
+      icon = iconSvg;
+    } else if (!user) {
+      label = 'Đăng Nhập Để Quay';
+      countHtml = '<span class="wheel-spin-btn-count">Tài khoản</span>';
+      icon = iconSvg;
+    } else if (!zaloId) {
+      label = 'Liên Kết Zalo Để Quay';
+      countHtml = '<span class="wheel-spin-btn-count">Đồng bộ</span>';
+      icon = iconSvg;
+    } else if (wheelState.isTestRestricted) {
+      label = 'Đang Thử Nghiệm Nội Bộ';
+      countHtml = '<span class="wheel-spin-btn-count">Admin</span>';
+      icon = iconSvg;
+    }
+
+    return `
+      <span class="wheel-spin-btn-icon" aria-hidden="true">${icon}</span>
+      <span class="wheel-spin-btn-label">${label}</span>
+      ${countHtml}
+    `;
+  }
+
   function renderLuckyWheelPage() {
     const soundLabel = wheelState.soundEnabled ? 'Âm thanh: Bật' : 'Âm thanh: Tắt';
     const soundIcon = wheelState.soundEnabled
@@ -395,7 +427,7 @@
             <div class="wheel-hero-pills">
               <span class="wheel-hero-pill">🏆 Jackpot 5.000đ</span>
               <span class="wheel-hero-pill">⚡ Cộng thẳng vào ví</span>
-              <span class="wheel-hero-pill">📢 Bot vinh danh nhóm Zalo</span>
+              <span class="wheel-hero-pill">🛍️ 1 đơn mới = +1 vé quay</span>
             </div>
           </div>
           <div class="wheel-hero-actions">
@@ -431,7 +463,7 @@
 
             <div class="wheel-stage-footer">
               <button type="button" id="wheel-main-spin-btn" class="wheel-main-spin-btn">
-                <span>🎡 Bấm Quay Ngay (${wheelState.availableTickets} vé)</span>
+                ${buildSpinButtonInnerHtml(getCurrentUser(), getCurrentZaloId())}
               </button>
               <div id="wheel-stage-note" class="wheel-stage-note"></div>
             </div>
@@ -487,10 +519,6 @@
                   <li class="wheel-rule-item">
                     <span class="wheel-rule-check" aria-hidden="true">✓</span>
                     <span>Tiền thưởng trúng được cộng thẳng vào số dư ví.</span>
-                  </li>
-                  <li class="wheel-rule-item">
-                    <span class="wheel-rule-check" aria-hidden="true">✓</span>
-                    <span>Khi trúng thưởng sẽ được Bot tự động thông báo chúc mừng trong nhóm Zalo.</span>
                   </li>
                 </ul>
               </div>
@@ -552,17 +580,7 @@
 
     if (mainBtn) {
       mainBtn.disabled = wheelState.isSpinning || wheelState.isLoading;
-      if (wheelState.isSpinning) {
-        mainBtn.innerHTML = '<span>⏳ Đang quay vòng may mắn...</span>';
-      } else if (!user) {
-        mainBtn.innerHTML = '<span>🔐 Đăng nhập để Quay Ngay</span>';
-      } else if (!zaloId) {
-        mainBtn.innerHTML = '<span>🔗 Liên kết Zalo để Quay Ngay</span>';
-      } else if (wheelState.isTestRestricted) {
-        mainBtn.innerHTML = '<span>🚧 Đang bảo trì / Admin thử nghiệm</span>';
-      } else {
-        mainBtn.innerHTML = `<span>🎡 Bấm Quay Ngay (${wheelState.availableTickets} vé)</span>`;
-      }
+      mainBtn.innerHTML = buildSpinButtonInnerHtml(user, zaloId);
     }
 
     if (centerBtn) {
