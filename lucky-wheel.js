@@ -284,7 +284,7 @@
               <div class="wheel-rule-box">
                 <b>Cách nhận vé quay:</b><br>
                 • Mỗi đơn hàng hợp lệ mới (từ 18/11/2026) chuyển sang trạng thái <b>Hoàn thành</b> tự động cộng <b>+1 vé quay</b>.<br>
-                • Tiền thưởng trúng được cộng thẳng vào số dư ví và đồng bộ Google Sheet!
+                • Tiền thưởng trúng được cộng thẳng vào số dư ví.
               </div>
               <a href="/convert" class="wheel-earn-btn">⚡ Chuyển link mua sắm kiếm thêm vé →</a>
             </section>
@@ -418,7 +418,7 @@
       icon = Number(slice.amount) >= 5000 ? '🏆' : '🎉';
       title = Number(slice.amount) >= 5000 ? 'NỔ HŨ JACKPOT!' : 'Chúc Mừng Bạn Đã Trúng Thưởng!';
       amountHtml = `<div class="wheel-result-amount">+${formatWheelMoney(slice.amount)}</div>`;
-      desc = 'Tiền thưởng đã được tự động cộng vào ví hoàn tiền và đồng bộ đơn thưởng của bạn!';
+      desc = 'Tiền thưởng trúng được cộng thẳng vào số dư ví của bạn!';
     } else if (isFree) {
       icon = '🔄';
       title = 'Tuyệt Vời! +1 Lượt Quay Miễn Phí';
