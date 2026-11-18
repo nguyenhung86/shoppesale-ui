@@ -415,9 +415,11 @@
     const chip = document.getElementById('wheel-time-window-chip');
     if (!chip) return false;
     const info = getVnWindowInfo();
-    chip.textContent = info.isOpen
-      ? `🟢 Giờ vàng ${info.openHour}h–${info.closeHour}h: Còn ${info.countdown}`
-      : `⏰ Mở quay ${info.openHour}h–${info.closeHour}h: Còn ${info.countdown}`;
+    chip.classList.toggle('is-open', info.isOpen);
+    chip.classList.toggle('is-closed', !info.isOpen);
+    chip.innerHTML = info.isOpen
+      ? `<span class="wheel-time-dot" aria-hidden="true"></span><span>Đang mở Giờ Vàng (${info.openHour}h–${info.closeHour}h)</span><span class="wheel-time-clock">Còn ${info.countdown}</span>`
+      : `<span class="wheel-time-dot" aria-hidden="true"></span><span>Giờ vàng ${info.openHour}h–${info.closeHour}h</span><span class="wheel-time-clock">Mở sau ${info.countdown}</span>`;
     if (wheelState.lastUiOpenState !== null && wheelState.lastUiOpenState !== info.isOpen) {
       updateWheelUI();
     }
@@ -491,7 +493,6 @@
               <span class="wheel-hero-pill">🏆 Jackpot 5.000đ</span>
               <span class="wheel-hero-pill">⚡ Cộng thẳng vào ví</span>
               <span class="wheel-hero-pill">🛍️ 1 đơn mới = +1 vé quay</span>
-              <span id="wheel-time-window-chip" class="wheel-hero-pill"></span>
             </div>
           </div>
         </header>
@@ -523,6 +524,7 @@
               <button type="button" id="wheel-main-spin-btn" class="wheel-main-spin-btn">
                 ${buildSpinButtonInnerHtml(getCurrentUser(), getCurrentZaloId())}
               </button>
+              <div id="wheel-time-window-chip" class="wheel-time-chip"></div>
               <div id="wheel-stage-note" class="wheel-stage-note"></div>
             </div>
           </section>

@@ -786,6 +786,71 @@
   display: none;
 }
 
+.wheel-time-chip {
+  margin: 12px auto 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 700;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.wheel-time-chip.is-open {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.12);
+}
+
+.wheel-time-chip.is-closed {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  color: #c2410c;
+  box-shadow: 0 3px 10px rgba(234, 88, 12, 0.08);
+}
+
+.wheel-time-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.wheel-time-chip.is-open .wheel-time-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+  animation: wheelPulseDot 1.6s ease-in-out infinite;
+}
+
+.wheel-time-chip.is-closed .wheel-time-dot {
+  background: #f97316;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
+}
+
+.wheel-time-clock {
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.wheel-time-chip.is-open .wheel-time-clock {
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.wheel-time-chip.is-closed .wheel-time-clock {
+  color: #c2410c;
+  border: 1px solid #fdba74;
+}
+
 .wheel-stage-note {
   margin-top: 10px;
   font-size: 12.5px;
@@ -1391,6 +1456,7 @@
   .wheel-sunburst,
   .wheel-hero-spark,
   .wheel-jackpot-dot,
+  .wheel-time-dot,
   .wheel-bulb,
   .wheel-main-spin-btn::after {
     animation: none !important;
