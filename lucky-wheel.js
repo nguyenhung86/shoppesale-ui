@@ -25,6 +25,10 @@
     dailySpinsUsed: 0,
     dailySpinsLimit: 5,
     hasPendingFreeSpin: false,
+    openHour: 20,
+    closeHour: 22,
+    isTimeWindowOpen: false,
+    lastUiOpenState: null,
     isTestRestricted: false,
     userHistory: [],
     recentWinners: [],
@@ -34,7 +38,8 @@
     isLoading: false,
     soundEnabled: true,
     audioCtx: null,
-    rafId: null
+    rafId: null,
+    clockTimer: null
   };
 
   function getApiUrl() {
@@ -373,6 +378,53 @@
     return html;
   }
 
+  function getVnWindowInfo() {
+    const openHour = Number(wheelState.openHour) || 20;
+    const closeHour = Number(wheelState.closeHour) || 22;
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Ho_Chi_Minh',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).formatToParts(new Date());
+    const map = {};
+    for (const p of parts) map[p.type] = parseInt(p.value, 10);
+    const hour = Number.isFinite(map.hour) ? (map.hour % 24) : 0;
+    const minute = Number.isFinite(map.minute) ? map.minute : 0;
+    const second = Number.isFinite(map.second) ? map.second : 0;
+    const nowSec = hour * 3600 + minute * 60 + second;
+    const openSec = openHour * 3600;
+    const closeSec = closeHour * 3600;
+    const isOpen = nowSec >= openSec && nowSec < closeSec;
+    const remainSec = isOpen
+      ? closeSec - nowSec
+      : (nowSec < openSec ? openSec - nowSec : 86400 - nowSec + openSec);
+    const hh = String(Math.floor(remainSec / 3600)).padStart(2, '0');
+    const mm = String(Math.floor((remainSec % 3600) / 60)).padStart(2, '0');
+    const ss = String(remainSec % 60).padStart(2, '0');
+    return {
+      isOpen,
+      openHour,
+      closeHour,
+      countdown: `${hh}:${mm}:${ss}`
+    };
+  }
+
+  function refreshTimeWindowChip() {
+    const chip = document.getElementById('wheel-time-window-chip');
+    if (!chip) return false;
+    const info = getVnWindowInfo();
+    chip.textContent = info.isOpen
+      ? `🟢 Giờ vàng ${info.openHour}h–${info.closeHour}h: Còn ${info.countdown}`
+      : `⏰ Mở quay ${info.openHour}h–${info.closeHour}h: Còn ${info.countdown}`;
+    if (wheelState.lastUiOpenState !== null && wheelState.lastUiOpenState !== info.isOpen) {
+      updateWheelUI();
+    }
+    wheelState.lastUiOpenState = info.isOpen;
+    return true;
+  }
+
   function isDailyCapReached() {
     const limit = wheelState.dailySpinsLimit || 5;
     return wheelState.adminBonusTickets === 0 && wheelState.dailySpinsUsed >= limit && !wheelState.hasPendingFreeSpin;
@@ -382,6 +434,7 @@
   function buildSpinButtonInnerHtml(user, zaloId) {
     const iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M3 12h18"/><path d="m5.64 5.64 12.72 12.72"/><path d="m18.36 5.64-12.72 12.72"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>`;
     const sparkleSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2 14.4 9.6 22 12 14.4 14.4 12 22 9.6 14.4 2 12 9.6 9.6Z"/></svg>`;
+    const winInfo = getVnWindowInfo();
 
     let label = 'Bấm Quay Ngay';
     let countHtml = `<span class="wheel-spin-btn-count">${wheelState.availableTickets} vé</span>`;
@@ -401,6 +454,9 @@
     } else if (wheelState.isTestRestricted) {
       label = 'Đang Thử Nghiệm Nội Bộ';
       countHtml = '<span class="wheel-spin-btn-count">Admin</span>';
+      icon = iconSvg;
+    } else if (!winInfo.isOpen && wheelState.adminBonusTickets === 0) {
+      label = `⏰ Mở Quay Lúc ${winInfo.openHour}:00 – ${winInfo.closeHour}:00`;
       icon = iconSvg;
     } else if (isDailyCapReached()) {
       const limit = wheelState.dailySpinsLimit || 5;
@@ -435,6 +491,7 @@
               <span class="wheel-hero-pill">🏆 Jackpot 5.000đ</span>
               <span class="wheel-hero-pill">⚡ Cộng thẳng vào ví</span>
               <span class="wheel-hero-pill">🛍️ 1 đơn mới = +1 vé quay</span>
+              <span id="wheel-time-window-chip" class="wheel-hero-pill"></span>
             </div>
           </div>
         </header>
@@ -525,6 +582,10 @@
                     <span class="wheel-rule-check" aria-hidden="true">✓</span>
                     <span>Mỗi tài khoản được quay tối đa <strong>5 lượt/ngày</strong> (vé còn dư được bảo lưu sang ngày hôm sau).</span>
                   </li>
+                  <li class="wheel-rule-item">
+                    <span class="wheel-rule-check" aria-hidden="true">✓</span>
+                    <span>Khung giờ mở vòng quay: <strong>20:00 – 22:00 hàng ngày</strong>.</span>
+                  </li>
                 </ul>
               </div>
 
@@ -605,6 +666,8 @@
         noteEl.textContent = 'Liên kết ID Zalo để hệ thống đồng bộ vé quay từ đơn hàng của bạn.';
       } else if (wheelState.isTestRestricted) {
         noteEl.textContent = '🚧 Khu vực Vòng Quay đang được Admin thử nghiệm nội bộ, sẽ mở cho mọi người sớm nhất!';
+      } else if (!getVnWindowInfo().isOpen && wheelState.adminBonusTickets === 0) {
+        noteEl.textContent = '⏰ Khung giờ vàng Vòng Quay diễn ra từ 20:00 – 22:00 hàng ngày. Vé của bạn đang được bảo lưu an toàn!';
       } else if (wheelState.availableTickets <= 0) {
         noteEl.textContent = 'Bạn chưa có vé khả dụng — hãy chuyển link & hoàn thành đơn hàng mới để nhận vé!';
       } else if (isDailyCapReached()) {
@@ -681,6 +744,9 @@
         wheelState.dailySpinsUsed = Number(data.dailySpinsUsed) || 0;
         wheelState.dailySpinsLimit = Number(data.dailySpinsLimit) || 5;
         wheelState.hasPendingFreeSpin = Boolean(data.hasPendingFreeSpin);
+        wheelState.openHour = Number(data.openHour) || 20;
+        wheelState.closeHour = Number(data.closeHour) || 22;
+        wheelState.isTimeWindowOpen = Boolean(data.isTimeWindowOpen);
         wheelState.isTestRestricted = Boolean(data.isTestRestricted);
         wheelState.userHistory = Array.isArray(data.userHistory) ? data.userHistory : [];
         wheelState.recentWinners = Array.isArray(data.recentWinners) ? data.recentWinners : [];
@@ -843,6 +909,11 @@
       return;
     }
 
+    if (wheelState.adminBonusTickets === 0 && !getVnWindowInfo().isOpen) {
+      openWheelResultModal(null, '⏰ Khung giờ vàng Vòng Quay May Mắn diễn ra từ 20:00 – 22:00 hàng ngày. Vé của bạn vẫn được bảo lưu an toàn, hẹn gặp bạn lúc 20:00 tối nhé!');
+      return;
+    }
+
     if (wheelState.availableTickets <= 0) {
       openWheelResultModal(null, 'Bạn đã hết vé quay! Hãy chuyển link & hoàn thành thêm đơn hàng mới để nhận vé nhé.');
       return;
@@ -989,6 +1060,17 @@
     });
 
     updateWheelUI();
+    refreshTimeWindowChip();
+    if (wheelState.clockTimer) {
+      clearInterval(wheelState.clockTimer);
+      wheelState.clockTimer = null;
+    }
+    wheelState.clockTimer = setInterval(() => {
+      if (!refreshTimeWindowChip()) {
+        clearInterval(wheelState.clockTimer);
+        wheelState.clockTimer = null;
+      }
+    }, 1000);
     fetchWheelStatus();
   }
 
