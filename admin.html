@@ -751,6 +751,9 @@
       <button class="tab-btn" id="tab-btn-conversions" onclick="switchAdminTab('conversions')">
         <i class="fa-solid fa-link"></i> Thống Kê Chuyển Link Web
       </button>
+      <button class="tab-btn" id="tab-btn-wheel" onclick="switchAdminTab('wheel')">
+        <i class="fa-solid fa-dharmachakra"></i> Vòng Quay May Mắn
+      </button>
     </div>
 
     <!-- TAB 1: USERS & BALANCES GRID -->
@@ -965,6 +968,124 @@
       </div>
     </div>
 
+    <!-- TAB 5: LUCKY WHEEL ANALYTICS & BUDGET MONITOR -->
+    <div class="grid-card" id="tab-content-wheel" style="display: none;">
+      <div class="grid-filter-bar" style="display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center;">
+        <div class="search-input-group" style="flex: 1; min-width: 240px;">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="search-wheel-input" onkeyup="filterAdminWheelUsers()" placeholder="Tìm thành viên theo Tên hoặc Zalo ID...">
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px; background: #f8fafc; border: 1.5px solid var(--line); border-radius: 10px; padding: 4px 10px;">
+            <i class="fa-regular fa-calendar-days" style="color: var(--primary);"></i>
+            <select id="filter-wheel-date" onchange="onWheelDateFilterChange()" style="border: none; background: transparent; font-size: 13px; font-weight: 700; color: var(--ink); outline: none; cursor: pointer;">
+              <option value="today">📅 Hôm nay</option>
+              <option value="month">🗓️ Tháng này</option>
+              <option value="all">📊 Tất cả từ ngày mở</option>
+            </select>
+            <input type="date" id="filter-wheel-custom-date" onchange="onWheelCustomDateChange()" style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 6px; font-size: 12px; font-weight: 600; outline: none; cursor: pointer;">
+          </div>
+
+          <button class="btn-action" id="btn-toggle-wheel-mode" onclick="toggleAdminWheelMode()" style="font-weight: 700;">
+            <i class="fa-solid fa-flask"></i> Chế độ: Đang tải...
+          </button>
+          <button class="btn-action" id="btn-refresh-wheel" onclick="loadAdminWheelStats(this)" style="font-weight: 600;">
+            <i class="fa-solid fa-rotate"></i> Làm mới
+          </button>
+          <button class="btn-action" onclick="exportWheelToCSV()" style="font-weight: 600; background: #059669; color: white; border-color: #047857;">
+            <i class="fa-solid fa-file-excel"></i> Xuất Excel
+          </button>
+        </div>
+      </div>
+
+      <!-- BANNER CẤU HÌNH QUỸ ĐỘNG (PHƯƠNG ÁN A + C) -->
+      <div id="wheel-budget-banner" style="background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px;">
+        <div style="color: #9a3412; font-weight: 600;">
+          <i class="fa-solid fa-shield-halved" style="color: #ea580c;"></i>
+          <strong>Cơ chế Quỹ A + C:</strong> Nền <span id="wb-base">10.000đ</span> + <span id="wb-bonus">+300đ</span>/vé phát sinh • Trần ngày <strong id="wb-max">25.000đ</strong> • Chia nhịp <strong>20h–21h (60%)</strong> / <strong>21h–22h (100%)</strong>
+        </div>
+        <div id="wheel-today-phase-pill" style="font-weight: 700; color: #ea580c;">
+          Quỹ hôm nay: --
+        </div>
+      </div>
+
+      <!-- 4 KPI CARDS -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 18px;">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-users" style="color: #2563EB;"></i> NGƯỜI THAM GIA (KỲ LỌC)
+          </div>
+          <strong id="stat-wheel-players" style="font-size: 22px; font-weight: 800; color: #2563EB; display: block; margin-top: 4px;">0</strong>
+          <div id="stat-wheel-spins-sub" style="font-size: 12px; color: var(--ink-soft); margin-top: 2px;">0 lượt quay • 0 lượt trúng</div>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-coins" style="color: #DC2626;"></i> CHI PHÍ THƯỞNG (KỲ LỌC)
+          </div>
+          <strong id="stat-wheel-cost" style="font-size: 22px; font-weight: 800; color: #DC2626; display: block; margin-top: 4px;">0đ</strong>
+          <div id="stat-wheel-ratio-sub" style="font-size: 12px; color: var(--ink-soft); margin-top: 2px;">0% trên lợi nhuận đơn</div>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-vault" style="color: #EA580C;"></i> QUỸ HÔM NAY (A + C)
+          </div>
+          <strong id="stat-wheel-today-limit" style="font-size: 22px; font-weight: 800; color: #EA580C; display: block; margin-top: 4px;">10.000đ</strong>
+          <div id="stat-wheel-today-sub" style="font-size: 12px; color: var(--ink-soft); margin-top: 2px;">Đã chi 0đ • Mở phiên: 10.000đ</div>
+        </div>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px;">
+          <div style="font-size: 12px; font-weight: 600; color: var(--ink-soft); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-ticket" style="color: #059669;"></i> VÉ CHỜ QUAY HIỆN CÓ
+          </div>
+          <strong id="stat-wheel-pending-tickets" style="font-size: 22px; font-weight: 800; color: #059669; display: block; margin-top: 4px;">0</strong>
+          <div id="stat-wheel-pending-sub" style="font-size: 12px; color: var(--ink-soft); margin-top: 2px;">Từ 0 thành viên đang giữ vé</div>
+        </div>
+      </div>
+
+      <!-- BẢNG 1: THỐNG KÊ THEO NGÀY -->
+      <h4 style="font-size: 14px; font-weight: 800; color: var(--ink); margin: 8px 0 10px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-calendar-days" style="color: var(--primary);"></i> Chi Phí & Người Tham Gia Theo Ngày <span style="font-weight: 500; font-size: 12px; color: var(--ink-soft);">(Bấm 1 ngày để lọc danh sách bên dưới)</span>
+      </h4>
+      <div class="table-responsive" style="margin-bottom: 22px; max-height: 290px;">
+        <table class="data-grid">
+          <thead>
+            <tr>
+              <th>Ngày</th>
+              <th style="text-align: center;">Người Chơi</th>
+              <th style="text-align: center;">Lượt Quay</th>
+              <th style="text-align: center;">Trúng Thưởng</th>
+              <th style="text-align: right;">Quỹ Ngày (Nền + Thêm)</th>
+              <th style="text-align: right;">Đã Chi Thực Tế</th>
+              <th style="text-align: right;">Lợi Nhuận Đơn</th>
+              <th style="text-align: center;">% Chi / Lời</th>
+            </tr>
+          </thead>
+          <tbody id="wheel-daily-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- BẢNG 2: CHI TIẾT NGƯỜI THAM GIA -->
+      <h4 style="font-size: 14px; font-weight: 800; color: var(--ink); margin: 8px 0 10px; display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-user-check" style="color: #2563EB;"></i> Chi Tiết Thành Viên Tham Gia & Vé Quay
+      </h4>
+      <div class="table-responsive">
+        <table class="data-grid">
+          <thead>
+            <tr>
+              <th style="width: 50px;">STT</th>
+              <th>Thành Viên</th>
+              <th style="text-align: center;">Lượt Quay (Kỳ)</th>
+              <th style="text-align: center;">Trúng (Kỳ)</th>
+              <th style="text-align: right;">Thưởng Nhận (Kỳ)</th>
+              <th style="text-align: center;">Vé Chờ Quay</th>
+              <th style="text-align: center;">Tổng Vé Đơn</th>
+              <th>Lần Quay Gần Nhất</th>
+            </tr>
+          </thead>
+          <tbody id="wheel-users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
   <!-- MODAL XEM CHI TIẾT LINK SHOPEE CỦA USER -->
@@ -1072,6 +1193,9 @@
     let adminProfiles = [];
     let adminConversions = [];
     let selectedConversionDate = "today";
+    let adminWheelReport = null;
+    let adminWheelUsers = [];
+    let selectedWheelDate = "today";
     let activeTab = "users";
 
     function checkAdminAuth() {
@@ -1082,7 +1206,7 @@
 
         // 1. Phục hồi tab đang xem trước đó khi F5 (mặc định 'users')
         const savedTab = localStorage.getItem("admin_active_tab") || "users";
-        if (["users", "orders", "profiles", "conversions"].includes(savedTab)) {
+        if (["users", "orders", "profiles", "conversions", "wheel"].includes(savedTab)) {
           switchAdminTab(savedTab);
         }
 
@@ -1164,13 +1288,19 @@
       document.getElementById("tab-btn-orders").classList.toggle("active", tab === "orders");
       document.getElementById("tab-btn-profiles").classList.toggle("active", tab === "profiles");
       document.getElementById("tab-btn-conversions").classList.toggle("active", tab === "conversions");
+      document.getElementById("tab-btn-wheel")?.classList.toggle("active", tab === "wheel");
       document.getElementById("tab-content-users").style.display = tab === "users" ? "block" : "none";
       document.getElementById("tab-content-orders").style.display = tab === "orders" ? "block" : "none";
       document.getElementById("tab-content-profiles").style.display = tab === "profiles" ? "block" : "none";
       document.getElementById("tab-content-conversions").style.display = tab === "conversions" ? "block" : "none";
+      const wheelEl = document.getElementById("tab-content-wheel");
+      if (wheelEl) wheelEl.style.display = tab === "wheel" ? "block" : "none";
 
       if (tab === "conversions") {
         loadWebConversions();
+      }
+      if (tab === "wheel") {
+        loadAdminWheelStats();
       }
 
       if (tab === "profiles") {
@@ -2096,6 +2226,10 @@
         exportConversionsToCSV();
         return;
       }
+      if (activeTab === "wheel") {
+        exportWheelToCSV();
+        return;
+      }
       let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
       if (activeTab === "users") {
         csvContent += "STT,ID Zalo,Ten Hien Thi,So Tien Chua Rut,Da Thanh Toan,Bank BIN,So TK,Ghi Chu\n";
@@ -2433,6 +2567,233 @@
         return `${parts[2]}/${parts[1]}/${parts[0]}`;
       }
       return dateStr;
+    }
+
+    // ============================================================
+    // CÁC HÀM THEO DÕI VÒNG QUAY MAY MẮN (NGƯỜI CHƠI & CHI PHÍ)
+    // ============================================================
+    function escapeAdminHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function formatVndShort(n) {
+      return (Number(n) || 0).toLocaleString("vi-VN") + "đ";
+    }
+
+    async function loadAdminWheelStats(btn) {
+      if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang tải...';
+        btn.disabled = true;
+      }
+      const uTbody = document.getElementById("wheel-users-tbody");
+      if (uTbody && !adminWheelReport) {
+        uTbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--ink-soft);"><i class="fa-solid fa-spinner fa-spin" style="color:var(--primary);"></i> Đang tải thống kê Vòng Quay May Mắn...</td></tr>';
+      }
+
+      try {
+        const res = await fetch(`${API_URL}?action=getAdminLuckyWheelStats&date=${encodeURIComponent(selectedWheelDate)}&t=${Date.now()}`);
+        const json = await res.json();
+        if (!json || !json.success) {
+          if (uTbody) uTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--danger);">Không thể tải dữ liệu: ${escapeAdminHtml(json?.error || "Lỗi server")}</td></tr>`;
+          return;
+        }
+        adminWheelReport = json;
+        adminWheelUsers = Array.isArray(json.userRows) ? json.userRows : [];
+        renderAdminWheelDashboard(json);
+      } catch (err) {
+        if (uTbody) uTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--danger);">Lỗi kết nối VPS: ${escapeAdminHtml(err.message)}</td></tr>`;
+      } finally {
+        if (btn) {
+          btn.innerHTML = '<i class="fa-solid fa-rotate"></i> Làm mới';
+          btn.disabled = false;
+        }
+      }
+    }
+
+    function renderAdminWheelDashboard(data) {
+      const cfg = data.config || {};
+      const budget = data.todayBudget || {};
+      const sum = data.summary || {};
+
+      // Mode toggle button
+      const modeBtn = document.getElementById("btn-toggle-wheel-mode");
+      if (modeBtn) {
+        const isTest = Boolean(cfg.isTestOnly);
+        modeBtn.dataset.testOnly = isTest ? "1" : "0";
+        modeBtn.innerHTML = isTest
+          ? '<i class="fa-solid fa-flask"></i> Chế độ: Chỉ Admin Test'
+          : '<i class="fa-solid fa-globe"></i> Chế độ: Mở Toàn Nhóm';
+        modeBtn.style.background = isTest ? "#fef3c7" : "#dcfce7";
+        modeBtn.style.color = isTest ? "#92400e" : "#166534";
+        modeBtn.style.borderColor = isTest ? "#f59e0b" : "#22c55e";
+      }
+
+      // Banner config
+      document.getElementById("wb-base").innerText = formatVndShort(cfg.baseLimit || 10000);
+      document.getElementById("wb-bonus").innerText = "+" + formatVndShort(cfg.ticketPoolBonus ?? 300);
+      document.getElementById("wb-max").innerText = formatVndShort(cfg.maxLimit || 25000);
+      const phaseLabel = budget.isPhase1 ? "Đang khung 20h–21h (mở 60%)" : "Mở 100% quỹ ngày";
+      document.getElementById("wheel-today-phase-pill").innerText =
+        `Hôm nay: ${formatVndShort(budget.baseLimit)} + ${formatVndShort(budget.bonusAdded)} (${budget.activityUnits || 0} vé) = ${formatVndShort(budget.dynamicLimit)} • ${phaseLabel}`;
+
+      // 4 KPI Cards
+      document.getElementById("stat-wheel-players").innerText = (sum.uniquePlayers || 0).toLocaleString("vi-VN");
+      document.getElementById("stat-wheel-spins-sub").innerText = `${sum.totalSpins || 0} lượt quay (${sum.totalFreeSpins || 0} free) • ${sum.totalWins || 0} lượt trúng`;
+      document.getElementById("stat-wheel-cost").innerText = formatVndShort(sum.totalCost || 0);
+      document.getElementById("stat-wheel-ratio-sub").innerText = `${sum.costRatioPct || 0}% trên lợi nhuận ${formatVndShort(sum.orderProfit || 0)}`;
+      document.getElementById("stat-wheel-today-limit").innerText = formatVndShort(budget.dynamicLimit || 10000);
+      document.getElementById("stat-wheel-today-sub").innerText = `Đã chi ${formatVndShort(budget.usedToday)} • Còn phiên này: ${formatVndShort(budget.remainingForPhase)}`;
+      document.getElementById("stat-wheel-pending-tickets").innerText = (sum.pendingTicketsTotal || 0).toLocaleString("vi-VN");
+      document.getElementById("stat-wheel-pending-sub").innerText = `Từ ${sum.usersWithTicketsCount || 0} thành viên đang giữ vé`;
+
+      // Table 1: Daily breakdown
+      const dTbody = document.getElementById("wheel-daily-tbody");
+      const dailyRows = Array.isArray(data.dailyRows) ? data.dailyRows : [];
+      if (dTbody) {
+        if (dailyRows.length === 0) {
+          dTbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--ink-soft);">Chưa có dữ liệu vòng quay theo ngày.</td></tr>';
+        } else {
+          dTbody.innerHTML = dailyRows.map(r => {
+            const isSelected = selectedWheelDate === r.date || (selectedWheelDate === "today" && r.date === data.todayDate);
+            const ratioColor = r.costRatioPct > 20 ? "#dc2626" : (r.costRatioPct > 12 ? "#d97706" : "#059669");
+            return `
+              <tr onclick="selectWheelDate('${r.date}')" style="cursor:pointer; ${isSelected ? "background:#fff7ed;" : ""}">
+                <td><strong>${formatDisplayDate(r.date)}</strong> ${r.date === data.todayDate ? '<span class="badge-tag badge-success" style="font-size:10px; margin-left:4px;">Hôm nay</span>' : ''}</td>
+                <td style="text-align:center; font-weight:700;">${r.playersCount}</td>
+                <td style="text-align:center;">${r.totalSpins} <span style="color:var(--ink-soft); font-size:11px;">(${r.baseSpins} vé)</span></td>
+                <td style="text-align:center; font-weight:700; color:#ea580c;">${r.wins}</td>
+                <td style="text-align:right; font-weight:700;">${formatVndShort(r.dynamicLimit)} <span style="color:var(--ink-soft); font-size:11px;">(+${formatVndShort(r.bonusAdded)})</span></td>
+                <td style="text-align:right; font-weight:800; color:#dc2626;">${formatVndShort(r.cost)} <span style="color:var(--ink-soft); font-size:11px;">(${r.poolUsagePct}%)</span></td>
+                <td style="text-align:right; font-weight:700; color:#2563eb;">${formatVndShort(r.orderProfit)}</td>
+                <td style="text-align:center; font-weight:800; color:${ratioColor};">${r.costRatioPct}%</td>
+              </tr>
+            `;
+          }).join("");
+        }
+      }
+
+      filterAdminWheelUsers();
+    }
+
+    function selectWheelDate(dateStr) {
+      selectedWheelDate = dateStr;
+      const sel = document.getElementById("filter-wheel-date");
+      if (sel) {
+        if (["today", "month", "all"].includes(dateStr)) sel.value = dateStr;
+        else sel.value = "today";
+      }
+      const customEl = document.getElementById("filter-wheel-custom-date");
+      if (customEl) customEl.value = !["today", "month", "all"].includes(dateStr) ? dateStr : "";
+      loadAdminWheelStats();
+    }
+
+    function onWheelDateFilterChange() {
+      const sel = document.getElementById("filter-wheel-date");
+      if (!sel) return;
+      selectedWheelDate = sel.value;
+      const customEl = document.getElementById("filter-wheel-custom-date");
+      if (customEl) customEl.value = "";
+      loadAdminWheelStats();
+    }
+
+    function onWheelCustomDateChange() {
+      const customEl = document.getElementById("filter-wheel-custom-date");
+      if (!customEl || !customEl.value) return;
+      selectedWheelDate = customEl.value;
+      loadAdminWheelStats();
+    }
+
+    function filterAdminWheelUsers() {
+      const q = (document.getElementById("search-wheel-input")?.value || "").trim().toLowerCase();
+      const filtered = (adminWheelUsers || []).filter(u =>
+        !q || (u.userName && u.userName.toLowerCase().includes(q)) || (u.userId && u.userId.toLowerCase().includes(q))
+      );
+      renderAdminWheelUsers(filtered);
+    }
+
+    function renderAdminWheelUsers(items) {
+      const tbody = document.getElementById("wheel-users-tbody");
+      if (!tbody) return;
+      if (!items || items.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:32px; color:var(--ink-soft);">Chưa có thành viên nào phát sinh lượt quay hoặc vé trong kỳ này.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = items.map((u, idx) => {
+        const lastTime = u.lastSpinAt
+          ? new Date(u.lastSpinAt).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", hour: "2-digit", minute: "2-digit", day: "2-digit", month: "2-digit" })
+          : "-";
+        return `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>
+              <strong>${escapeAdminHtml(u.userName)}</strong>
+              ${u.isAdmin ? '<span class="badge-tag badge-pending" style="font-size:10px; margin-left:4px;">Admin Test</span>' : ''}
+              <div style="font-size:11px; color:var(--ink-soft); font-family:monospace;">${escapeAdminHtml(u.userId)}</div>
+            </td>
+            <td style="text-align:center; font-weight:700;">${u.periodSpins} ${u.periodFreeSpins > 0 ? `<span style="font-size:11px; color:var(--ink-soft);">(${u.periodFreeSpins} free)</span>` : ''}</td>
+            <td style="text-align:center; font-weight:700; color:#ea580c;">${u.periodWins}</td>
+            <td style="text-align:right; font-weight:800; color:#dc2626;">${formatVndShort(u.periodCost)}</td>
+            <td style="text-align:center;"><span class="badge-tag ${u.availableTickets > 0 ? 'badge-success' : ''}">${u.availableTickets} vé</span></td>
+            <td style="text-align:center;">${u.earnedOrderTickets}</td>
+            <td style="font-size:12px; color:var(--ink-soft);">${lastTime}</td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    async function toggleAdminWheelMode() {
+      const btn = document.getElementById("btn-toggle-wheel-mode");
+      const currentlyTest = btn?.dataset?.testOnly === "1";
+      const nextTestOnly = !currentlyTest;
+      const confirmMsg = nextTestOnly
+        ? "Chuyển Vòng Quay về chế độ CHỈ ADMIN TEST?"
+        : "MỞ CÔNG KHAI Vòng Quay May Mắn cho toàn bộ thành viên trong nhóm?";
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const res = await fetch(`${API_URL}?action=toggleWheelPublicMode`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ testOnlyAdmin: nextTestOnly })
+        });
+        const json = await res.json();
+        if (json && json.success) {
+          loadAdminWheelStats();
+        } else {
+          alert("Không thể đổi chế độ: " + (json?.error || "Lỗi không xác định"));
+        }
+      } catch (err) {
+        alert("Lỗi kết nối VPS: " + err.message);
+      }
+    }
+
+    function exportWheelToCSV() {
+      if (!adminWheelReport) {
+        alert("Vui lòng đợi tải dữ liệu Vòng Quay trước khi xuất Excel!");
+        return;
+      }
+      let csv = "data:text/csv;charset=utf-8,\uFEFF";
+      csv += "=== TONG HOP THEO NGAY ===\n";
+      csv += "Ngay,Nguoi Choi,Luot Quay,Luot Trung,Quy Ngay (A+C),Da Chi Thuc Te,Loi Nhuan Don,% Chi/Loi\n";
+      (adminWheelReport.dailyRows || []).forEach(r => {
+        csv += `"${r.date}","${r.playersCount}","${r.totalSpins}","${r.wins}","${r.dynamicLimit}","${r.cost}","${r.orderProfit}","${r.costRatioPct}%"\n`;
+      });
+      csv += "\n=== CHI TIET NGUOI THAM GIA ===\n";
+      csv += "STT,Ten Hien Thi,Zalo ID,Luot Quay,Trung,Thuong Nhan,Ve Cho Quay,Tong Ve Don\n";
+      (adminWheelUsers || []).forEach((u, i) => {
+        csv += `"${i + 1}","${String(u.userName || '').replace(/"/g, '""')}","${u.userId}","${u.periodSpins}","${u.periodWins}","${u.periodCost}","${u.availableTickets}","${u.earnedOrderTickets}"\n`;
+      });
+      const link = document.createElement("a");
+      link.setAttribute("href", encodeURI(csv));
+      link.setAttribute("download", `Thong_Ke_Vong_Quay_${selectedWheelDate}_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     window.onload = checkAdminAuth;
