@@ -13,7 +13,7 @@
   let wheelState = {
     slices: DEFAULT_WHEEL_SLICES,
     availableTickets: 0,
-    welcomeTickets: 0,
+    adminBonusTickets: 0,
     earnedOrderTickets: 0,
     bonusFreeSpins: 0,
     usedTickets: 0,
@@ -277,13 +277,12 @@
                 </div>
               </div>
               <div class="wheel-ticket-breakdown" id="wheel-ticket-breakdown">
-                <span class="wheel-pill">🎁 Mở hàng: ${wheelState.welcomeTickets} vé</span>
+                ${wheelState.adminBonusTickets > 0 ? `<span class="wheel-pill">👑 Vé Test Admin: ${wheelState.adminBonusTickets} vé</span>` : ''}
                 <span class="wheel-pill">🛍️ Từ đơn mới: ${wheelState.earnedOrderTickets} vé</span>
                 <span class="wheel-pill">🔄 Quay thêm: ${wheelState.bonusFreeSpins} vé</span>
               </div>
               <div class="wheel-rule-box">
                 <b>Cách nhận vé quay:</b><br>
-                • Tặng miễn phí <b>1 vé mở hàng</b> khi tham gia.<br>
                 • Mỗi đơn hàng hợp lệ mới (từ 18/11/2026) chuyển sang trạng thái <b>Hoàn thành</b> tự động cộng <b>+1 vé quay</b>.<br>
                 • Tiền thưởng trúng được cộng thẳng vào số dư ví và đồng bộ Google Sheet!
               </div>
@@ -358,7 +357,7 @@
     if (wonEl) wonEl.textContent = formatWheelMoney(wheelState.totalWonAmount);
     if (breakdownEl) {
       breakdownEl.innerHTML = `
-        <span class="wheel-pill">🎁 Mở hàng: ${wheelState.welcomeTickets} vé</span>
+        ${wheelState.adminBonusTickets > 0 ? `<span class="wheel-pill">👑 Vé Test Admin: ${wheelState.adminBonusTickets} vé</span>` : ''}
         <span class="wheel-pill">🛍️ Từ đơn mới: ${wheelState.earnedOrderTickets} vé</span>
         <span class="wheel-pill">🔄 Quay thêm: ${wheelState.bonusFreeSpins} vé</span>
       `;
@@ -391,7 +390,7 @@
           }
         }
         wheelState.availableTickets = Number(res.availableTickets) || 0;
-        wheelState.welcomeTickets = Number(res.welcomeTickets) || 0;
+        wheelState.adminBonusTickets = Number(res.adminBonusTickets) || 0;
         wheelState.earnedOrderTickets = Number(res.earnedOrderTickets) || 0;
         wheelState.bonusFreeSpins = Number(res.bonusFreeSpins) || 0;
         wheelState.usedTickets = Number(res.usedTickets) || 0;
