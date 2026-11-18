@@ -24,6 +24,7 @@
     totalWonAmount: 0,
     dailySpinsUsed: 0,
     dailySpinsLimit: 5,
+    hasPendingFreeSpin: false,
     isTestRestricted: false,
     userHistory: [],
     recentWinners: [],
@@ -372,6 +373,11 @@
     return html;
   }
 
+  function isDailyCapReached() {
+    const limit = wheelState.dailySpinsLimit || 5;
+    return wheelState.adminBonusTickets === 0 && wheelState.dailySpinsUsed >= limit && !wheelState.hasPendingFreeSpin;
+  }
+
   /* ---------- Spin Button Builder & UI Page Template ---------- */
   function buildSpinButtonInnerHtml(user, zaloId) {
     const iconSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M3 12h18"/><path d="m5.64 5.64 12.72 12.72"/><path d="m18.36 5.64-12.72 12.72"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>`;
@@ -395,6 +401,10 @@
     } else if (wheelState.isTestRestricted) {
       label = 'Đang Thử Nghiệm Nội Bộ';
       countHtml = '<span class="wheel-spin-btn-count">Admin</span>';
+      icon = iconSvg;
+    } else if (isDailyCapReached()) {
+      const limit = wheelState.dailySpinsLimit || 5;
+      label = `Đã Đủ ${limit}/${limit} Lượt Hôm Nay`;
       icon = iconSvg;
     }
 
@@ -597,6 +607,8 @@
         noteEl.textContent = '🚧 Khu vực Vòng Quay đang được Admin thử nghiệm nội bộ, sẽ mở cho mọi người sớm nhất!';
       } else if (wheelState.availableTickets <= 0) {
         noteEl.textContent = 'Bạn chưa có vé khả dụng — hãy chuyển link & hoàn thành đơn hàng mới để nhận vé!';
+      } else if (isDailyCapReached()) {
+        noteEl.textContent = 'Bạn đã dùng hết 5/5 lượt quay hôm nay — số vé còn lại được bảo lưu sang ngày mai!';
       } else {
         noteEl.textContent = '';
       }
@@ -668,6 +680,7 @@
         wheelState.totalWonAmount = Number(data.totalWonAmount) || 0;
         wheelState.dailySpinsUsed = Number(data.dailySpinsUsed) || 0;
         wheelState.dailySpinsLimit = Number(data.dailySpinsLimit) || 5;
+        wheelState.hasPendingFreeSpin = Boolean(data.hasPendingFreeSpin);
         wheelState.isTestRestricted = Boolean(data.isTestRestricted);
         wheelState.userHistory = Array.isArray(data.userHistory) ? data.userHistory : [];
         wheelState.recentWinners = Array.isArray(data.recentWinners) ? data.recentWinners : [];
@@ -835,6 +848,11 @@
       return;
     }
 
+    if (isDailyCapReached()) {
+      openWheelResultModal(null, 'Bạn đã dùng hết 5/5 lượt quay hôm nay — số vé còn lại được bảo lưu sang ngày mai!');
+      return;
+    }
+
     ensureAudioCtx();
     wheelState.isSpinning = true;
     const frameEl = document.querySelector('.wheel-frame');
@@ -903,6 +921,7 @@
         if (data.dailySpinsLimit !== undefined) {
           wheelState.dailySpinsLimit = Number(data.dailySpinsLimit) || 5;
         }
+        wheelState.hasPendingFreeSpin = Boolean(data.hasPendingFreeSpin);
         if (Array.isArray(data.userHistory)) wheelState.userHistory = data.userHistory;
         if (Array.isArray(data.recentWinners)) wheelState.recentWinners = data.recentWinners;
 
