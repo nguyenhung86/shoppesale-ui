@@ -1,15 +1,3 @@
-function isMobileBrowserDevice() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent || "");
-}
-
-function isShopeeWebPlatform(platform, url) {
-  return platform === "Shopee" || platform === "ShopeeFood" || /shopee\.vn|shp\.ee|s\.shopee|shopeefood|spf\.shopee/i.test(String(url || ""));
-}
-
-function isCloakedWebLink(url) {
-  return /^https?:\/\/[^/]*hoantienonline\.io\.vn\/r\//i.test(String(url || ""));
-}
-
 function getActiveZaloSubId() {
   let zaloId = localStorage.getItem('shoppesale_zalo_id') || "";
   if (!zaloId) {
@@ -21,37 +9,6 @@ function getActiveZaloSubId() {
     }
   }
   return zaloId;
-}
-
-function openMobileQrModal(productTitle, cloakedUrl) {
-  const existing = document.getElementById('shopee-mobile-qr-modal');
-  if (existing) existing.remove();
-
-  const safeTitle = String(productTitle || "Sản phẩm Shopee").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-  const qrSrc = "https://api.qrserver.com/v1/create-qr-code/?size=210x210&margin=6&data=" + encodeURIComponent(cloakedUrl);
-  const modal = document.createElement('div');
-  modal.id = 'shopee-mobile-qr-modal';
-  modal.style = 'position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.6);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px;';
-  modal.innerHTML = `
-    <div style="background:#fff;border-radius:20px;max-width:380px;width:100%;padding:24px 20px;text-align:center;box-shadow:0 24px 48px rgba(15,23,42,0.22);position:relative;">
-      <button type="button" id="close-qr-modal-btn" aria-label="Đóng" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">×</button>
-      <div style="display:inline-flex;align-items:center;gap:6px;background:#fff7ed;color:#ea580c;border:1px solid #ffedd5;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:12px;">📱 Chỉ mở trên điện thoại</div>
-      <h3 style="font-size:17px;font-weight:800;color:#0f172a;margin:0 0 6px;">Quét QR để vào App Shopee</h3>
-      <div style="font-size:13px;color:#475569;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${safeTitle}</div>
-      <div style="display:inline-block;padding:12px;border:2px dashed #fed7aa;border-radius:16px;background:#fff;margin-bottom:14px;">
-        <img src="${qrSrc}" alt="QR Code Mở App Shopee" style="width:190px;height:190px;display:block;border-radius:10px;" />
-      </div>
-      <div style="background:#f8fafc;border-radius:12px;padding:10px 12px;font-size:12.5px;color:#334155;line-height:1.5;text-align:left;">
-        1. Mở <b>Camera điện thoại</b> hoặc <b>Zalo</b><br>
-        2. Quét mã QR trên để bật thẳng <b>App Shopee</b> và nhận đủ 100% tiền hoàn.
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  modal.querySelector('#close-qr-modal-btn').addEventListener('click', () => modal.remove());
-  modal.addEventListener('click', (ev) => {
-    if (ev.target === modal) modal.remove();
-  });
 }
 
 function setupConvertSelection() {
@@ -571,51 +528,27 @@ function handleConvert() {
             </div>
             
             <!-- Primary CTA Action Button -->
-            ${(() => {
-              const isShopeeFamily = isShopeeWebPlatform(platform, shortLink);
-              const isMob = isMobileBrowserDevice();
-              const appLabel = platform === "ShopeeFood" ? "App ShopeeFood" : "App Shopee";
-              if (isShopeeFamily) {
-                if (isMob) {
-                  return `
-                    <a href="${shortLink}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f97316; color: #ffffff; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(249,115,22,0.25); margin-bottom: 8px; transition: all 0.2s;">
-                      <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
-                      Mở ${appLabel} Ngay
-                    </a>
-                    <div style="font-size: 12px; color: #64748b; text-align: center; margin-bottom: 12px;">
-                      Link được bảo mật — chỉ mở trên điện thoại để vào thẳng ${appLabel}.
-                    </div>
-                  `;
-                }
-                return `
-                  <button type="button" id="open-mobile-qr-btn" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f97316; color: #ffffff; border: none; border-radius: 12px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 14px rgba(249,115,22,0.25); margin-bottom: 10px; cursor: pointer; transition: all 0.2s;">
-                    📱 Quét QR trên điện thoại để vào ${appLabel}
-                  </button>
-                  <div style="background: #fff7ed; border: 1px solid #ffedd5; color: #c2410c; font-size: 12.5px; font-weight: 600; padding: 9px 12px; border-radius: 10px; text-align: center; margin-bottom: 12px; line-height: 1.45;">
-                    Chỉ mở được trên điện thoại để vào thẳng ${appLabel} &amp; tránh rớt đơn hoàn tiền.
-                  </div>
-                `;
-              }
-              return `
-                <a href="${shortLink}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f97316; color: #ffffff; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(249,115,22,0.25); margin-bottom: 12px; transition: all 0.2s;">
-                  <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
-                  Mở link mua hàng
-                </a>
-              `;
-            })()}
+            <a href="${shortLink}" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #f97316; color: #ffffff; border-radius: 12px; font-weight: 700; text-decoration: none; font-size: 15px; box-shadow: 0 4px 14px rgba(249,115,22,0.25); margin-bottom: 12px; transition: all 0.2s;">
+              <svg style="width: 16px; height: 16px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
+              ${platform === "ShopeeFood" ? "Mở link đặt món" : "Mở link mua hàng"}
+            </a>
             
             <!-- Secondary Action Buttons -->
             <div style="display: flex; gap: 12px;">
-              <button id="show-qr-code" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+              <button type="button" id="copy-aff-link" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;">
+                <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"></path><path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"></path></svg>
+                <span id="copy-btn-label">Sao chép link</span>
+              </button>
+              <button type="button" id="show-qr-code" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 12px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; font-weight: 600; color: #475569; font-size: 13px; cursor: pointer; transition: all 0.2s;">
                 <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 2V5h1v1H5zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm2 2v-1h1v1H5zM13 3a1 1 0 00-1 1h3a1 1 0 001-1V4a1 1 0 00-1-1h-3zm1 2v1h1v-1h-1zM11 12a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm3 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1v-1zm5-11a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V5zm-2 2a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm-4 0a1 1 0 011-1h1a1 1 0 011 1v1a1 1 0 01-1 1h-1a1 1 0 01-1-1V7zm2 5a1 1 0 00-1 1v1a1 1 0 001 1h1a1 1 0 001-1v-1a1 1 0 00-1-1h-1z" clip-rule="evenodd"></path></svg>
-                <span id="qr-btn-label">${(isShopeeWebPlatform(platform, shortLink) && !isMobileBrowserDevice()) ? "Ẩn mã QR" : "QR Code"}</span>
+                <span id="qr-btn-label">QR Code</span>
               </button>
             </div>
             
             <!-- QR Code container -->
-            <div id="qr-code-container" style="display: ${(isShopeeWebPlatform(platform, shortLink) && !isMobileBrowserDevice()) ? "flex" : "none"}; flex-direction: column; align-items: center; justify-content: center; margin-top: 18px; padding-top: 18px; border-top: 1px solid #f1f5f9; text-align: center;">
-              <img id="qr-code-img" src="${(isShopeeWebPlatform(platform, shortLink) && !isMobileBrowserDevice()) ? ("https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent(shortLink)) : ""}" style="width: 170px; height: 170px; border: 2px dashed #fed7aa; padding: 8px; border-radius: 14px; background: white;" alt="QR Code" />
-              <span style="font-size: 12.5px; color: #475569; margin-top: 8px; font-weight: 600;">Dùng Camera điện thoại hoặc Zalo quét mã QR để vào thẳng ${platform === "ShopeeFood" ? "App ShopeeFood" : "App Shopee"}</span>
+            <div id="qr-code-container" style="display: none; flex-direction: column; align-items: center; justify-content: center; margin-top: 18px; padding-top: 18px; border-top: 1px solid #f1f5f9; text-align: center;">
+              <img id="qr-code-img" src="" style="width: 170px; height: 170px; border: 2px dashed #fed7aa; padding: 8px; border-radius: 14px; background: white;" alt="QR Code" />
+              <span style="font-size: 12.5px; color: #475569; margin-top: 8px; font-weight: 600;">Quét mã QR để mở link trên điện thoại</span>
             </div>
           `;
 
@@ -628,36 +561,48 @@ function handleConvert() {
             container.appendChild(resultCard);
           }
 
+          const copyBtn = resultCard.querySelector("#copy-aff-link");
+          const copyBtnLabel = resultCard.querySelector("#copy-btn-label");
           const qrBtn = resultCard.querySelector("#show-qr-code");
           const qrBtnLabel = resultCard.querySelector("#qr-btn-label");
           const qrContainer = resultCard.querySelector("#qr-code-container");
           const qrImg = resultCard.querySelector("#qr-code-img");
-          const openMobileQrBtn = resultCard.querySelector("#open-mobile-qr-btn");
-          const showQrBox = () => {
-            if (!qrImg.getAttribute("src")) {
-              qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent(shortLink);
-            }
-            qrContainer.style.display = "flex";
-            qrBtn.style.background = "#f8fafc";
-            if (qrBtnLabel && isShopeeWebPlatform(platform, shortLink) && !isMobileBrowserDevice()) {
-              qrBtnLabel.textContent = "Ẩn mã QR";
-            }
-          };
-          if (openMobileQrBtn) {
-            openMobileQrBtn.addEventListener("click", () => {
-              showQrBox();
-              qrContainer.scrollIntoView({ behavior: "smooth", block: "center" });
+
+          if (copyBtn) {
+            copyBtn.addEventListener("click", async () => {
+              try {
+                await navigator.clipboard.writeText(shortLink);
+              } catch (_) {
+                const ta = document.createElement("textarea");
+                ta.value = shortLink;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                ta.remove();
+              }
+              if (copyBtnLabel) copyBtnLabel.textContent = "Đã sao chép!";
+              copyBtn.style.borderColor = "#22c55e";
+              copyBtn.style.color = "#16a34a";
+              setTimeout(() => {
+                if (copyBtnLabel) copyBtnLabel.textContent = "Sao chép link";
+                copyBtn.style.borderColor = "#e2e8f0";
+                copyBtn.style.color = "#475569";
+              }, 1600);
             });
           }
+
           qrBtn.addEventListener("click", () => {
             if (qrContainer.style.display === "none") {
-              showQrBox();
+              if (!qrImg.getAttribute("src")) {
+                qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=" + encodeURIComponent(shortLink);
+              }
+              qrContainer.style.display = "flex";
+              qrBtn.style.background = "#f8fafc";
+              if (qrBtnLabel) qrBtnLabel.textContent = "Ẩn mã QR";
             } else {
               qrContainer.style.display = "none";
               qrBtn.style.background = "#ffffff";
-              if (qrBtnLabel && isShopeeWebPlatform(platform, shortLink) && !isMobileBrowserDevice()) {
-                qrBtnLabel.textContent = "Hiện mã QR";
-              }
+              if (qrBtnLabel) qrBtnLabel.textContent = "QR Code";
             }
           });
 
@@ -821,25 +766,9 @@ function handleConvert() {
           
           <!-- Thanh thao tác chính -->
           <div class="convert-history-actions">
-            ${(() => {
-              const isShopeeHist = isShopeeWebPlatform(item.platform, item.convertedUrl || item.originalUrl);
-              const isMob = isMobileBrowserDevice();
-              if (isShopeeHist) {
-                const label = isMob
-                  ? (item.platform === "ShopeeFood" ? "Mở lại App ShopeeFood" : "Mở lại App Shopee")
-                  : (item.platform === "ShopeeFood" ? "📱 Quét QR mở App ShopeeFood" : "📱 Quét QR mở App Shopee");
-                return `
-                  <button type="button" class="history-open-btn" data-index="${idx}" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; border-radius: 8px; font-size: 13.5px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: all 0.2s;">
-                    ${label}
-                  </button>
-                `;
-              }
-              return `
-                <a href="${item.convertedUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; border-radius: 8px; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: all 0.2s;">
-                  Mở link mua lại <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
-                </a>
-              `;
-            })()}
+            <a href="${item.convertedUrl}" target="_blank" rel="noopener noreferrer" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; background: #fff7ed; border: 1px solid #ffedd5; color: #ea580c; border-radius: 8px; font-size: 13.5px; font-weight: 700; text-decoration: none; white-space: nowrap; transition: all 0.2s;">
+              Mở link mua lại <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z"></path><path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z"></path></svg>
+            </a>
             <button class="history-delete-btn" data-index="${idx}" title="Xóa khỏi lịch sử" style="display: flex; align-items: center; justify-content: center; padding: 10px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; color: #94a3b8; cursor: pointer; transition: background 0.2s;">
               <svg style="width: 14px; height: 14px; fill: currentColor;" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
             </button>
@@ -903,46 +832,6 @@ function handleConvert() {
       }
     });
     
-    // Gắn sự kiện mở link ẩn / QR Code trên lịch sử chuyển đổi Shopee
-    historySection.querySelectorAll('.history-open-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const index = parseInt(btn.getAttribute('data-index'), 10);
-        let currentHistory = JSON.parse(localStorage.getItem('shoppesale_convert_history') || "[]");
-        const entry = currentHistory[index];
-        if (!entry) return;
-
-        let targetUrl = entry.convertedUrl || "";
-        if (!isCloakedWebLink(targetUrl)) {
-          const origHtml = btn.innerHTML;
-          btn.disabled = true;
-          btn.textContent = "Đang tạo link bảo mật...";
-          try {
-            const sourceUrl = entry.originalUrl || targetUrl;
-            const res = await fetch(CONFIG.API_URL + "?action=convertLink&url=" + encodeURIComponent(sourceUrl) + "&subId=" + encodeURIComponent(getActiveZaloSubId()));
-            const json = await res.json();
-            if (json && json.success && json.shortLink && isCloakedWebLink(json.shortLink)) {
-              targetUrl = json.shortLink;
-              currentHistory[index].convertedUrl = targetUrl;
-              localStorage.setItem('shoppesale_convert_history', JSON.stringify(currentHistory));
-            }
-          } catch (_) {}
-          btn.disabled = false;
-          btn.innerHTML = origHtml;
-        }
-
-        if (!isCloakedWebLink(targetUrl)) {
-          alert("⚠️ Không thể tạo liên kết bảo mật cho sản phẩm này, vui lòng dán lại link sản phẩm ở ô Chuyển đổi link phía trên nhé!");
-          return;
-        }
-
-        if (isMobileBrowserDevice()) {
-          window.open(targetUrl, '_blank', 'noopener');
-        } else {
-          openMobileQrModal(entry.productName || "Sản phẩm Shopee", targetUrl);
-        }
-      });
-    });
-
     // Gắn sự kiện xóa lịch sử
     historySection.querySelectorAll('.history-delete-btn').forEach(btn => {
       btn.addEventListener('click', () => {
