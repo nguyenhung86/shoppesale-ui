@@ -462,9 +462,6 @@
   </div>
 
   <script>
-    // Mật khẩu bảo mật
-    const CORRECT_PASSWORD = "Baophan54@";
-    
     // API URL VPS Bot Zalo (Tách biệt 100% qua api-vps.hoantienonline.io.vn)
     let API_URL = "https://api-vps.hoantienonline.io.vn/api/web";
     const LOCAL_BOT_URL = "https://api-vps.hoantienonline.io.vn";
@@ -477,8 +474,28 @@
     let selectedBillBase64 = "";
     let activeTotalPaid = 0;
 
+    let payoutAuthExpiredNotified = false;
+    async function payoutFetch(url, options = {}) {
+      const token = localStorage.getItem("admin_token") || "";
+      const headers = Object.assign({}, options.headers || {}, {
+        "X-Admin-Token": token
+      });
+      const res = await fetch(url, Object.assign({}, options, { headers }));
+      if (res.status === 401) {
+        localStorage.removeItem("admin_token");
+        localStorage.removeItem("payout_logged_in");
+        if (!payoutAuthExpiredNotified) {
+          payoutAuthExpiredNotified = true;
+          alert("Phiên đăng nhập đã hết hạn hoặc cần xác thực lại. Vui lòng nhập mật khẩu Admin!");
+          checkLogin();
+          setTimeout(() => { payoutAuthExpiredNotified = false; }, 2000);
+        }
+      }
+      return res;
+    }
+
     function checkLogin() {
-      if (localStorage.getItem("payout_logged_in") === "true") {
+      if (localStorage.getItem("payout_logged_in") === "true" && localStorage.getItem("admin_token")) {
         document.getElementById("login-screen").style.display = "none";
         document.getElementById("main-content").style.display = "block";
         document.getElementById("search-input").value = ""; // Xóa trắng ô tìm kiếm nếu bị tự động điền
@@ -489,25 +506,44 @@
       }
     }
 
-    function verifyPassword() {
-      const input = document.getElementById("admin-password").value;
-      if (input === CORRECT_PASSWORD) {
-        localStorage.setItem("payout_logged_in", "true");
-        document.getElementById("login-screen").style.display = "none";
-        document.getElementById("main-content").style.display = "block";
-        document.getElementById("login-error").style.display = "none";
-        document.getElementById("search-input").value = ""; // Xóa trắng ô tìm kiếm nếu bị tự động điền
-        loadData();
-      } else {
-        const error = document.getElementById("login-error");
+    async function verifyPassword() {
+      const input = document.getElementById("admin-password").value.trim();
+      const error = document.getElementById("login-error");
+      if (!input) {
+        error.innerText = "Vui lòng nhập mật khẩu!";
         error.style.display = "block";
-        document.getElementById("admin-password").value = "";
-        document.getElementById("admin-password").focus();
+        return;
+      }
+      try {
+        const res = await fetch(`${API_URL}?action=adminLogin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "adminLogin", username: "admin", password: input })
+        });
+        const json = await res.json();
+        if (json && json.success && json.token) {
+          localStorage.setItem("admin_token", json.token);
+          localStorage.setItem("payout_logged_in", "true");
+          document.getElementById("login-screen").style.display = "none";
+          document.getElementById("main-content").style.display = "block";
+          error.style.display = "none";
+          document.getElementById("search-input").value = "";
+          loadData();
+        } else {
+          error.innerText = (json && json.error) || "Mật khẩu không đúng!";
+          error.style.display = "block";
+          document.getElementById("admin-password").value = "";
+          document.getElementById("admin-password").focus();
+        }
+      } catch (e) {
+        error.innerText = "Lỗi kết nối máy chủ xác thực: " + e.message;
+        error.style.display = "block";
       }
     }
 
     function logout() {
       localStorage.removeItem("payout_logged_in");
+      localStorage.removeItem("admin_token");
       checkLogin();
     }
 
@@ -526,22 +562,16 @@
       try {
         let json = null;
         try {
-          const res = await fetch(`${API_URL}?action=getPayoutList&_t=${Date.now()}`);
+          const res = await payoutFetch(`${API_URL}?action=getPayoutList&_t=${Date.now()}`);
+          if (res.status === 401) {
+            hideLoading();
+            return;
+          }
           if (res.ok) {
             const data = await res.json();
             if (data && data.success) json = data;
           }
         } catch(eVps) {}
-
-        if (!json && CONFIG.APPS_SCRIPT_URL) {
-          try {
-            const resApps = await fetch(`${CONFIG.APPS_SCRIPT_URL}?action=getPayoutList`);
-            if (resApps.ok) {
-              const dataApps = await resApps.json();
-              if (dataApps && dataApps.success) json = dataApps;
-            }
-          } catch(eApps) {}
-        }
 
         if (json && json.success && Array.isArray(json.data)) {
           json.data.sort((a, b) => (b.unpaid || 0) - (a.unpaid || 0));
@@ -617,7 +647,7 @@
 
       // Nếu từ khóa tìm kiếm dài >= 2 ký tự -> Truy vấn thêm toàn bộ 414 thành viên trên VPS
       if (query.length >= 2) {
-        fetch(`${API_URL}?action=getPayoutList&query=${encodeURIComponent(query)}`)
+        payoutFetch(`${API_URL}?action=getPayoutList&query=${encodeURIComponent(query)}`)
           .then(res => res.json())
           .then(json => {
             if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -778,8 +808,9 @@
 
               // 2. Gửi lưu trực tiếp lên Google Sheets (lưu vĩnh viễn cho tất cả thiết bị khác)
               try {
-                fetch(API_URL, {
+                payoutFetch(API_URL, {
                   method: "POST",
+                  headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     action: "save_bank_info",
                     userId: activeUserId,
@@ -869,8 +900,9 @@
               switchQrTab("dynamic");
               
               // Đồng bộ ngược lên Google Sheets nếu thấy local có mà Sheets chưa có
-              fetch(API_URL, {
+              payoutFetch(API_URL, {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   action: "save_bank_info",
                   userId: userId,
@@ -938,7 +970,7 @@
       try {
         let result = null;
         try {
-          const response = await fetch(API_URL, {
+          const response = await payoutFetch(API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -953,25 +985,6 @@
             if (data && data.success) result = data;
           }
         } catch(eVps) {}
-
-        if (!result && CONFIG.APPS_SCRIPT_URL) {
-          try {
-            const resApps = await fetch(CONFIG.APPS_SCRIPT_URL, {
-              method: "POST",
-              headers: { "Content-Type": "text/plain" },
-              body: JSON.stringify({
-                action: "save_bank_info",
-                userId: activeUserId,
-                bankBin: activeBankBin,
-                bankAcc: activeAccNum
-              })
-            });
-            if (resApps.ok) {
-              const dataApps = await resApps.json();
-              if (dataApps && dataApps.success) result = dataApps;
-            }
-          } catch(eApps) {}
-        }
 
         // Cập nhật bộ nhớ cục bộ
         const user = allUsers.find(u => u.userId === activeUserId);
@@ -998,8 +1011,9 @@
         showLoading("Đang tải ảnh QR lên Drive...");
         
         try {
-          const response = await fetch(API_URL, {
+          const response = await payoutFetch(API_URL, {
             method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               action: "save_qr",
               userId: activeUserId,
@@ -1075,7 +1089,7 @@
       
       try {
         // 1. Cập nhật Google Sheets thành "Đã TT" và lưu Lịch sử thanh toán kèm Bill
-        const sheetRes = await fetch(`${API_URL}?action=confirm_payout`, {
+        const sheetRes = await payoutFetch(`${API_URL}?action=confirm_payout`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -1085,6 +1099,10 @@
             billBase64: selectedBillBase64
           })
         });
+        if (sheetRes.status === 401) {
+          hideLoading();
+          return;
+        }
         const rawText = await sheetRes.text();
         let sheetJson;
         try {
@@ -1098,8 +1116,9 @@
           // Gửi lưu thông tin ngân hàng lên Google Sheets nếu có thay đổi thủ công hoặc chưa lưu
           if (activeBankBin && activeAccNum) {
             try {
-              fetch(API_URL, {
+              payoutFetch(API_URL, {
                 method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   action: "save_bank_info",
                   userId: activeUserId,
@@ -1121,7 +1140,7 @@
           // 2. Gửi thông báo Zalo kèm ảnh hóa đơn ngầm
           showLoading("Đang cập nhật thông báo Zalo...");
           try {
-            fetch(`${LOCAL_BOT_URL}/api/payout/notify`, {
+            payoutFetch(`${LOCAL_BOT_URL}/api/payout/notify`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({

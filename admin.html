@@ -1248,6 +1248,25 @@
       }
     }
 
+    let adminAuthExpiredNotified = false;
+    async function adminFetch(url, options = {}) {
+      const token = localStorage.getItem("admin_token") || "";
+      const headers = Object.assign({}, options.headers || {}, {
+        "X-Admin-Token": token
+      });
+      const res = await fetch(url, Object.assign({}, options, { headers }));
+      if (res.status === 401) {
+        localStorage.removeItem("admin_token");
+        if (!adminAuthExpiredNotified) {
+          adminAuthExpiredNotified = true;
+          alert("Phiên đăng nhập Admin đã hết hạn hoặc cần xác thực lại. Vui lòng đăng nhập lại!");
+          checkAdminAuth();
+          setTimeout(() => { adminAuthExpiredNotified = false; }, 2000);
+        }
+      }
+      return res;
+    }
+
     async function handleAdminLogin() {
       const user = document.getElementById("admin-username").value.trim();
       const pass = document.getElementById("admin-password").value.trim();
@@ -1260,18 +1279,22 @@
       }
 
       try {
-        const loginUrl = `${API_URL}?action=adminLogin&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
-        const res = await fetch(loginUrl);
+        const res = await fetch(`${API_URL}?action=adminLogin`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "adminLogin", username: user, password: pass })
+        });
         const json = await res.json();
-        if (json.success) {
+        if (json.success && json.token) {
           localStorage.setItem("admin_token", json.token);
+          errorMsg.style.display = "none";
           checkAdminAuth();
         } else {
           errorMsg.innerText = json.error || "Đăng nhập thất bại!";
           errorMsg.style.display = "block";
         }
       } catch (e) {
-        errorMsg.innerText = "Vui lòng copy file affiliate-bot.js mới lên VPS và khởi động lại bot sếp nhé! (" + e.message + ")";
+        errorMsg.innerText = "Lỗi kết nối máy chủ Admin: " + e.message;
         errorMsg.style.display = "block";
       }
     }
@@ -1343,9 +1366,9 @@
 
         // Tải song song cả 3 nguồn dữ liệu bằng Promise.allSettled để siêu nhanh và độc lập
         const [resUsers, resOrders, resProfiles] = await Promise.allSettled([
-          fetch(`${API_URL}?action=getAdminUsers&t=${timestamp}`).then(r => r.json()),
-          fetch(`${API_URL}?action=getAdminOrders&t=${timestamp}`).then(r => r.json()),
-          fetch(`${API_URL}?action=getMemberProfiles&t=${timestamp}`).then(r => r.json())
+          adminFetch(`${API_URL}?action=getAdminUsers&t=${timestamp}`).then(r => r.json()),
+          adminFetch(`${API_URL}?action=getAdminOrders&t=${timestamp}`).then(r => r.json()),
+          adminFetch(`${API_URL}?action=getMemberProfiles&t=${timestamp}`).then(r => r.json())
         ]);
 
         // 1. Cập nhật Users & Số dư
@@ -1503,7 +1526,7 @@
         return;
       }
       try {
-        const res = await fetch(`${API_URL}?action=blockUser&userId=${userId}`);
+        const res = await adminFetch(`${API_URL}?action=blockUser&userId=${userId}`);
         const json = await res.json();
         if (json.success) {
           alert(`⛔ ${json.message}`);
@@ -1585,7 +1608,7 @@
       btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
 
       try {
-        const res = await fetch(`${API_URL}?action=updateMemberProfile`, {
+        const res = await adminFetch(`${API_URL}?action=updateMemberProfile`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, phone, email, dob, note })
@@ -1620,12 +1643,12 @@
         btn.innerHTML = '<i class="fa-solid fa-rotate fa-spin"></i> Đang đồng bộ...';
       }
       try {
-        const res = await fetch(`${API_URL}?action=syncZaloProfiles`);
+        const res = await adminFetch(`${API_URL}?action=syncZaloProfiles`);
         const json = await res.json();
         if (json.success) {
           alert(`✅ ${json.message || 'Đồng bộ Zalo thành công!'}`);
           // Nạp lại dữ liệu
-          const resProfiles = await fetch(`${API_URL}?action=getMemberProfiles&t=${Date.now()}`);
+          const resProfiles = await adminFetch(`${API_URL}?action=getMemberProfiles&t=${Date.now()}`);
           const jsonP = await resProfiles.json();
           if (jsonP.success) {
             adminProfiles = jsonP.data;
@@ -1655,7 +1678,7 @@
         }
       });
       try {
-        const res = await fetch(`${API_URL}?action=syncShopeeOrders&days=30`);
+        const res = await adminFetch(`${API_URL}?action=syncShopeeOrders&days=30`);
         const json = await res.json();
         if (json.success) {
           const accInfo = json.accounts ? json.accounts.map(a => `${a.name}: ${a.count} đơn`).join(', ') : '';
@@ -1688,7 +1711,7 @@
         }
       });
       try {
-        const res = await fetch(`${API_URL}?action=syncLazadaOrders&days=60`);
+        const res = await adminFetch(`${API_URL}?action=syncLazadaOrders&days=60`);
         const json = await res.json();
         if (json.success) {
           const totalCommStr = Math.round(json.totalCommissionSum || 0).toLocaleString('vi-VN') + 'đ';
@@ -1741,7 +1764,7 @@
       setBtnLoading("Đang khởi tạo...");
 
       try {
-        const res = await fetch(`${API_URL}?action=pushVpsOrdersToSheet&days=${days}`);
+        const res = await adminFetch(`${API_URL}?action=pushVpsOrdersToSheet&days=${days}`);
         const json = await res.json();
         
         if (!json.success && !json.inProgress) {
@@ -1763,7 +1786,7 @@
         const timer = setInterval(async () => {
           pollCount++;
           try {
-            const stRes = await fetch(`${API_URL}?action=getPushVpsOrdersStatus&t=${Date.now()}`);
+            const stRes = await adminFetch(`${API_URL}?action=getPushVpsOrdersStatus&t=${Date.now()}`);
             const stJson = await stRes.json();
             const st = stJson.status;
             if (!st) return;
@@ -2167,7 +2190,7 @@
 
       // Nếu không tìm thấy trong RAM và từ khóa dài >= 3 ký tự -> Gọi API getAdminOrders trên VPS siêu tốc
       if (filtered.length === 0 && q.length >= 3) {
-        fetch(`${API_URL}?action=getAdminOrders&query=${encodeURIComponent(q)}`)
+        adminFetch(`${API_URL}?action=getAdminOrders&query=${encodeURIComponent(q)}`)
           .then(res => res.json())
           .then(json => {
             if (json && json.success && Array.isArray(json.data) && json.data.length > 0) {
@@ -2203,7 +2226,7 @@
       const note = document.getElementById("edit-user-note").value.trim();
 
       try {
-        const res = await fetch(`${API_URL}?action=updateUserBalance`, {
+        const res = await adminFetch(`${API_URL}?action=updateUserBalance`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userId, unpaid, paid, bankBin, bankAcc, note })
@@ -2283,7 +2306,7 @@
 
       try {
         const queryDate = selectedConversionDate;
-        const res = await fetch(`${API_URL}?action=getWebConversionStats&date=${encodeURIComponent(queryDate)}&t=${Date.now()}`);
+        const res = await adminFetch(`${API_URL}?action=getWebConversionStats&date=${encodeURIComponent(queryDate)}&t=${Date.now()}`);
         const json = await res.json();
 
         if (json && json.success) {
@@ -2595,7 +2618,7 @@
       }
 
       try {
-        const res = await fetch(`${API_URL}?action=getAdminLuckyWheelStats&date=${encodeURIComponent(selectedWheelDate)}&t=${Date.now()}`);
+        const res = await adminFetch(`${API_URL}?action=getAdminLuckyWheelStats&date=${encodeURIComponent(selectedWheelDate)}&t=${Date.now()}`);
         const json = await res.json();
         if (!json || !json.success) {
           if (uTbody) uTbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--danger);">Không thể tải dữ liệu: ${escapeAdminHtml(json?.error || "Lỗi server")}</td></tr>`;
@@ -2756,7 +2779,7 @@
       if (!confirm(confirmMsg)) return;
 
       try {
-        const res = await fetch(`${API_URL}?action=toggleWheelPublicMode`, {
+        const res = await adminFetch(`${API_URL}?action=toggleWheelPublicMode`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ testOnlyAdmin: nextTestOnly })
