@@ -806,13 +806,14 @@
                 }));
               } catch(e) {}
 
-              // 2. Gửi lưu trực tiếp lên Google Sheets (lưu vĩnh viễn cho tất cả thiết bị khác)
+              // 2. Gửi lưu trực tiếp lên Google Sheets (lưu vào bảng Thanh toán hoa hồng cho mọi thiết bị, không tự thêm vào Danh bạ STK)
               try {
                 payoutFetch(API_URL, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     action: "save_bank_info",
+                    source: "payout_web",
                     userId: activeUserId,
                     bankBin: parsed.bankBin,
                     bankAcc: parsed.accountNumber
@@ -899,12 +900,13 @@
               hasCache = true;
               switchQrTab("dynamic");
               
-              // Đồng bộ ngược lên Google Sheets nếu thấy local có mà Sheets chưa có
+              // Đồng bộ ngược lên bảng Thanh toán hoa hồng nếu thấy local có mà Sheets chưa có
               payoutFetch(API_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   action: "save_bank_info",
+                  source: "payout_web",
                   userId: userId,
                   bankBin: parsedCache.bankBin,
                   bankAcc: parsedCache.accountNumber
@@ -975,6 +977,7 @@
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               action: "save_bank_info",
+              source: "payout_web",
               userId: activeUserId,
               bankBin: activeBankBin,
               bankAcc: activeAccNum
@@ -1113,22 +1116,6 @@
         }
         
         if (sheetJson.success) {
-          // Gửi lưu thông tin ngân hàng lên Google Sheets nếu có thay đổi thủ công hoặc chưa lưu
-          if (activeBankBin && activeAccNum) {
-            try {
-              payoutFetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  action: "save_bank_info",
-                  userId: activeUserId,
-                  bankBin: activeBankBin,
-                  bankAcc: activeAccNum
-                })
-              });
-            } catch(e) {}
-          }
-          
           // Xây dựng nội dung ghi chú thưởng thêm nếu có
           let note = "";
           const bonus = Number(document.getElementById("bonus-amount").value) || 0;
